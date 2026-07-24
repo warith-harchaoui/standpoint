@@ -2,7 +2,7 @@
 
 [🇫🇷](https://github.com/warith-harchaoui/standingpoint/blob/main/LISEZMOI.md) · [🇬🇧](https://github.com/warith-harchaoui/standingpoint/blob/main/README.md)
 
-[![CI](https://github.com/warith-harchaoui/standingpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standingpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standingpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20Vega--Lite-brightgreen.svg)](#the-promise)
+[![CI](https://github.com/warith-harchaoui/standingpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standingpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standingpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20Vega--Lite-brightgreen.svg)](#local-first)
 
 `Standpoint` belongs to a collection of libraries called `AI Helpers` developed for building Artificial Intelligence.
 
@@ -21,20 +21,17 @@ time. What Standpoint adds is the work you would otherwise do by hand: it orient
 the map around a reference option, names the axes in plain words (in the language
 of your columns), colours and labels the points, and writes everything out.
 
-## The Promise
+## Local-first
 
-Standpoint is **local-first** by design. Three honest cases:
+Everything runs on your machine: parsing, PCA, orientation, colouring, and rendering
+the figure with [`vl-convert`](https://github.com/vega/vl-convert). Your table is never
+uploaded, and there is no telemetry, no account, and nothing to sign up for.
 
-1. **Guaranteed local.** Parsing, PCA, orientation, colouring, and figure rendering
-   (via [`vl-convert`](https://github.com/vega/vl-convert)) all run on your machine.
-   Your table is **never uploaded**. There is **no telemetry, no account, no SaaS**.
-2. **The one caveat: the local model.** Axis names and the written analysis are
-   produced by a local [Ollama](https://ollama.com) model on `localhost`. Ollama
-   downloads the model weights **once** on first pull; after that it runs offline.
-   Nothing leaves your machine.
-3. **Your decision.** You never have to run the model at all: `--no-llm` gives you
-   the full map deterministically, with axis names taken from the strongest column
-   at each end and no written narrative.
+The one thing that reaches out is the axis naming and the written analysis, which ask a
+[Ollama](https://ollama.com) model running on `localhost`. Ollama fetches the model
+weights the first time, then works offline. You can also leave the model out entirely:
+with `--no-llm` you still get the whole map, and the axes are named after the strongest
+column at each end.
 
 ## Documentation
 

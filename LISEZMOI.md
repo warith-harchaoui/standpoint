@@ -2,7 +2,7 @@
 
 [🇫🇷](https://github.com/warith-harchaoui/standingpoint/blob/main/LISEZMOI.md) · [🇬🇧](https://github.com/warith-harchaoui/standingpoint/blob/main/README.md)
 
-[![CI](https://github.com/warith-harchaoui/standingpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standingpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standingpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20Vega--Lite-brightgreen.svg)](#la-promesse)
+[![CI](https://github.com/warith-harchaoui/standingpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standingpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standingpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20Vega--Lite-brightgreen.svg)](#tout-en-local)
 
 `Standpoint` fait partie d'une collection de bibliothèques appelée `AI Helpers`, développée pour bâtir des applications d'intelligence artificielle.
 
@@ -23,21 +23,18 @@ main : il oriente la carte autour d'une option de référence, nomme les axes en
 simples (dans la langue de vos colonnes), colore et étiquette les points, et écrit
 tout le résultat.
 
-## La promesse
+## Tout en local
 
-Standpoint est **local-first** par conception. Trois cas, en toute honnêteté :
+Tout tourne sur votre machine : la lecture du tableau, l'ACP, l'orientation, la
+coloration et le rendu de la figure avec [`vl-convert`](https://github.com/vega/vl-convert).
+Votre tableau n'est jamais envoyé nulle part ; pas de télémétrie, pas de compte, rien à
+créer.
 
-1. **Garanti local.** L'analyse, l'ACP, l'orientation, la coloration et le rendu de
-   la figure (via [`vl-convert`](https://github.com/vega/vl-convert)) s'exécutent
-   tous sur votre machine. Votre tableau n'est **jamais téléversé**. **Aucune
-   télémétrie, aucun compte, aucune dépendance SaaS.**
-2. **La seule réserve : le modèle local.** Les noms des axes et l'analyse rédigée
-   sont produits par un modèle [Ollama](https://ollama.com) local, sur `localhost`.
-   Ollama télécharge les poids du modèle **une seule fois**, au premier `pull` ;
-   ensuite, tout fonctionne hors ligne. Rien ne quitte votre machine.
-3. **Votre décision.** Le modèle n'est jamais imposé : `--no-llm`
-   donne la carte complète de façon déterministe, avec des noms d'axes tirés de
-   la colonne la plus forte à chaque extrémité, mais sans analyse rédigée.
+Seuls le nommage des axes et l'analyse rédigée sollicitent un modèle
+[Ollama](https://ollama.com) tournant sur `localhost`. Ollama récupère les poids du
+modèle la première fois, puis fonctionne hors ligne. Et vous pouvez très bien vous en
+passer : avec `--no-llm`, vous obtenez la carte entière, les axes prenant simplement le
+nom de la colonne la plus forte à chaque extrémité.
 
 ## Documentation
 
