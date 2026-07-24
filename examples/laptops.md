@@ -2,13 +2,13 @@
 
 ## Interpretation
 
-The positioning map uses a horizontal axis that spans from "Affordable" on the left to "Durable" on the right, indicating a spectrum of product characteristics related to cost versus longevity. The vertical axis ranges from "Powerful" at the bottom to "Portable" at the top, reflecting different priorities in terms of performance and mobility.
+The single biggest takeaway from this positioning map is the clear dominance of Apple's MacBook Air in the upper-right quadrant, signifying its unparalleled combination of portability and power. The MacBook Air wins decisively on these two axes, making it an ideal choice for users who prioritize both a lightweight design and robust performance without compromise.
 
-The MacBook Air leads as it is positioned at the top-right corner, signifying its excellence across both powerful performance and portability. Conversely, Lenovo Legion occupies a spot near the bottom-left quadrant, indicating that while it may offer durability or affordability, it falls short on either portable design or power output compared to other models in this map.
+However, the MacBook Air also faces notable exposure when compared to other options like ThinkPad X1, which offers a more durable build while still maintaining impressive portability. This trade-off highlights that while Apple excels in creating devices that are easy to carry around, Lenovo's ThinkPad X1 provides an alternative for those who value a more robust and potentially longer-lasting device.
 
-Acer Swift stands out as it reaches furthest toward "Portable," suggesting its strong focus on mobility and lightweight design. On the other hand, MacBook Pro extends farthest towards "Durable," highlighting its reputation for reliability and longevity despite potentially higher costs.
+The sharpest trade-off in the field is between Acer Swift and MacBook Pro. Acer Swift stands out with its exceptional portability but falls short on durability compared to the MacBook Pro, which offers a sturdier build at the cost of being less portable. This juxtaposition shows that for users who need a highly portable device without sacrificing durability, the Acer Swift might be the better choice.
 
-The leaderboard is determined by a combined score that considers both axes' criteria. The top performers are the MacBook Air, ThinkPad X1, MacBook Pro, HP Spectre, Dell XPS, Asus Zenbook, Acer Swift, and Framework. These models demonstrate balanced strengths in terms of power, portability, affordability, and durability, catering to various consumer needs effectively across different segments of the market.
+Lastly, it's worth noting that Asus Zenbook punches above its rank by offering a highly portable and powerful option with top-tier performance, making it an excellent alternative to the MacBook Air for those seeking a more affordable yet still capable laptop. This demonstrates that while the MacBook Air is the clear leader in this category, there are other high-quality options available at different price points.
 
 ## Axes
 
@@ -22,18 +22,3 @@ The leaderboard is determined by a combined score that considers both axes' crit
 - **Weakest overall:** Lenovo Legion (lowest projection on the leader diagonal)
 - **Strongest toward Portable:** Acer Swift (challenger furthest up the vertical axis)
 - **Strongest toward Durable:** MacBook Pro (challenger furthest along the horizontal axis)
-
-## Leaderboard (by combined axis score)
-
-1. MacBook Air  (+2.36, +2.66)
-2. ThinkPad X1  (+1.46, +0.93)
-3. MacBook Pro  (+2.36, -1.31)
-4. HP Spectre  (+0.07, +0.93)
-5. Dell XPS  (+0.89, -0.40)
-6. Asus Zenbook  (-0.88, +1.31)
-7. Acer Swift  (-2.36, +2.66)
-8. Framework  (-1.20, +0.93)
-9. Razer Blade  (+0.25, -2.66)
-10. Lenovo Legion  (-1.30, -2.29)
-
-*Coordinates are PCA units; see the companion YAML for full coefficients.*

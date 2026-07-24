@@ -280,6 +280,16 @@ def test_export_all_writes_three_fold(tmp_path, df, result, roles):
     assert f"# {result.reference}" in Path(f"{stem}.md").read_text()
 
 
+def test_markdown_is_focused(result, roles):
+    # The analysis ends at the highlighted approaches — no leaderboard coordinate
+    # dump and no PCA-units footer (dropped as noise).
+    poles = p4m.axis_poles(result, use_llm=False)
+    md = p4m.analysis_markdown(result, roles, poles, use_llm=False)
+    assert "## Highlighted approaches" in md
+    assert "Leaderboard" not in md
+    assert "Coordinates are PCA" not in md
+
+
 # --------------------------------------------------------------------------- #
 # validation & convenience API
 # --------------------------------------------------------------------------- #

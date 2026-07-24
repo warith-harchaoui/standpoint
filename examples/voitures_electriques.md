@@ -2,7 +2,15 @@
 
 ## Interpretation
 
-La carte de positionnement met en lumière les caractéristiques clés des véhicules électriques sur deux axes : l'accessibilité et la durabilité, avec une progression vers le haut pour la simplicité et vers le bas pour la connectivité. La Tesla Model 3 domine nettement dans cette représentation, signifiant qu'elle offre un excellent équilibre entre ces facteurs. Le BMW i4 se distingue en allant plus loin sur l'accessibilité et la durabilité, tandis que le Renault Mégane E-Tech se démarque par sa forte connectivité. La Dacia Spring figure comme le véhicule le moins performant dans cette analyse. Les modèles tels que la Hyundai Ioniq 5, Kia EV6, Polestar 2, Volkswagen ID.3 et Peugeot e-208 occupent des positions intermédiaires, reflétant un équilibre varié entre les différents critères examinés.
+L'enseignement principal à retenir est que le choix du véhicule électrique dépend fortement des priorités individuelles entre accessibilité, simplicité, connectivité et durabilité.
+
+La Tesla Model 3 se distingue par sa connectivité exceptionnelle, offrant une expérience de conduite moderne et intuitive. Elle est également très accessible en termes d'achat initial et de maintenance, tout en restant un choix durable avec son design innovant et sa technologie avancée.
+
+Dans le champ du marché, l'arbitrage le plus net se fait entre la simplicité et la durabilité. Pour ceux qui valorisent fortement ces deux aspects, BMW i4 offre une performance exceptionnelle en termes de durabilité et d'autonomie, tout en restant très accessible à l'achat.
+
+En revanche, des options comme le Renault Mégane E-Tech se démarquent pour leur connectivité et leur simplicité, offrant un excellent rapport qualité-prix. Cependant, si la durabilité est une préoccupation majeure, les voitures comme la Volkswagen ID.3 ou la Polestar 2 peuvent être plus adaptées en raison de leurs performances en termes d'autonomie.
+
+Enfin, il faut noter que des modèles comme le Hyundai Ioniq 5 et le Kia EV6 offrent un bon équilibre entre accessibilité et durabilité, tout en proposant une connectivité satisfaisante.
 
 ## Axes
 
@@ -16,20 +24,3 @@ La carte de positionnement met en lumière les caractéristiques clés des véhi
 - **Weakest overall:** Dacia Spring (lowest projection on the leader diagonal)
 - **Strongest toward Connectivité:** Renault Mégane E-Tech (challenger furthest up the vertical axis)
 - **Strongest toward Durabilité:** BMW i4 (challenger furthest along the horizontal axis)
-
-## Leaderboard (by combined axis score)
-
-1. Tesla Model 3  (+3.46, +0.44)
-2. BMW i4  (+3.46, -0.44)
-3. Hyundai Ioniq 5  (+2.85, -0.20)
-4. Kia EV6  (+2.85, -0.20)
-5. Polestar 2  (+2.47, -0.19)
-6. Renault Mégane E-Tech  (+0.93, +0.44)
-7. Volkswagen ID.3  (+0.92, -0.39)
-8. Peugeot e-208  (-0.49, -0.27)
-9. Fiat 500e  (-0.49, -0.27)
-10. Nissan Leaf  (-0.87, -0.26)
-11. MG4  (-1.66, +0.37)
-12. Dacia Spring  (-3.46, -0.34)
-
-*Coordinates are PCA units; see the companion YAML for full coefficients.*

@@ -1,7 +1,7 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
-    "text": "Tools in the Quadrant",
+    "text": "Positioning maps in the Quadrant",
     "font": "Roboto, -apple-system, Helvetica, Arial, sans-serif",
     "fontSize": 18
   },
@@ -513,7 +513,7 @@
             ]
           },
           "legend": {
-            "title": "Tools",
+            "title": "Positioning maps",
             "symbolLimit": 0,
             "labelFontSize": 13,
             "symbolOpacity": 1

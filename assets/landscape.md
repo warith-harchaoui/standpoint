@@ -2,11 +2,11 @@
 
 ## Interpretation
 
-The positioning map illustrates how different tools for data visualization or analysis are ranked on two dimensions: clarity versus versatility on the horizontal axis, and ease of use versus comprehensiveness on the vertical axis. The reference 'Standpoint' is positioned at the top-right corner, indicating it offers a high level of both comprehensive features and versatile capabilities, making it the best option according to this map.
+The most critical takeaway from this positioning map is the clear dominance of "Standpoint" in terms of both clarity and comprehensiveness, making it an indispensable choice for anyone seeking a robust yet straightforward solution to their data visualization needs. Standpoint excels particularly when you need to convey complex analyses in a simple, intuitive manner—its strength lies in its ability to distill intricate information into easily digestible visualizations that can be quickly grasped by stakeholders with varying levels of technical expertise.
 
-On the other hand, PCA (scikit-learn) is placed in the bottom-left quadrant, suggesting it excels more in ease of use but falls short when it comes to versatility or comprehensiveness. The challenger 'factoextra + FactoMineR' reaches furthest toward comprehensive features on the vertical axis, indicating that while it provides a wide range of functionalities, its clarity and versatility are not as high.
+However, this dominance is not without its limitations; Standpoint's simplicity occasionally sacrifices the level of customization and flexibility required for more advanced users or those dealing with highly specific data scenarios. This trade-off highlights a key choice point in the field: between the ease and accessibility offered by "Standpoint" versus the depth and versatility provided by options like "QuadrantMaker," which, despite its lower rank on comprehensiveness, offers unparalleled flexibility for those who need to perform complex analyses or generate highly customized visualizations.
 
-Similarly, 'QuadrantMaker' stands out by reaching far towards versatility on the horizontal axis, implying it is highly adaptable but might lack in comprehensiveness or ease. The leaderboard indicates that Standpoint leads with the highest combined score, followed closely by QuadrantMaker, Slides or whiteboard, and then factoextra + FactoMineR, prince, and finally PCA (scikit-learn). This analysis suggests a nuanced view where each tool excels in different aspects of data visualization and analysis.
+Interestingly, "factoextra + FactoMineR" stands out as a standout option toward 'Comprehensive,' offering users the ability to handle and visualize large datasets with advanced techniques. This makes it an excellent choice for researchers or analysts who require sophisticated exploratory data analysis (EDA) capabilities without compromising on ease of use. Conversely, "QuadrantMaker," which ranks higher in versatility but lower in comprehensiveness, is a compelling option that punches above its rank by providing a powerful toolset for creating complex visualizations tailored to specific needs—making it an ideal choice for those who need both flexibility and a high degree of customization without the complexity of more comprehensive tools.
 
 ## Axes
 
@@ -20,14 +20,3 @@ Similarly, 'QuadrantMaker' stands out by reaching far towards versatility on the
 - **Weakest overall:** PCA (scikit-learn) (lowest projection on the leader diagonal)
 - **Strongest toward Comprehensive:** factoextra + FactoMineR (challenger furthest up the vertical axis)
 - **Strongest toward Versatility:** QuadrantMaker (challenger furthest along the horizontal axis)
-
-## Leaderboard (by combined axis score)
-
-1. Standpoint  (+2.03, +1.84)
-2. QuadrantMaker  (+2.03, -1.84)
-3. Slides or whiteboard  (+0.49, -0.67)
-4. factoextra + FactoMineR  (-2.03, +1.84)
-5. prince  (-1.78, +1.27)
-6. PCA (scikit-learn)  (-1.53, +0.94)
-
-*Coordinates are PCA units; see the companion YAML for full coefficients.*

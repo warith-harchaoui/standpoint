@@ -2,9 +2,13 @@
 
 ## Interpretation
 
-The positioning map illustrates how different programming languages are ranked based on their performance across four dimensions: scalability (left), versatility (right), flexibility (bottom), and accessibility (top). At the top-right corner is Python, which leads in both 'Versatility' and 'Accessibility', indicating its strong presence in diverse applications and ease of use. Rust, positioned at the bottom-left, is considered the worst performer among those listed on this map due to its poor scores across all dimensions.
+The single biggest takeaway from this positioning map is Python's unparalleled dominance in both scalability and accessibility, making it the go-to language for a wide range of applications across different industries. Python excels particularly in its ability to handle large-scale projects efficiently while maintaining simplicity that makes it accessible even to those with minimal programming experience. However, its versatility is slightly compromised when compared to languages like Java or TypeScript which offer more specialized features and frameworks suited for specific tasks.
 
-Ruby stands out as a challenger with high accessibility but lower versatility compared to Python. Java, another notable language, excels in 'Versatility' while being less accessible than Python and Ruby. The leaderboard shows that Python takes the top spot followed by JavaScript, Ruby, TypeScript, Java, Go, C#, and Kotlin. This indicates that these languages are well-positioned across a range of criteria, with Python leading in most areas due to its balance between scalability, versatility, flexibility, and accessibility.
+The trade-off most evident here is between scalability and accessibility; Python shines in both but leans towards the former due to its powerful libraries and robust ecosystem that support high performance even with complex systems. Conversely, languages like Ruby and JavaScript excel at accessibility by offering straightforward syntax and extensive community support, which makes them ideal for rapid development and prototyping.
+
+Interestingly, Rust stands out as a language that punches above its rank in terms of scalability despite being positioned lower on the map. Its focus on memory safety and performance makes it particularly suitable for systems programming where reliability is paramount, such as operating system kernels or device drivers. This unexpected strength underscores Rust's potential to challenge Python’s dominance in certain high-performance niches.
+
+Lastly, TypeScript, while ranked below JavaScript, offers a compelling trade-off by providing static typing which can enhance code maintainability and reduce errors compared to its dynamically typed counterpart. This makes it an excellent choice for large-scale projects where type safety is crucial but still maintains the accessibility benefits of JavaScript through its syntax similarities.
 
 ## Axes
 
@@ -18,20 +22,3 @@ Ruby stands out as a challenger with high accessibility but lower versatility co
 - **Weakest overall:** Rust (lowest projection on the leader diagonal)
 - **Strongest toward Accessibility:** Ruby (challenger furthest up the vertical axis)
 - **Strongest toward Versatility:** Java (challenger furthest along the horizontal axis)
-
-## Leaderboard (by combined axis score)
-
-1. Python  (+2.45, +2.86)
-2. JavaScript  (+2.08, +1.57)
-3. Ruby  (+0.01, +2.86)
-4. TypeScript  (+2.32, -0.50)
-5. Java  (+2.45, -2.02)
-6. Go  (+0.65, -1.26)
-7. C#  (+1.22, -1.84)
-8. Kotlin  (+0.08, -1.15)
-9. Swift  (-0.55, -1.04)
-10. C++  (-0.41, -1.29)
-11. Elixir  (-2.45, +0.46)
-12. Rust  (-1.21, -2.86)
-
-*Coordinates are PCA units; see the companion YAML for full coefficients.*

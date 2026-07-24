@@ -52,6 +52,20 @@ def test_position_roundtrip_deterministic() -> None:
     assert "meta:" in data["yaml"]
 
 
+def test_position_response_has_full_frontend_contract() -> None:
+    """The response carries everything the browser needs to draw and colorize."""
+    table = "Language,Speed,Safety,Jobs\nPython,2,2,5\nRust,5,5,3\nGo,4,4,4\nJava,4,4,5"
+    data = client.post("/api/position", json={"table": table, "use_llm": False}).json()
+    assert {"vega", "markdown", "yaml", "axes", "poles", "reference", "roles"} <= set(data)
+    assert set(data["axes"]) == {"x", "y"}
+    assert len(data["poles"]) == 4
+    # the four highlighted roles the analysis colorizer tints by name
+    assert {"best", "worst", "top", "right"} <= set(data["roles"].values())
+    # spec ships transparent; the UI sets the background per the toggle
+    assert data["vega"]["background"] is None
+    assert "Leaderboard" not in data["markdown"]
+
+
 def test_position_rejects_degenerate_table() -> None:
     """A table with too few options yields a clean 400, not a 500."""
     r = client.post("/api/position", json={"table": "A,B\nonly,1", "use_llm": False})

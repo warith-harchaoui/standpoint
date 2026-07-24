@@ -2,7 +2,13 @@
 
 ## Interpretation
 
-La carte de positionnement montre que Standpoint est le meilleur en termes de précision et de compréhensibilité, dominant clairement les autres solutions. QuadrantMaker se distingue par sa facilité d'utilisation tout en conservant une bonne simplicité. Diapositives ou tableau blanc offrent un bon équilibre entre simplicité et facilité d'utilisation. Factoextra + FactoMineR allie bien la compréhensibilité à une certaine complexité, tandis que PCA (scikit-learn) est le moins performant en termes de précision mais reste facile à utiliser. Les solutions comme prince se situent entre ces deux extrêmes selon les critères choisis.
+L'enseignement principal à retenir est que le Standpoint offre un équilibre exceptionnel entre précision et simplicité, offrant une compréhension claire des données tout en restant facile à utiliser. 
+
+Standpoint l'emporte vraiment dans la précision et la simplicité, car elle permet de visualiser efficacement les relations entre plusieurs variables avec une précision qui n'est pas dépassée par d'autres outils.
+
+L'arbitrage le plus net se trouve entre Diapositives ou tableau blanc et factoextra + FactoMineR. Pour ceux qui cherchent à avoir un aperçu rapide et facilement compréhensible des données, Diapositives ou tableau blanc sont les meilleures options. Si vous recherchez une analyse plus approfondie et détaillée, factoextra + FactoMineR est le choix idéal.
+
+QuadrantMaker surperforme son rang en offrant une facilité d'utilisation exceptionnelle tout en conservant une bonne précision, ce qui la rend très attractive pour ceux qui cherchent à visualiser rapidement les données sans perdre de précision.
 
 ## Axes
 
@@ -16,14 +22,3 @@ La carte de positionnement montre que Standpoint est le meilleur en termes de pr
 - **Weakest overall:** PCA (scikit-learn) (lowest projection on the leader diagonal)
 - **Strongest toward Compréhensibilité:** factoextra + FactoMineR (challenger furthest up the vertical axis)
 - **Strongest toward Facilité d'utilisation:** QuadrantMaker (challenger furthest along the horizontal axis)
-
-## Leaderboard (by combined axis score)
-
-1. Standpoint  (+2.03, +1.84)
-2. QuadrantMaker  (+2.03, -1.84)
-3. Diapositives ou tableau blanc  (+0.49, -0.67)
-4. factoextra + FactoMineR  (-2.03, +1.84)
-5. prince  (-1.78, +1.27)
-6. PCA (scikit-learn)  (-1.53, +0.94)
-
-*Coordinates are PCA units; see the companion YAML for full coefficients.*
