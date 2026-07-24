@@ -91,9 +91,13 @@ machine (the LLM, when enabled, is the same local Ollama the CLI uses).
 - **PoC polish.** Column headers truncate at a fixed width; the two-panel layout
   pushes the analysis below the map on narrow screens; no drag-to-reorder yet. All
   are straightforward front-end work.
-- **Tests.** `tests/test_gui.py` covers the endpoints (page served, example, position
-  round-trip, both 400 paths, CSV+XLSX upload, XLSX download); it runs only when the
-  `gui` extra is installed, so the default suite is unaffected.
+- **Tests.** `tests/test_gui.py` covers the endpoints (page served, example, the full
+  position round-trip contract, both 400 paths, CSV+XLSX upload, XLSX download);
+  `tests/test_gui_e2e.py` drives the *real page* in headless Chromium (generate →
+  quadrant renders, analysis role-colorized, PNG/SVG buttons, zero JS errors). Both
+  skip unless their deps are present (`gui` extra; Playwright + Chromium for the e2e),
+  so the default CI suite is unaffected. Run the e2e locally with
+  `pip install playwright && playwright install chromium`.
 - **Synchronous requests.** With the model on, `/api/position` blocks for ~10–25 s.
   Fine for one user on localhost; a streaming or two-step (spec first, narrative
   after) response would feel better.
