@@ -22,20 +22,35 @@ objects. The single source of truth for the version is `standpoint.__version__`.
 
 ## Running the checks locally
 
-Everything CI runs, you can run first (shift validation left):
+CI is intentionally light — one Python, `ruff check`, and the deterministic core
+tests. The full gate runs **locally before you push** (shift validation left, coding
+standard Rule 18). Run it all:
 
 ```bash
-pip install -e ".[dev]"                       # or: pip install -r requirements-dev.txt
-python3 -m ruff check standpoint tests        # lint
-python3 -m ruff format --check standpoint tests   # formatting
-python3 -m pytest tests/ -q                   # tests (model-backed ones auto-skip)
+pip install -e ".[dev,mcp]"                        # library + tests + GUI/API/MCP surfaces
+
+# Lint + format (everything, skill scripts included):
+python3 -m ruff check standpoint tests skills
+python3 -m ruff format --check standpoint tests
+
+# The whole test suite:
+python3 -m pytest tests/ -q                        # core + GUI + MCP endpoints
+
+# Optional, heavier surfaces (each self-skips if its dep is missing):
+pip install ".[eval]"                              # DeepEval pole-naming eval (needs Ollama)
+pip install playwright && playwright install chromium   # the headless-Chromium GUI e2e test
 ```
 
-- `ruff check` and `ruff format --check` must both exit 0 — a lint or format
-  violation blocks merging, exactly like a failing test.
+Notes:
+
+- `ruff check` and `ruff format --check` must both exit 0 — a lint or format violation
+  is a blocker, like a failing test. (CI pins `ruff` so its result is reproducible;
+  match it locally if a new ruff release disagrees.)
 - The deterministic tests need no model. The two model-backed tests and the DeepEval
-  pole-naming evaluation (`tests/test_eval.py`) run only when a local Ollama with the
-  `qwen2.5vl` model is available, and skip cleanly otherwise (so CI stays green).
+  evaluation run only when a local Ollama with the `qwen2.5vl` model is present, and
+  skip cleanly otherwise. The GUI / MCP endpoint tests need the `[gui]` / `[mcp]`
+  extras; the Playwright end-to-end test needs Chromium. All skip when absent, so CI
+  (which installs none of them) stays green.
 
 ## Code expectations
 
