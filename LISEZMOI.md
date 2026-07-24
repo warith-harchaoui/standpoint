@@ -82,12 +82,11 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
 - **Consciente de la polarité** : marquez une colonne « le plus bas, le meilleur » avec
   `(↓)` (ou `--lower`) et `standpoint` reformule un inconvénient en bénéfice
   (*Abordable* au lieu de « pas cher »).
-- **Repli déterministe** : `--no-llm` ne requiert ni modèle ni réseau.
 - **Auto-vérification visuelle** : `--check` demande à un modèle de vision local si
   la figure se lit correctement (leader en haut à droite, étiquettes lisibles,
   légende visible).
 
-**Un moteur, six accès** — le même pipeline `positioning()` s'utilise via :
+**Un moteur, six surfaces d'accès** — le même pipeline `positioning()` s'utilise via :
 
 - **Bibliothèque** : `import standpoint as sp`.
 - **CLI ×2** : `standpoint` (argparse, toujours installée) et `standpoint-click`

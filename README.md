@@ -75,11 +75,10 @@ coordinates, role, colour, and original values.
   challengers that reach furthest toward the top and right poles.
 - **Polarity aware**: mark a lower-is-better column with `(↓)` (or `--lower`) and
   Standpoint names the benefit (*Affordable*, *Portable*), never the drawback.
-- **Deterministic fallback**: `--no-llm` needs no model and no network at all.
 - **Vision self-check**: `--check` asks a local vision model whether the figure reads
   correctly (leader top-right, labels legible, legend visible).
 
-**One engine, six ways** — the same `positioning()` pipeline is reachable as:
+**One engine, six access surfaces** — the same `positioning()` pipeline is reachable as:
 
 - **Library**: `import standpoint as sp`.
 - **CLI ×2**: `standpoint` (argparse, always installed) and `standpoint-click`
