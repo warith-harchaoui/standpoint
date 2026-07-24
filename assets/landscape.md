@@ -2,21 +2,29 @@
 
 ## Interpretation
 
-The most critical takeaway from this positioning map is the clear dominance of "Standpoint" in terms of both clarity and comprehensiveness, making it an indispensable choice for anyone seeking a robust yet straightforward solution to their data visualization needs. Standpoint excels particularly when you need to convey complex analyses in a simple, intuitive manner—its strength lies in its ability to distill intricate information into easily digestible visualizations that can be quickly grasped by stakeholders with varying levels of technical expertise.
+The single biggest takeaway from this positioning map is that for those seeking a comprehensive yet versatile solution in data visualization and analysis, the combination of factoextra + FactoMineR stands out as an exceptional choice. This duo excels particularly where clarity and ease are paramount but still offers the depth and flexibility needed to tackle complex datasets comprehensively. Standpoint, on the other hand, wins hands down when it comes to sheer versatility and comprehensive coverage, making it a go-to for those who need a robust toolset that can handle any data challenge with ease. However, this strength in versatility also means it might be more suited for advanced users or projects where a single solution needs to cover multiple dimensions of analysis.
 
-However, this dominance is not without its limitations; Standpoint's simplicity occasionally sacrifices the level of customization and flexibility required for more advanced users or those dealing with highly specific data scenarios. This trade-off highlights a key choice point in the field: between the ease and accessibility offered by "Standpoint" versus the depth and versatility provided by options like "QuadrantMaker," which, despite its lower rank on comprehensiveness, offers unparalleled flexibility for those who need to perform complex analyses or generate highly customized visualizations.
+The sharpest trade-off lies between Standpoint and PCA (scikit-learn). While Standpoint offers unparalleled flexibility and depth, its steep learning curve and complex interface make it less accessible for beginners. Conversely, PCA (scikit-learn) excels in simplicity and ease but falls short when it comes to the breadth of features or customization options that more advanced users require.
 
-Interestingly, "factoextra + FactoMineR" stands out as a standout option toward 'Comprehensive,' offering users the ability to handle and visualize large datasets with advanced techniques. This makes it an excellent choice for researchers or analysts who require sophisticated exploratory data analysis (EDA) capabilities without compromising on ease of use. Conversely, "QuadrantMaker," which ranks higher in versatility but lower in comprehensiveness, is a compelling option that punches above its rank by providing a powerful toolset for creating complex visualizations tailored to specific needs—making it an ideal choice for those who need both flexibility and a high degree of customization without the complexity of more comprehensive tools.
+Interestingly, QuadrantMaker, which ranks third on the map, punches above its rank by offering a highly intuitive interface that bridges the gap between Standpoint’s versatility and PCA's ease. This makes it an excellent choice for mid-level data analysts who need both comprehensive analysis capabilities and user-friendly tools to present their findings effectively in presentations or reports.
+
+Slides or whiteboard solutions, while not explicitly listed on this map, are implicitly represented by their simplicity and directness, making them a standout option when the focus is purely on ease of use. These tools excel at quickly visualizing data points without the need for extensive setup or configuration, making them ideal for quick presentations or brainstorming sessions where clarity and speed are crucial.
 
 ## Axes
 
-- **Horizontal — Clarity ↔ Versatility** (48% of variance). Columns by weight: One Command (+0.46) · Multilingual Output (+0.44) · Ease of Setup (+0.43) · Automated Axis Naming (+0.35) · Threefold Deliverable (+0.29) · Reproducibility (-0.23) · Local Execution (-0.23) · Readable Axes (-0.31).
-- **Vertical — Ease ↔ Comprehensive** (41% of variance). Columns by weight: Reproducibility (+0.46) · Threefold Deliverable (+0.44) · Automated Axis Naming (+0.40) · Readable Axes (+0.40) · Local Execution (+0.37) · Multilingual Output (+0.21) · One Command (+0.14) · Ease of Setup (-0.26).
-- Together the two axes retain **89%** of the total variation; the reference was rotated -0.5° to reach the top-right.
+**Horizontal — Clarity ↔ Versatility** — 48% of the information.
+
+Relevant columns for axis: One Command · Multilingual Output · Ease of Setup · Automated Axis Naming · Threefold Deliverable · Reproducibility · Local Execution · Readable Axes.
+
+**Vertical — Ease ↔ Comprehensive** — 41% of the information.
+
+Relevant columns for axis: Reproducibility · Threefold Deliverable · Automated Axis Naming · Readable Axes · Local Execution · Multilingual Output · One Command · Ease of Setup.
+
+In two axes, we preserved **89%** of the information.
 
 ## Highlighted approaches
 
-- **Leader (reference):** Standpoint
-- **Weakest overall:** PCA (scikit-learn) (lowest projection on the leader diagonal)
+- **Chosen leader reference:** Standpoint
+- **Exact reference opposite:** PCA (scikit-learn) (diametrically opposite the leader on the map)
 - **Strongest toward Comprehensive:** factoextra + FactoMineR (challenger furthest up the vertical axis)
 - **Strongest toward Versatility:** QuadrantMaker (challenger furthest along the horizontal axis)

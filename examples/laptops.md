@@ -2,23 +2,29 @@
 
 ## Interpretation
 
-The single biggest takeaway from this positioning map is the clear dominance of Apple's MacBook Air in the upper-right quadrant, signifying its unparalleled combination of portability and power. The MacBook Air wins decisively on these two axes, making it an ideal choice for users who prioritize both a lightweight design and robust performance without compromise.
+The single biggest takeaway from this positioning map is the clear dominance of Apple's MacBook Air in the market for portable, affordable laptops. This leader stands out not just because it offers a balance between affordability and portability but also because it excels where Lenovo Legion falls short—on both power and durability. The MacBook Air wins hands down on its ability to deliver a lightweight yet capable device that can handle most everyday tasks without breaking the bank.
 
-However, the MacBook Air also faces notable exposure when compared to other options like ThinkPad X1, which offers a more durable build while still maintaining impressive portability. This trade-off highlights that while Apple excels in creating devices that are easy to carry around, Lenovo's ThinkPad X1 provides an alternative for those who value a more robust and potentially longer-lasting device.
+Where MacBook Air is exposed, however, is in the realm of durability; while it's not the most durable option available, it still offers a solid build quality for its price point. This trade-off between affordability and durability is where the ThinkPad X1 comes into play—it excels at being both powerful and portable but at a significantly higher cost.
 
-The sharpest trade-off in the field is between Acer Swift and MacBook Pro. Acer Swift stands out with its exceptional portability but falls short on durability compared to the MacBook Pro, which offers a sturdier build at the cost of being less portable. This juxtaposition shows that for users who need a highly portable device without sacrificing durability, the Acer Swift might be the better choice.
+The sharpest trade-off in this field is between Acer Swift and MacBook Pro. Acer Swift shines as an ultra-portable option, perfect for those who need a lightweight device that can still handle some demanding tasks, whereas the MacBook Pro offers unmatched durability and power, making it ideal for professionals or heavy users who demand reliability and performance.
 
-Lastly, it's worth noting that Asus Zenbook punches above its rank by offering a highly portable and powerful option with top-tier performance, making it an excellent alternative to the MacBook Air for those seeking a more affordable yet still capable laptop. This demonstrates that while the MacBook Air is the clear leader in this category, there are other high-quality options available at different price points.
+Lastly, Asus Zenbook stands out by punching above its rank in terms of build quality and performance. Despite being positioned as more affordable than the ThinkPad X1, it manages to offer a solid balance between portability and durability that rivals some higher-priced options, making it an excellent choice for those who want a bit more power without breaking into the premium segment.
 
 ## Axes
 
-- **Horizontal — Affordable ↔ Durable** (53% of variance). Columns by weight: Build Quality (+0.65) · Battery Life (+0.52) · Weight (+0.29) · Screen (+0.26) · Performance (+0.19) · Price (-0.35).
-- **Vertical — Powerful ↔ Portable** (35% of variance). Columns by weight: Weight (+0.52) · Price (+0.44) · Battery Life (+0.39) · Build Quality (-0.02) · Screen (-0.35) · Performance (-0.51).
-- Together the two axes retain **88%** of the total variation; the reference was rotated -68.0° to reach the top-right.
+**Horizontal — Affordable ↔ Durable** — 53% of the information.
+
+Relevant columns for axis: Build Quality · Battery Life · Weight · Screen · Performance · Price.
+
+**Vertical — Powerful ↔ Portable** — 35% of the information.
+
+Relevant columns for axis: Weight · Price · Battery Life · Build Quality · Screen · Performance.
+
+In two axes, we preserved **88%** of the information.
 
 ## Highlighted approaches
 
-- **Leader (reference):** MacBook Air
-- **Weakest overall:** Lenovo Legion (lowest projection on the leader diagonal)
+- **Chosen leader reference:** MacBook Air
+- **Exact reference opposite:** Lenovo Legion (diametrically opposite the leader on the map)
 - **Strongest toward Portable:** Acer Swift (challenger furthest up the vertical axis)
 - **Strongest toward Durable:** MacBook Pro (challenger furthest along the horizontal axis)

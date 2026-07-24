@@ -1265,12 +1265,15 @@ def analysis_markdown(
     if lang is None:
         lang = detect_language(result.features)
 
-    def loading_line(k: int) -> str:
-        """Axis `k`'s criteria and signed weights, highest-first, as one line."""
+    def order_line(k: int) -> str:
+        """Axis `k`'s criteria in order — from the ones pulling toward its positive
+        (right/top) pole to those pulling toward the negative one. Names only: the
+        ordering is what a reader can use; the raw weights are noise here.
+        """
         pairs = sorted(
             zip(result.features, result.components[k], strict=False), key=lambda t: -t[1]
         )
-        return " · ".join(f"{f} ({w:+.2f})" for f, w in pairs)
+        return " · ".join(f for f, _ in pairs)
 
     ranked = sorted(names, key=lambda n: -(coords.loc[n].sum()))
     role_rows = {
@@ -1296,8 +1299,8 @@ def analysis_markdown(
         fallback=(
             f"The map's horizontal axis contrasts **{left}** (left) with **{right}** "
             f"(right); the vertical contrasts **{bottom}** (bottom) with **{top}** "
-            f"(top), together capturing {evr.sum():.0%} of the variation between "
-            f"approaches. **{result.reference}** anchors the top-right as the "
+            f"(top), together capturing {evr.sum():.0%} of the information that tells "
+            f"these approaches apart. **{result.reference}** anchors the top-right as the "
             f"reference leader, strongest on the {right.lower()} and {top.lower()} "
             f"directions. **{role_rows['worst']}** sits opposite as the weakest on "
             f"these dimensions, while among the challengers **{role_rows['top']}** "
@@ -1315,17 +1318,20 @@ def analysis_markdown(
         "",
         "## Axes",
         "",
-        f"- **Horizontal — {left} ↔ {right}** ({evr[0]:.0%} of variance). "
-        f"Columns by weight: {loading_line(0)}.",
-        f"- **Vertical — {bottom} ↔ {top}** ({evr[1]:.0%} of variance). "
-        f"Columns by weight: {loading_line(1)}.",
-        f"- Together the two axes retain **{evr.sum():.0%}** of the total variation; "
-        f"the reference was rotated {result.rotation_deg:+.1f}° to reach the top-right.",
+        f"**Horizontal — {left} ↔ {right}** — {evr[0]:.0%} of the information.",
+        "",
+        f"Relevant columns for axis: {order_line(0)}.",
+        "",
+        f"**Vertical — {bottom} ↔ {top}** — {evr[1]:.0%} of the information.",
+        "",
+        f"Relevant columns for axis: {order_line(1)}.",
+        "",
+        f"In two axes, we preserved **{evr.sum():.0%}** of the information.",
         "",
         "## Highlighted approaches",
         "",
-        f"- **Leader (reference):** {role_rows['best']}",
-        f"- **Weakest overall:** {role_rows['worst']} (lowest projection on the leader diagonal)",
+        f"- **Chosen leader reference:** {role_rows['best']}",
+        f"- **Exact reference opposite:** {role_rows['worst']} (diametrically opposite the leader on the map)",
         f"- **Strongest toward {top}:** {role_rows['top']} (challenger furthest up "
         "the vertical axis)",
         f"- **Strongest toward {right}:** {role_rows['right']} (challenger furthest "

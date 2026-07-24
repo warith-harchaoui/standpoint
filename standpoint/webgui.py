@@ -33,7 +33,11 @@ GUI_HTML = r"""<!doctype html>
       --ink:#1c1c1e; --paper:#F8F8F8;
     }
     body { font-family: Roboto, -apple-system, Helvetica, Arial, sans-serif; background: var(--paper); }
-    .cell { width: 4.5rem; }
+    /* Grid inputs sized to their content: numeric cells stay compact, but option
+       (row) names and criterion (column) names get room so nothing truncates. */
+    .cell { width: 5rem; }          /* numeric value cells */
+    .cell-name { width: 11rem; }    /* option / row names (first column) */
+    .cell-head { width: 9rem; }     /* criterion / column names (header) */
     /* A small coloured accent bar that heads each step. */
     .accent { width: .6rem; height: 1.6rem; border-radius: .3rem; display: inline-block; }
     /* Visible keyboard focus everywhere (accessibility). */
@@ -47,6 +51,9 @@ GUI_HTML = r"""<!doctype html>
       linear-gradient(-45deg,transparent 75%,#eee 75%);
       background-size: 20px 20px;
       background-position: 0 0, 0 10px, 10px -10px, -10px 0; }
+    /* Scale the rendered map down to fit the card (SVG stays crisp); exports use
+       the Vega view at native resolution, so this only affects on-screen size. */
+    #chart svg, #chart canvas { max-width: 100%; height: auto; display: block; margin: 0 auto; }
     /* The analysis panel, coloured to echo the map (Tailwind's CDN has no prose
        plugin, so the rendered Markdown is themed here by hand). */
     .analysis { color:#1c1c1e; line-height:1.65; }
@@ -67,17 +74,8 @@ GUI_HTML = r"""<!doctype html>
 <body class="text-slate-800">
   <div class="max-w-6xl mx-auto px-6 py-10 space-y-10">
 
-    <header class="rounded-2xl px-8 py-9 shadow-sm"
-            style="background:linear-gradient(120deg,#CCE4FF 0%,#EFDCF8 55%,#FFD8D6 100%)">
-      <div class="flex items-center gap-4">
-        <span class="flex gap-2" aria-hidden="true">
-          <span class="w-4 h-4 rounded-full ring-2 ring-white" style="background:#FF3B30"></span>
-          <span class="w-4 h-4 rounded-full ring-2 ring-white" style="background:#AF52DE"></span>
-          <span class="w-4 h-4 rounded-full ring-2 ring-white" style="background:#007AFF"></span>
-          <span class="w-4 h-4 rounded-full ring-2 ring-white" style="background:#A52A2A"></span>
-        </span>
-        <h1 class="text-4xl font-extrabold tracking-tight text-slate-900">Standpoint</h1>
-      </div>
+    <header>
+      <h1 class="text-4xl font-extrabold tracking-tight text-slate-900">Standpoint</h1>
     </header>
 
     <!-- 1 · Your table -->
@@ -118,7 +116,7 @@ GUI_HTML = r"""<!doctype html>
 
       <div class="space-y-4 max-w-xl">
         <label class="flex items-center justify-between gap-4 text-sm">
-          <span class="font-medium">Reference <span class="text-slate-400">(placed top-right)</span></span>
+          <span class="font-medium">Chosen top-right reference</span>
           <select id="reference" class="border rounded-lg px-3 py-2 min-w-[13rem]"></select>
         </label>
 
@@ -130,15 +128,14 @@ GUI_HTML = r"""<!doctype html>
           </select>
         </label>
 
-        <label class="flex items-start gap-3 text-sm">
-          <input type="checkbox" id="useLlm" class="w-4 h-4 mt-0.5" />
-          <span>Name the axes and write the analysis with the local model
-            <span class="text-slate-400">(slower; needs Ollama)</span></span>
+        <label class="flex items-center gap-3 text-sm">
+          <input type="checkbox" id="useLlm" class="w-4 h-4" />
+          <span class="font-medium">AI Naming of axis + Analysis</span>
         </label>
       </div>
 
       <button id="run" class="px-6 py-3 rounded-xl text-white font-semibold shadow-sm"
-              style="background:#007AFF">Generate quadrant &rarr;</button>
+              style="background:#007AFF">Generate quadrant</button>
     </section>
 
     <p id="status" role="status" aria-live="polite" class="text-sm text-slate-500 hidden"></p>
@@ -206,14 +203,14 @@ function renderGrid() {
   // header row: first-column name, then each criterion with ↓ toggle + delete
   const htr = document.createElement("tr");
   htr.innerHTML = `<th class="p-1"><input aria-label="Name of the options column"
-      class="cell font-semibold border rounded px-1 py-0.5"
+      class="cell-name font-semibold border rounded px-2 py-1"
       value="${firstCol}" oninput="firstCol=this.value"/></th>`;
   headers.forEach((h, i) => {
     const th = document.createElement("th");
     th.className = "p-1 align-bottom";
     th.innerHTML = `
       <div class="flex flex-col items-center gap-1">
-        <input aria-label="Criterion ${i + 1} name" class="cell border rounded px-1 py-0.5 text-center" value="${h}"
+        <input aria-label="Criterion ${i + 1} name" class="cell-head border rounded px-2 py-1 text-center" value="${h}"
                oninput="headers[${i}]=this.value"/>
         <div class="flex gap-1 text-xs">
           <button aria-label="${lowerCols.has(i) ? 'Lower is better — click to make higher better' : 'Higher is better — click to make lower better'}"
@@ -231,7 +228,7 @@ function renderGrid() {
   rows.forEach((r, ri) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `<td class="p-1"><input aria-label="Option ${ri + 1} name"
-        class="cell border rounded px-1 py-0.5" value="${r.name}"
+        class="cell-name border rounded px-2 py-1 font-medium" value="${r.name}"
         oninput="rows[${ri}].name=this.value; syncReference()"/></td>`;
     r.values.forEach((v, ci) => {
       const td = document.createElement("td");
@@ -357,8 +354,9 @@ $("run").onclick = async () => {
     spec.background = $("bg").value === "white" ? "white" : null;
     $("chart").classList.toggle("checker", $("bg").value === "transparent");
     $("chart").textContent = "";
-    // No vega-embed "⋯" menu — the explicit PNG / SVG buttons replace it.
-    const embed = await vegaEmbed("#chart", spec, { actions: false });
+    // No vega-embed "⋯" menu — the explicit PNG / SVG buttons replace it. SVG
+    // renderer so the map stays crisp when CSS scales it to fit the card.
+    const embed = await vegaEmbed("#chart", spec, { actions: false, renderer: "svg" });
     chartView = embed.view;  // used by the explicit PNG / SVG export buttons
     $("dlPng").classList.remove("hidden"); $("dlSvg").classList.remove("hidden");
     // Render the analysis, then tint each option name by its role so the prose

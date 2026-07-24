@@ -2,23 +2,29 @@
 
 ## Interpretation
 
-The single biggest takeaway from this positioning map is that AWS remains the undisputed leader in both ease of use and scalability, offering a seamless experience for developers across all aspects of cloud computing. However, AWS's dominance is not without its weaknesses; while it excels at providing a robust platform with extensive resources and support, its high cost can be prohibitive for smaller projects or startups looking to minimize expenses.
+The single biggest takeaway from this positioning map is the clear dominance of AWS in both 'Ease of Use' and 'Scalability,' making it the reference leader for these critical attributes. However, AWS's strength in 'Affordability' is somewhat offset by its position at the top-right corner, indicating a higher price point compared to other providers like Alibaba Cloud or Oracle Cloud.
 
-The sharpest trade-off in the field lies between Microsoft Azure and IBM Cloud. Azure shines particularly well when it comes to flexibility, allowing users to customize their cloud environment extensively, which is ideal for businesses that require a highly adaptable infrastructure. Conversely, IBM Cloud excels at scalability, making it an excellent choice for enterprises with rapidly growing needs who need a scalable solution without the complexity of managing multiple components.
+AWS excels in providing robust infrastructure services that are both user-friendly and scalable, which makes it an ideal choice for businesses looking to quickly scale their operations without compromising on functionality. However, AWS's high cost might be prohibitive for small startups or companies with tight budgets seeking flexibility and affordability.
 
-Interestingly, Alibaba Cloud and Cloudflare both punch above their rank in terms of functionality relative to their positioning on the map. Alibaba Cloud offers a comprehensive suite of services that can cater to a wide range of business needs, from data analytics to AI solutions, while Cloudflare stands out for its edge computing capabilities, which can significantly improve website performance and security.
+The sharpest trade-off lies between Microsoft Azure’s focus on 'Flexibility' and IBM Cloud's emphasis on 'Scalability.' Azure stands out as a top contender in terms of flexibility, particularly appealing to businesses that require a wide range of services and tools from a single provider. On the other hand, IBM Cloud shines with its scalability capabilities, making it an excellent choice for enterprises needing to handle large volumes of data or complex applications.
 
-In summary, AWS remains the go-to choice for those seeking both ease of use and scalability. Microsoft Azure is a strong contender in flexibility, making it ideal for businesses that require high customization options. IBM Cloud's scalability makes it an excellent fit for enterprises with rapidly growing needs. Alibaba Cloud and Cloudflare demonstrate their value by offering more extensive capabilities than their map position suggests, making them worth considering beyond their rank on the scale.
+Interestingly, Alibaba Cloud, which ranks fourth overall, punches above its rank in terms of affordability while still maintaining decent 'Ease of Use' and 'Scalability.' This makes Alibaba a compelling option for companies looking to save on costs without sacrificing too much in terms of functionality.
 
 ## Axes
 
-- **Horizontal — Ease of Use ↔ Scalability** (55% of variance). Columns by weight: Compute Breadth (+0.54) · Enterprise Trust (+0.44) · Managed AI/ML (+0.35) · Global Reach (+0.05) · Pricing Value (-0.15) · Serverless (-0.20) · Developer Experience (-0.57).
-- **Vertical — Affordability ↔ Flexibility** (28% of variance). Columns by weight: Serverless (+0.59) · Global Reach (+0.52) · Developer Experience (+0.30) · Managed AI/ML (+0.26) · Enterprise Trust (+0.22) · Compute Breadth (+0.03) · Pricing Value (-0.41).
-- Together the two axes retain **84%** of the total variation; the reference was rotated +51.1° to reach the top-right.
+**Horizontal — Ease of Use ↔ Scalability** — 55% of the information.
+
+Relevant columns for axis: Compute Breadth · Enterprise Trust · Managed AI/ML · Global Reach · Pricing Value · Serverless · Developer Experience.
+
+**Vertical — Affordability ↔ Flexibility** — 28% of the information.
+
+Relevant columns for axis: Serverless · Global Reach · Developer Experience · Managed AI/ML · Enterprise Trust · Compute Breadth · Pricing Value.
+
+In two axes, we preserved **84%** of the information.
 
 ## Highlighted approaches
 
-- **Leader (reference):** AWS
-- **Weakest overall:** DigitalOcean (lowest projection on the leader diagonal)
+- **Chosen leader reference:** AWS
+- **Exact reference opposite:** DigitalOcean (diametrically opposite the leader on the map)
 - **Strongest toward Flexibility:** Microsoft Azure (challenger furthest up the vertical axis)
 - **Strongest toward Scalability:** IBM Cloud (challenger furthest along the horizontal axis)

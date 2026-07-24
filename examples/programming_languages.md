@@ -2,23 +2,29 @@
 
 ## Interpretation
 
-The single biggest takeaway from this positioning map is Python's unparalleled dominance in both scalability and accessibility, making it the go-to language for a wide range of applications across different industries. Python excels particularly in its ability to handle large-scale projects efficiently while maintaining simplicity that makes it accessible even to those with minimal programming experience. However, its versatility is slightly compromised when compared to languages like Java or TypeScript which offer more specialized features and frameworks suited for specific tasks.
+The single biggest takeaway from this positioning map is Python's dominance across scalability and accessibility, making it the go-to language for a wide range of applications due to its simplicity and robust ecosystem. While Python excels in these areas, it does face competition from other languages like JavaScript and Ruby when it comes to versatility and flexibility. The trade-off here is clear: Python shines where speed and ease are paramount but may not be as versatile or flexible compared to languages like Java or TypeScript that offer more specialized features for complex applications.
 
-The trade-off most evident here is between scalability and accessibility; Python shines in both but leans towards the former due to its powerful libraries and robust ecosystem that support high performance even with complex systems. Conversely, languages like Ruby and JavaScript excel at accessibility by offering straightforward syntax and extensive community support, which makes them ideal for rapid development and prototyping.
+The standout feature of Python is its accessibility, which makes it a top choice for beginners and developers looking to quickly build robust applications. However, when it comes to versatility, languages such as Java and JavaScript are superior, providing the necessary tools and frameworks for building everything from web applications to enterprise systems with ease. This trade-off highlights that while Python excels in simplicity and broad applicability, developers seeking more specialized functionality might need to consider other languages like TypeScript or Java.
 
-Interestingly, Rust stands out as a language that punches above its rank in terms of scalability despite being positioned lower on the map. Its focus on memory safety and performance makes it particularly suitable for systems programming where reliability is paramount, such as operating system kernels or device drivers. This unexpected strength underscores Rust's potential to challenge Python’s dominance in certain high-performance niches.
+Interestingly, Rust stands out by punching above its rank on scalability despite being less accessible compared to Python. This suggests that for those looking for a language that can handle large-scale applications with minimal overhead while maintaining ease of use, Rust offers an excellent option. On the other hand, Ruby's accessibility makes it highly appealing for developers who prioritize simplicity and quick development cycles, even though it lags behind in terms of versatility compared to Java or TypeScript.
 
-Lastly, TypeScript, while ranked below JavaScript, offers a compelling trade-off by providing static typing which can enhance code maintainability and reduce errors compared to its dynamically typed counterpart. This makes it an excellent choice for large-scale projects where type safety is crucial but still maintains the accessibility benefits of JavaScript through its syntax similarities.
+In summary, Python's position at the top-right corner of this map underscores its versatility and accessibility, making it a versatile choice across various applications. However, understanding the trade-offs between scalability, flexibility, and accessibility is crucial for selecting the right language based on specific project needs.
 
 ## Axes
 
-- **Horizontal — Scalability ↔ Versatility** (49% of variance). Columns by weight: Ecosystem (+0.60) · Job Market (+0.60) · Tooling (+0.36) · Ease of Learning (+0.24) · Type Safety (-0.03) · Performance (-0.11) · Concurrency (-0.28).
-- **Vertical — Flexibility ↔ Accessibility** (30% of variance). Columns by weight: Ease of Learning (+0.35) · Job Market (-0.08) · Ecosystem (-0.10) · Concurrency (-0.39) · Tooling (-0.42) · Performance (-0.50) · Type Safety (-0.53).
-- Together the two axes retain **80%** of the total variation; the reference was rotated -127.9° to reach the top-right.
+**Horizontal — Scalability ↔ Versatility** — 49% of the information.
+
+Relevant columns for axis: Ecosystem · Job Market · Tooling · Ease of Learning · Type Safety · Performance · Concurrency.
+
+**Vertical — Flexibility ↔ Accessibility** — 30% of the information.
+
+Relevant columns for axis: Ease of Learning · Job Market · Ecosystem · Concurrency · Tooling · Performance · Type Safety.
+
+In two axes, we preserved **80%** of the information.
 
 ## Highlighted approaches
 
-- **Leader (reference):** Python
-- **Weakest overall:** Rust (lowest projection on the leader diagonal)
+- **Chosen leader reference:** Python
+- **Exact reference opposite:** Rust (diametrically opposite the leader on the map)
 - **Strongest toward Accessibility:** Ruby (challenger furthest up the vertical axis)
 - **Strongest toward Versatility:** Java (challenger furthest along the horizontal axis)
