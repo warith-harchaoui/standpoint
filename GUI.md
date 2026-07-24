@@ -30,17 +30,21 @@ Run it (`standpoint-gui`) and, entirely on `localhost`:
    openpyxl) and **download** the edited table as CSV or XLSX.
 2. **Generate** — the grid is serialized to CSV and POSTed to `/api/position`, which
    runs the real `positioning()` pipeline.
-3. **See the quadrant** — the returned Vega-Lite spec is rendered live, with a
-   transparent/white background toggle and explicit **PNG / SVG** export buttons.
+3. **See the quadrant** — the returned Vega-Lite spec is rendered live (SVG, scaled
+   to fit its card), with a **Transparent background** toggle and explicit
+   **PNG / SVG** export buttons.
 4. **Read the analysis** — the Markdown interpretation is rendered below the map and
    **colour-coded**: each highlighted option is tinted by its role (leader red,
    weakest brown, top-pole purple, right-pole blue) to match the dots on the map.
    Downloadable as Markdown.
 
-The whole interface uses the ["Good Colors"](https://harchaoui.org/warith/colors/)
-palette — the same hues as the map — with accessible labels and keyboard focus rings.
+**Colour discipline**: the ["Good Colors"](https://harchaoui.org/warith/colors/)
+palette is reserved for **data only** — the dots on the map and the role-tinted names
+in the analysis. The UI chrome (buttons, accents, headings) stays neutral slate/ink,
+so a colour in the app always means "data", never decoration. Accessible labels and
+keyboard focus rings throughout.
 
-Optionally tick *"name the axes and write the analysis with the local model"* to get
+Optionally tick *"AI Naming of Axes + Analysis"* to get
 LLM-named poles and a decision-useful written narrative (slower); unticked, it is
 instant and deterministic.
 

@@ -34,9 +34,9 @@ GUI_HTML = r"""<!doctype html>
       --ink:#1c1c1e; --paper:#F8F8F8; --slate:#94a3b8;                    /* chrome */
     }
     body { font-family: Roboto, -apple-system, Helvetica, Arial, sans-serif; background: var(--paper); }
-    /* Grid inputs sized to their content: numeric cells stay compact, but option
-       (row) names and criterion (column) names get room so nothing truncates. */
-    .cell { width: 5rem; }          /* numeric value cells */
+    /* Grid inputs sized to their content: numeric value cells fill their column
+       (see the w-full inputs in renderGrid), while option (row) names and criterion
+       (column) names get fixed room so nothing truncates and columns stay aligned. */
     .cell-name { width: 12rem; }    /* option / row names + first-column header */
     .cell-head { width: 7rem; }     /* criterion / column names (header) */
     /* A small NEUTRAL accent bar that heads each step (chrome, not data). */
