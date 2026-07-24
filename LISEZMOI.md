@@ -17,8 +17,8 @@ colonnes, des nombres dans les cellules) et produit une carte de positionnement 
 une courte analyse rédigée, et un fichier YAML avec toutes les coordonnées et tous
 les coefficients. Une seule commande suffit.
 
-La méthode est une ACP ordinaire, utilisée depuis longtemps pour les cartes
-perceptuelles. Ce que Standpoint ajoute, c'est le travail que vous feriez sinon à la
+La méthode est une ACP ordinaire, utilisée de longue date pour les cartes
+perceptuelles. Standpoint y ajoute le travail que vous feriez sinon à la
 main : il oriente la carte autour d'une option de référence, nomme les axes en mots
 simples (dans la langue de vos colonnes), colore et étiquette les points, et écrit
 tout le résultat.
@@ -35,9 +35,9 @@ Standpoint est **local-first** par conception. Trois cas, en toute honnêteté :
    sont produits par un modèle [Ollama](https://ollama.com) local, sur `localhost`.
    Ollama télécharge les poids du modèle **une seule fois**, au premier `pull` ;
    ensuite, tout fonctionne hors ligne. Rien ne quitte votre machine.
-3. **Votre décision.** Vous n'êtes jamais obligé d'utiliser le modèle : `--no-llm`
-   vous donne la carte complète de façon déterministe, avec des noms d'axes tirés de
-   la colonne la plus forte à chaque extrémité, et sans analyse rédigée.
+3. **Votre décision.** Le modèle n'est jamais imposé : `--no-llm`
+   donne la carte complète de façon déterministe, avec des noms d'axes tirés de
+   la colonne la plus forte à chaque extrémité, mais sans analyse rédigée.
 
 ## Documentation
 
@@ -70,16 +70,16 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
 
 - **Une commande, un livrable en trois volets** : une figure (PNG + SVG + JSON
   Vega-Lite), une interprétation Markdown, et un YAML de coordonnées + coefficients.
-- **Axes lisibles** : l'ACP garde les axes comme des sommes pondérées de vos
-  colonnes ; un modèle local nomme les quatre pôles comme des qualités positives,
+- **Axes lisibles** : l'ACP garde les axes sous forme de sommes pondérées de vos
+  colonnes ; un modèle local nomme les quatre pôles par des qualités positives,
   avec un garde-fou contre les acronymes, les négatifs et les paires d'antonymes.
 - **Multilingue** : les noms d'axes, l'analyse rédigée et le titre de la figure
   sortent dans la langue même du tableau (anglais, français ou espagnol),
   détectée automatiquement à partir des noms de colonnes — un tableau français
   affiche *Voitures dans le quadrant*.
 - **Orienté sur une référence** : l'option qui vous intéresse est pivotée en haut à
-  droite ; une référence maximale partout est placée juste au-delà du meilleur
-  concurrent, plutôt qu'en valeur aberrante.
+  droite ; une référence maximale sur tous les critères est placée juste au-delà du
+  meilleur concurrent, plutôt qu'en valeur aberrante.
 - **Quatre options mises en avant** : le leader, le plus faible globalement, et les
   deux concurrents qui vont le plus loin vers les pôles haut et droit.
 - **Consciente de la polarité** : marquez une colonne « plus bas c'est mieux » avec
@@ -164,9 +164,9 @@ Plus d'exemples dans [EXAMPLES.md](https://github.com/warith-harchaoui/standingp
 
 ## Format d'entrée
 
-Un tableau CSV ou Markdown. La première colonne contient les noms des options ; le
-reste sont des critères numériques sur n'importe quelle échelle. Plus haut vaut
-mieux. Les cellules vides sont remplies par le minimum de la colonne, donc une note
+Un tableau CSV ou Markdown. La première colonne contient les noms des options ; les
+suivantes sont des critères numériques sur n'importe quelle échelle. Plus haut vaut
+mieux. Les cellules vides prennent le minimum de la colonne : une note
 manquante n'avantage jamais une option.
 
 | Language | Performance | Ease of Learning | Ecosystem | Type Safety | Job Market |
@@ -182,9 +182,9 @@ ex. `Price (↓)`, ou listez-la dans `--lower`.
 ## Comment ça marche
 
 1. Standardiser chaque critère à moyenne 0 et écart-type 1. L'ACP est sensible à
-   l'échelle, ce qui met chaque critère sur un pied d'égalité.
+   l'échelle ; cette étape met chaque critère sur un pied d'égalité.
 2. Lancer l'ACP et garder deux composantes. Les axes restent des sommes pondérées
-   des colonnes d'origine, donc on peut les lire.
+   des colonnes d'origine, donc on peut les lire directement.
 3. Pivoter la carte pour que la référence soit en haut à droite. Si la référence
    obtient le maximum partout, elle est placée juste au-delà du meilleur concurrent
    sur chaque axe, plutôt qu'à l'écart toute seule.
@@ -213,8 +213,8 @@ reste.
   sur n'importe quelle page, et une version **fond blanc** `.white.png` / `.white.svg`
   pour les surfaces sombres où les étiquettes presque noires disparaîtraient sur la
   transparence.
-- C'est une projection 2D. Les axes portent une fraction annoncée de la variance,
-  donc lisez-la comme un résumé plutôt que comme l'image complète.
+- C'est une projection 2D. Les axes portent une fraction annoncée de la variance :
+  à lire comme un résumé, pas comme l'image complète.
 
 ## Exemples
 
