@@ -79,7 +79,7 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
   meilleur concurrent, plutôt qu'en valeur aberrante.
 - **Quatre options mises en avant** : le leader, le plus faible globalement, et les
   deux concurrents qui vont le plus loin vers les pôles haut et droit.
-- **Consciente de la polarité** : marquez une colonne « plus bas c'est mieux » avec
+- **Consciente de la polarité** : marquez une colonne « le plus bas, le meilleur » avec
   `(↓)` (ou `--lower`) et Standpoint nomme le bénéfice (*Abordable*, *Léger*),
   jamais l'inconvénient.
 - **Repli déterministe** : `--no-llm` ne requiert ni modèle ni réseau.
@@ -215,7 +215,7 @@ manquante n'avantage jamais une option.
 | Go | 4 | 4 | 4 | 4 | 4 |
 
 La première ligne est la référence et va en haut à droite. Changez-la avec
-`--reference "<nom>"`. Marquez une colonne « plus bas c'est mieux » avec `(↓)`, par
+`--reference "<nom>"`. Marquez une colonne « le plus bas, le meilleur » avec `(↓)`, par
 ex. `Price (↓)`, ou listez-la dans `--lower`.
 
 ## Comment ça marche
