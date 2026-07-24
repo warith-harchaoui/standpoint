@@ -38,8 +38,9 @@ l'outil.
 
 Deux familles se font face :
 
-- **Les boîtes à outils ACP statistiques** (`prince`, le `PCA` de scikit-learn,
-  `factoextra` + `FactoMineR`) sont fortes là où ça compte mathématiquement :
+- **Les boîtes à outils statistiques d'analyse en composantes principales (ACP)**
+  (`prince`, le `PCA` de scikit-learn, `factoextra` + `FactoMineR`) sont fortes là où
+  ça compte mathématiquement :
   reproductibles, scriptables, loadings lisibles. Mais elles rendent des
   composantes et des nombres, pas une carte étiquetée, rédigée et prête à partager.
   Nommer les axes, orienter autour d'une référence, colorer et rédiger reste à votre
