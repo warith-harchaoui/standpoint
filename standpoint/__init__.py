@@ -75,8 +75,10 @@ PALETTE = {
 FONT = "Roboto, -apple-system, Helvetica, Arial, sans-serif"
 
 # One qwen vision-LLM for everything: axis pole names, the written analysis, and
-# the visual assessment of the rendered figure (see `vlm_assess`).
-DEFAULT_MODEL = "qwen2.5vl:7b"
+# the visual assessment of the rendered figure (see `vlm_assess`). This is the
+# single source of truth for the model; override it once via the shared
+# AI_HELPERS_LLM_MODEL env var. No other model is used.
+DEFAULT_MODEL = os.environ.get("AI_HELPERS_LLM_MODEL", "qwen2.5vl:7b")
 
 __all__ = [
     "positioning",
@@ -669,7 +671,7 @@ def _one_word(feature: str) -> str:
     """A single real word from an attribute name — longest non-acronym token,
     expanding known acronyms so the figure never shows abbreviations.
     """
-    toks = re.findall(r"[A-Za-z]+", feature)
+    toks = re.findall(r"[^\W\d_]+", feature, re.UNICODE)  # Unicode letters (keeps é, à, ç…)
     words = [t for t in toks if len(t) > 1 and not t.isupper()]  # drop acronyms
     if words:
         return max(words, key=len).capitalize()
