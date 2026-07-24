@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-24
+
+### Added
+
+- **Browser GUI** (optional `gui` extra: FastAPI + uvicorn + openpyxl), launched with
+  `standpoint-gui`. A single self-contained HTML page (vanilla JS + Tailwind +
+  vega-embed + marked, no build step): an editable table grid (add/remove rows &
+  columns, per-column ⬆️/⬇️ polarity, reference picker), **CSV/XLSX upload &
+  download**, a live-rendered quadrant with **PNG/SVG export** and a transparent /
+  white toggle, and a colour-coded written analysis. Served by `standpoint.api`
+  (`/gui`, `/api/example`, `/api/position`, `/api/upload`, `/api/download/xlsx`); the
+  core library and CLIs gain no new runtime dependency. Covered by endpoint tests and
+  a headless-Chromium end-to-end test, with a dedicated CI job for the backend.
+
+### Changed
+
+- **Analysis is more useful and readable.** The narrative prompt (en/fr/es) now asks
+  for decision-useful takeaways rather than a restatement of the axes; wording uses
+  "information" instead of "variance", percentages are approximate (`~90%`), each
+  axis lists its criteria **by influence (names only, no raw weights)**, and the
+  leaderboard coordinate dump plus the rotation jargon are gone.
+- **Colour discipline.** The "Good Colors" palette is reserved for **data** — the map
+  dots and the role-tinted option names in the analysis — while the GUI chrome stays
+  neutral, so a colour always means data.
+
 ## [0.2.0] - 2026-07-24
 
 ### Added
@@ -77,5 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Two console commands (`standpoint`, `standpoint-click`) and a `positioning()`
   library API returning a `Positioning` object.
 
-[Unreleased]: https://github.com/warith-harchaoui/standingpoint/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/warith-harchaoui/standingpoint/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/warith-harchaoui/standingpoint/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/warith-harchaoui/standingpoint/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/warith-harchaoui/standingpoint/releases/tag/v0.1.0
