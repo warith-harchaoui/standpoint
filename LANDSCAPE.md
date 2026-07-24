@@ -26,7 +26,7 @@ The comparison (higher is better, on a 1–5 scale):
 
 ![Positioning map](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/landscape.png)
 
-The map is a 2-D summary of the eight criteria, so read it as a shape, not a scoreboard. `Standpoint` is at the top-right corner. The axes read **Horizontal — Readable ↔ Versatile** and **Vertical — Simple Setup ↔ Consistent**.
+The map is a 2-D summary of the eight criteria, so read it as a shape, not a scoreboard. `Standpoint` is at the top-right corner. The axes read **Horizontal — Clarity ↔ Versatility** and **Vertical — Ease ↔ Comprehensive**.
 <!-- FIGURE:END -->
 
 ## How to read it
