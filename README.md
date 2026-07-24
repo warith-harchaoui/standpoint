@@ -8,7 +8,7 @@
 
 [🌍 AI Helpers](https://harchaoui.org/warith/ai-helpers)
 
-[![Standpoint logo](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/logo.png)](https://harchaoui.org/warith/ai-helpers)
+[![Standpoint logo](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/logo.png)](https://harchaoui.org/warith/ai-helpers/#standingpoint)
 
 Know where each option actually stands.
 
@@ -129,7 +129,7 @@ pip install -e .          # or: pip install -r requirements.txt
 Or install straight from GitHub (the import name is `standpoint`):
 
 ```bash
-pip install "git+https://github.com/warith-harchaoui/standingpoint.git@v0.2.0"
+pip install "git+https://github.com/warith-harchaoui/standingpoint.git@v0.4.0"
 ```
 
 ## Usage

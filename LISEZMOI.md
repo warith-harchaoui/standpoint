@@ -137,7 +137,7 @@ pip install -e .          # ou : pip install -r requirements.txt
 Ou directement depuis GitHub (le nom d'import est `standpoint`) :
 
 ```bash
-pip install "git+https://github.com/warith-harchaoui/standingpoint.git@v0.2.0"
+pip install "git+https://github.com/warith-harchaoui/standingpoint.git@v0.4.0"
 ```
 
 ## Utilisation
