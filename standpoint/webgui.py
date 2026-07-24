@@ -126,11 +126,6 @@ GUI_HTML = r"""<!doctype html>
           <input type="checkbox" id="bgTransparent" class="w-4 h-4" />
           <span class="font-medium">Transparent background</span>
         </label>
-
-        <label class="flex items-center gap-3 text-sm">
-          <input type="checkbox" id="useLlm" class="w-4 h-4" />
-          <span class="font-medium">AI Naming of Axes + Analysis</span>
-        </label>
       </div>
 
       <button id="run" class="px-6 py-3 rounded-xl text-white font-semibold shadow-sm"
@@ -331,9 +326,8 @@ function colorizeRoles(html, roles) {
 let lastMd = "", chartView = null;
 $("run").onclick = async () => {
   $("error").classList.add("hidden");
-  $("status").textContent = $("useLlm").checked
-    ? "Running PCA and asking the local model… (this can take ~10–25 s)"
-    : "Running PCA…";
+  $("status").textContent =
+    "Running PCA and asking the local model… (this can take ~10–25 s)";
   $("status").classList.remove("hidden");
   try {
     const res = await fetch("/api/position", {
@@ -343,7 +337,6 @@ $("run").onclick = async () => {
         table: toCsv(),
         reference: $("reference").value,
         lower: "",                 // lower-is-better is carried by the (↓) markers
-        use_llm: $("useLlm").checked,
       }),
     });
     if (!res.ok) throw new Error((await res.json()).detail || res.statusText);

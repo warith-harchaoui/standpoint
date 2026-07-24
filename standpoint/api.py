@@ -59,16 +59,13 @@ class PositionRequest(BaseModel):
         Row index (as a string) or exact option name to place top-right.
     lower : str
         Comma-separated criteria where lower is better (e.g. ``"Price,Weight"``).
-    use_llm : bool
-        Whether to name the axes and write the analysis with the local model.
     model : str
-        Ollama model to use when ``use_llm`` is true.
+        Ollama model used to name the axes and write the analysis.
     """
 
     table: str
     reference: str = "0"
     lower: str = ""
-    use_llm: bool = False
     model: str = DEFAULT_MODEL
 
 
@@ -220,16 +217,13 @@ def position(req: PositionRequest) -> PositionResponse:
             reference=ref,
             lower_is_better=lower,
             model=req.model,
-            use_llm=req.use_llm,
         )
     except ValueError as exc:  # bad table / unknown reference -> a clean 400 for the UI
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     # The Markdown narrative is a separate call so a slow model doesn't block the
     # spec; here we compute it inline since the whole request is already synchronous.
-    markdown = analysis_markdown(
-        pos.result, pos.roles, pos.poles, model=req.model, use_llm=req.use_llm
-    )
+    markdown = analysis_markdown(pos.result, pos.roles, pos.poles, model=req.model)
     return PositionResponse(
         vega=pos.to_vega(),
         markdown=markdown,

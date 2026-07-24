@@ -6,9 +6,9 @@ an *evaluation* layer on top, expressed with DeepEval, that scores the model's r
 output on every tracked example: the four labels must be distinct, positive (no
 drawback word), and free of acronyms — the qualities a good pole label has.
 
-It is intentionally heavy and model-dependent, so it runs only when BOTH `deepeval`
-(the ``eval`` extra) and a local Ollama model are installed. Otherwise it skips, and
-never gates CI (where no model runs).
+It is intentionally heavy and model-dependent: it runs whenever `deepeval` (the
+``eval`` extra) is installed, and drives the real local model, which is a hard
+prerequisite that `tests/conftest.py` guarantees.
 """
 
 from __future__ import annotations
@@ -29,24 +29,8 @@ from deepeval.test_case import LLMTestCase  # noqa: E402
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
 _JOIN = " | "  # separator that carries the poles through the test case's output
 
-
-def _model_available(prefix: str = "qwen") -> bool:
-    """True if an Ollama model whose name starts with `prefix` is installed."""
-    try:
-        import ollama
-
-        models = ollama.list().get("models", [])
-        names = [getattr(m, "model", None) or m.get("model", "") for m in models]
-        return any(str(n).startswith(prefix) for n in names)
-    except Exception:
-        return False
-
-
-# Naming quality can only be judged against the real model output, so the eval
-# needs a local model; without one it is meaningless and skips.
-pytestmark = pytest.mark.skipif(
-    not _model_available(), reason="no qwen model in Ollama for the pole-naming eval"
-)
+# Naming quality is judged against the real model output; the local model is a hard
+# prerequisite that `tests/conftest.py` guarantees, so the eval always runs it.
 
 
 class PoleQualityMetric(BaseMetric):
@@ -101,7 +85,7 @@ class PoleQualityMetric(BaseMetric):
 )
 def test_pole_naming_quality(csv: str) -> None:
     """Every example's model-named poles pass the DeepEval quality metric."""
-    pos = sp.positioning(str(EXAMPLES / csv), use_llm=True)
+    pos = sp.positioning(str(EXAMPLES / csv))
     case = LLMTestCase(
         input=f"Name the four axis poles for {csv}",
         actual_output=_JOIN.join(pos.poles),

@@ -1,11 +1,13 @@
 """End-to-end GUI test: drive the real page in headless Chromium (dev-gui).
 
 This is the one test that exercises the *frontend* JavaScript rather than the
-endpoints — it loads `/gui`, clicks Generate (deterministic, no model), and checks
-that the quadrant actually renders, the analysis comes out role-colorized, and no
-JavaScript error fires. It is heavily gated: it starts the FastAPI app on a loopback
-port in a background thread and skips unless FastAPI, Playwright, and a Chromium build
-are all present, so CI (which has none of them) is unaffected.
+endpoints — it loads `/gui`, clicks Generate, and checks that the quadrant actually
+renders, the analysis comes out role-colorized, and no JavaScript error fires.
+Generating always names the axes with the local model (a hard prerequisite that
+`tests/conftest.py` guarantees). It is otherwise heavily gated on test infrastructure:
+it starts the FastAPI app on a loopback port in a background thread and skips unless
+FastAPI, Playwright, and a Chromium build are all present, so CI (which has none of
+them) is unaffected.
 """
 
 from __future__ import annotations
@@ -68,7 +70,7 @@ def test_generate_flow_renders_and_colorizes(base_url: str) -> None:
             page.goto(f"{base_url}/gui", wait_until="networkidle")
             page.wait_for_selector("#grid input")  # the seeded example loaded
             page.click("#run")
-            # deterministic path: chart appears and the analysis heading renders
+            # the chart appears and the analysis heading renders
             page.wait_for_selector("#chart canvas, #chart svg", timeout=30000)
             page.wait_for_function("document.querySelector('#comments h1') !== null", timeout=30000)
             role_spans = page.eval_on_selector_all(

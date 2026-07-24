@@ -817,20 +817,19 @@ def _poles_to_names(poles: list[str]) -> list[str]:
 
 
 def axis_poles(
-    result: PCAResult, model: str = DEFAULT_MODEL, use_llm: bool = True, lang: str | None = None
+    result: PCAResult, model: str = DEFAULT_MODEL, lang: str | None = None
 ) -> list[str]:
     """Four distinct pole labels [left, right, bottom, top] for the two axes.
 
     Each PCA axis is a weighted mix of the criteria. The local LLM names each pole
     (1-3 words) for what the approaches at that end are collectively strongest at,
     from the signed loadings and the original column names — in the table's own
-    language (auto-detected from the column names; see `i18n.yaml`). Falls back to
-    loading-derived distinct words if the LLM is unavailable or misbehaves.
+    language (auto-detected from the column names; see `i18n.yaml`). Always uses the
+    local model; loading-derived words only serve as the per-label robustness fallback
+    when the model returns a bad label (see `finalize_poles`).
     """
     feats = result.features
     fallback_poles = _fallback_poles(result.components, feats)
-    if not use_llm:
-        return fallback_poles
     if lang is None:
         lang = detect_language(feats)
     tpl = i18n(lang)
@@ -896,27 +895,26 @@ def axis_poles(
         raw = [str(data.get(k, "")) for k in ("left", "right", "bottom", "top")]
         # Clean, de-duplicate, and reject antonym/shared-word pairs.
         return finalize_poles(raw, fallback_poles)
-    except Exception as exc:  # ollama missing / model absent / bad JSON
-        logger.warning("axis naming: LLM unavailable (%s); using deterministic names", exc)
-        return fallback_poles
+    except Exception:  # ollama missing / model absent / bad JSON
+        logger.error("axis naming: LLM unavailable; the local model is required")
+        raise
 
 
 def noun_forms(
-    word: str, model: str = DEFAULT_MODEL, use_llm: bool = True, lang: str | None = None
+    word: str, model: str = DEFAULT_MODEL, lang: str | None = None
 ) -> tuple[str, str]:
     """Singular and plural of `word` (the first-column name), in its own language.
 
     Used for the figure title and legend heading, so a table of "Language" reads
-    "Languages in the Quadrant". The prompt lives in `i18n.yaml`. Falls back to a
-    naive `+s` plural without a model.
+    "Languages in the Quadrant". The prompt lives in `i18n.yaml`. Always uses the
+    local model; a naive `+s` plural only serves as the robustness fallback when the
+    model is unreachable or returns a form that drifts from the column word.
     """
     word = (word or "Approach").strip() or "Approach"
     if len(word) > 1 and word.lower().endswith("s"):  # looks plural already
         naive = (word[:-1].capitalize(), word.capitalize())
     else:
         naive = (word.capitalize(), word.capitalize() + "s")
-    if not use_llm:
-        return naive
     if lang is None:
         lang = detect_language([word])
     try:
@@ -1230,10 +1228,8 @@ def vlm_assess(image: str | bytes, model: str = DEFAULT_MODEL) -> dict:
         return {}
 
 
-def _llm_text(prompt: str, model: str, use_llm: bool, fallback: str) -> str:
-    """Free-text completion from the local model; `fallback` if unavailable."""
-    if not use_llm:
-        return fallback
+def _llm_text(prompt: str, model: str, fallback: str) -> str:
+    """Free-text completion from the local model; `fallback` if unreachable."""
     try:
         resp = ollama.chat(
             model=model,
@@ -1259,7 +1255,6 @@ def analysis_markdown(
     roles: list[str],
     poles: list[str],
     model: str = DEFAULT_MODEL,
-    use_llm: bool = True,
     lang: str | None = None,
 ) -> str:
     """A thoughtful, precise interpretation of the map as Markdown.
@@ -1306,7 +1301,6 @@ def analysis_markdown(
             leaderboard=", ".join(ranked[:8]),
         ),
         model,
-        use_llm,
         fallback=(
             f"The map's horizontal axis contrasts **{left}** (left) with **{right}** "
             f"(right); the vertical contrasts **{bottom}** (bottom) with **{top}** "
@@ -1420,7 +1414,6 @@ def export_all(
     colors: list[str],
     stem: str,
     model: str = DEFAULT_MODEL,
-    use_llm: bool = True,
     noun_plural: str = "Approaches",
     title: str | None = None,
 ) -> list[str]:
@@ -1434,7 +1427,7 @@ def export_all(
     written = render_figures(spec, stem)
     for path, text in [
         (f"{stem}.vl.json", json.dumps(spec, indent=2, ensure_ascii=False)),
-        (f"{stem}.md", analysis_markdown(result, roles, poles, model, use_llm)),
+        (f"{stem}.md", analysis_markdown(result, roles, poles, model)),
         (f"{stem}.yaml", results_yaml(df, result, roles, poles, axis_names, colors)),
     ]:
         with open(path, "w", encoding="utf-8") as fh:
@@ -1491,9 +1484,9 @@ class Positioning:
             title=self.title,
         )
 
-    def to_markdown(self, model: str = DEFAULT_MODEL, use_llm: bool = True) -> str:
+    def to_markdown(self, model: str = DEFAULT_MODEL) -> str:
         """The written interpretation as Markdown."""
-        return analysis_markdown(self.result, self.roles, self.poles, model, use_llm)
+        return analysis_markdown(self.result, self.roles, self.poles, model)
 
     def to_yaml(self) -> str:
         """All coordinates + coefficients as YAML."""
@@ -1510,7 +1503,6 @@ class Positioning:
         outdir: str = ".",
         stem: str | None = None,
         model: str = DEFAULT_MODEL,
-        use_llm: bool = True,
     ) -> list[str]:
         """Write the full three-fold deliverable into `outdir`; returns the paths."""
         os.makedirs(outdir, exist_ok=True)
@@ -1524,7 +1516,6 @@ class Positioning:
             self.colors,
             os.path.join(outdir, name),
             model=model,
-            use_llm=use_llm,
             noun_plural=self.noun_plural,
             title=self.title,
         )
@@ -1537,7 +1528,6 @@ def positioning(
     right: str | None = None,
     lower_is_better: list[str] | None = None,
     model: str = DEFAULT_MODEL,
-    use_llm: bool = True,
 ) -> Positioning:
     """Position options from a table in one call.
 
@@ -1556,9 +1546,9 @@ def positioning(
     result = analyze(df, reference=reference, lower_is_better=list(lower))
     roles = assign_roles(result, top=top, right=right)
     lang = detect_language(result.features)
-    poles = axis_poles(result, model=model, use_llm=use_llm, lang=lang)
+    poles = axis_poles(result, model=model, lang=lang)
     singular, plural = noun_forms(
-        str(df.index.name or "Approach"), model=model, use_llm=use_llm, lang=lang
+        str(df.index.name or "Approach"), model=model, lang=lang
     )
     # Localize the whole title, not just the noun: a French table reads
     # "Voitures dans le quadrant", never "Voitures in the Quadrant".
@@ -1588,7 +1578,6 @@ def run(
     right: str | None = None,
     lower: str = "",
     model: str = DEFAULT_MODEL,
-    no_llm: bool = False,
     check: bool = False,
 ) -> list[str]:
     """Shared CLI core: build the positioning, print a summary, write the files.
@@ -1606,7 +1595,6 @@ def run(
         right=right,
         lower_is_better=lower_cols,
         model=model,
-        use_llm=not no_llm,
     )
     result, evr = pos.result, pos.result.explained_variance_ratio
 
@@ -1635,7 +1623,7 @@ def run(
     print("Canonical axes in the oriented frame (loadings):")
     print(pos.loadings.round(3).to_string(), "\n")
 
-    written = pos.export(outdir, stem=stem, model=model, use_llm=not no_llm)
+    written = pos.export(outdir, stem=stem, model=model)
     print("Three-fold deliverable written:")
     for path in written:
         print(f"  {path}")
@@ -1694,15 +1682,12 @@ def main(argv: list[str] | None = None) -> None:
         help=f"Ollama model for axis naming (default {DEFAULT_MODEL})",
     )
     ap.add_argument(
-        "--no-llm", action="store_true", help="skip the LLM; use deterministic axis names"
-    )
-    ap.add_argument(
         "--check",
         action="store_true",
         help="ask the vision model to sanity-check the rendered figure",
     )
     a = ap.parse_args(argv)
-    run(a.table, a.reference, a.outdir, a.stem, a.top, a.right, a.lower, a.model, a.no_llm, a.check)
+    run(a.table, a.reference, a.outdir, a.stem, a.top, a.right, a.lower, a.model, a.check)
 
 
 if __name__ == "__main__":

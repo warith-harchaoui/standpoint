@@ -1,9 +1,11 @@
 """Test suite for Standpoint.
 
-Deterministic tests run without any model. The two model-backed tests (axis names
-in a real language, and the qwen vision-LLM assessment of the rendered figure) are
-skipped automatically when Ollama or the model is not available, so the suite is
-green in CI and richer on a workstation with the model pulled.
+Standpoint always names the axes and writes the analysis with the local model, so the
+model is a hard prerequisite of the suite, not an optional extra: `tests/conftest.py`
+guarantees `standpoint.DEFAULT_MODEL` is present (pulling it once if needed) before
+any test runs. Tests that exercise the model — axis naming in the table's own
+language and the vision assessment of the rendered figure — therefore always call the
+real local LLM.
 """
 
 import re
@@ -36,18 +38,6 @@ def result(df) -> p4m.PCAResult:
 @pytest.fixture(scope="module")
 def roles(result) -> list[str]:
     return p4m.assign_roles(result)
-
-
-def _model_available(prefix: str) -> bool:
-    """True if an Ollama model whose name starts with `prefix` is installed."""
-    try:
-        import ollama
-
-        models = ollama.list().get("models", [])
-        names = [getattr(m, "model", None) or m.get("model", "") for m in models]
-        return any(str(n).startswith(prefix) for n in names)
-    except Exception:
-        return False
 
 
 # --------------------------------------------------------------------------- #
@@ -191,12 +181,6 @@ def test_deacronym_expands_and_drops():
     assert "UX" not in p4m._deacronym("Operator UX")
 
 
-def test_fallback_poles_no_acronyms(result):
-    poles = p4m.axis_poles(result, use_llm=False)
-    assert len(poles) == 4 and len(set(poles)) == 4
-    assert not ({"TCO", "PII", "GDPR", "UX"} & set(poles))
-
-
 # --------------------------------------------------------------------------- #
 # i18n
 # --------------------------------------------------------------------------- #
@@ -225,11 +209,6 @@ def test_i18n_all_languages_present_and_formattable():
             leaderboard="l",
         )
         tpl["noun_prompt"].format(word="Language")
-
-
-def test_noun_forms_fallback():
-    assert p4m.noun_forms("Language", use_llm=False) == ("Language", "Languages")
-    assert p4m.noun_forms("Providers", use_llm=False) == ("Provider", "Providers")
 
 
 def test_detect_language():
@@ -263,11 +242,11 @@ def test_to_vega_structure(result):
 
 
 def test_export_all_writes_three_fold(tmp_path, df, result, roles):
-    poles = p4m.axis_poles(result, use_llm=False)
+    poles = p4m.axis_poles(result)
     names = p4m._poles_to_names(poles)
     colors = p4m.gradient_colors(result, roles)
     stem = str(tmp_path / "map")
-    written = p4m.export_all(df, result, roles, poles, names, colors, stem, use_llm=False)
+    written = p4m.export_all(df, result, roles, poles, names, colors, stem)
     # transparent png+svg, white png+svg, then vl.json + md + yaml
     assert len(written) == 7
     assert Path(f"{stem}.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
@@ -283,8 +262,8 @@ def test_export_all_writes_three_fold(tmp_path, df, result, roles):
 def test_markdown_is_focused(result, roles):
     # The analysis ends at the highlighted approaches — no leaderboard coordinate
     # dump and no PCA-units footer (dropped as noise).
-    poles = p4m.axis_poles(result, use_llm=False)
-    md = p4m.analysis_markdown(result, roles, poles, use_llm=False)
+    poles = p4m.axis_poles(result)
+    md = p4m.analysis_markdown(result, roles, poles)
     assert "## Highlighted approaches" in md
     assert "Leaderboard" not in md
     assert "Coordinates are PCA" not in md
@@ -340,13 +319,13 @@ def test_positioning_lower_marker_cleaned():
     marked = pd.DataFrame(
         {"Price (↓)": [1, 5, 3, 2], "Quality": [3, 2, 4, 5]}, index=["a", "b", "c", "d"]
     )
-    pos = p4m.positioning(marked, use_llm=False)
+    pos = p4m.positioning(marked)
     assert "Price" in pos.result.lower
     assert "Price" in pos.df.columns  # marker stripped
 
 
 def test_positioning_api(df):
-    pos = p4m.positioning(df, use_llm=False)
+    pos = p4m.positioning(df)
     assert isinstance(pos, p4m.Positioning)
     assert pos.role_of[pos.result.reference] == "best"
     assert set(pos.axes) == {"x", "y"}
@@ -356,8 +335,8 @@ def test_positioning_api(df):
 
 
 def test_positioning_export(tmp_path, df):
-    pos = p4m.positioning(df, use_llm=False)
-    written = pos.export(str(tmp_path), stem="demo", use_llm=False)
+    pos = p4m.positioning(df)
+    written = pos.export(str(tmp_path), stem="demo")
     assert {Path(w).name for w in written} == {
         "demo.png",
         "demo.svg",
@@ -370,24 +349,20 @@ def test_positioning_export(tmp_path, df):
 
 
 def test_positioning_accepts_path_and_string(df):
-    from_path = p4m.positioning(str(EXAMPLE), use_llm=False)
+    from_path = p4m.positioning(str(EXAMPLE))
     assert from_path.df.shape == df.shape
 
 
 # --------------------------------------------------------------------------- #
-# model-backed (skipped when the qwen model is not installed)
+# model-backed (the local model is a hard prerequisite; see tests/conftest.py)
 # --------------------------------------------------------------------------- #
-@pytest.mark.skipif(not _model_available("qwen"), reason="no qwen model in Ollama")
 def test_axis_poles_llm_quality(result):
-    poles = p4m.axis_poles(result, use_llm=True)
+    poles = p4m.axis_poles(result)
     assert len(poles) == 4 and len(set(poles)) == 4
     joined = p4m._content_words(" ".join(poles))
     assert not (joined & p4m._NEGATIVE_WORDS)  # only positive qualities
 
 
-@pytest.mark.skipif(
-    not _model_available("qwen2.5vl"), reason="qwen2.5vl vision model not installed"
-)
 def test_vlm_assessment_of_rendered_figure(result):
     # Assess a white-composited render (the exported figure is transparent, which the
     # model's backend would flatten onto black and misread — see png_on_white).

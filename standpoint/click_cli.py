@@ -37,7 +37,6 @@ from standpoint import DEFAULT_MODEL, run
 @click.option(
     "--model", default=DEFAULT_MODEL, show_default=True, help="Ollama model for axis naming."
 )
-@click.option("--no-llm", is_flag=True, help="Skip the LLM; deterministic axis names.")
 @click.option("--check", is_flag=True, help="Vision-model sanity-check of the figure.")
 def main_click(
     table: str,
@@ -48,11 +47,10 @@ def main_click(
     right: str | None,
     lower: str,
     model: str,
-    no_llm: bool,
     check: bool,
 ) -> None:
     """Turn a comparison TABLE (CSV or Markdown) into a positioning map."""
-    run(table, reference, outdir, stem, top, right, lower, model, no_llm, check)
+    run(table, reference, outdir, stem, top, right, lower, model, check)
 
 
 if __name__ == "__main__":

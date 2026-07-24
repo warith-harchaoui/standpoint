@@ -1,8 +1,9 @@
 """Smoke tests for the browser GUI backend (`dev-gui` investigation).
 
 These run only when the ``gui`` extra (FastAPI + a test client) is installed, so the
-default suite is unaffected. They exercise the three endpoints end to end with the
-deterministic (no-model) path, mirroring how the core library is tested.
+default suite is unaffected. They exercise the three endpoints end to end; the
+positive-path round-trips call the real local model, which `tests/conftest.py`
+guarantees is present, mirroring how the core library is tested.
 """
 
 from __future__ import annotations
@@ -40,10 +41,10 @@ def test_example_endpoint_returns_csv() -> None:
     assert "," in header and "Performance" in header  # a real criteria table
 
 
-def test_position_roundtrip_deterministic() -> None:
+def test_position_roundtrip() -> None:
     """`POST /api/position` returns a full, drawable result on a valid table."""
     table = "Language,Speed,Safety,Jobs\nPython,2,2,5\nRust,5,5,3\nGo,4,4,4\nJava,4,4,5"
-    r = client.post("/api/position", json={"table": table, "reference": "0", "use_llm": False})
+    r = client.post("/api/position", json={"table": table, "reference": "0"})
     assert r.status_code == 200
     data = r.json()
     assert data["reference"] == "Python"
@@ -56,7 +57,7 @@ def test_position_roundtrip_deterministic() -> None:
 def test_position_response_has_full_frontend_contract() -> None:
     """The response carries everything the browser needs to draw and colorize."""
     table = "Language,Speed,Safety,Jobs\nPython,2,2,5\nRust,5,5,3\nGo,4,4,4\nJava,4,4,5"
-    data = client.post("/api/position", json={"table": table, "use_llm": False}).json()
+    data = client.post("/api/position", json={"table": table}).json()
     assert {"vega", "markdown", "yaml", "axes", "poles", "reference", "roles"} <= set(data)
     assert set(data["axes"]) == {"x", "y"}
     assert len(data["poles"]) == 4
@@ -69,14 +70,14 @@ def test_position_response_has_full_frontend_contract() -> None:
 
 def test_position_rejects_degenerate_table() -> None:
     """A table with too few options yields a clean 400, not a 500."""
-    r = client.post("/api/position", json={"table": "A,B\nonly,1", "use_llm": False})
+    r = client.post("/api/position", json={"table": "A,B\nonly,1"})
     assert r.status_code == 400
     assert "detail" in r.json()
 
 
 def test_position_rejects_empty_table() -> None:
     """An empty table body is rejected with 400."""
-    r = client.post("/api/position", json={"table": "   ", "use_llm": False})
+    r = client.post("/api/position", json={"table": "   "})
     assert r.status_code == 400
 
 
