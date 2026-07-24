@@ -1331,14 +1331,7 @@ def analysis_markdown(
         f"- **Strongest toward {right}:** {role_rows['right']} (challenger furthest "
         "along the horizontal axis)",
         "",
-        "## Leaderboard (by combined axis score)",
-        "",
     ]
-    lines += [
-        f"{i}. {n}  ({coords.loc[n, 'axis-1']:+.2f}, {coords.loc[n, 'axis-2']:+.2f})"
-        for i, n in enumerate(ranked, 1)
-    ]
-    lines += ["", "*Coordinates are PCA units; see the companion YAML for full coefficients.*", ""]
     return "\n".join(lines)
 
 

@@ -24,20 +24,25 @@ unusually cheap to build on top of the existing library.
 Run it (`standpoint-gui`) and, entirely on `localhost`:
 
 1. **Edit a table** — an editable grid seeded with an example: add/remove options
-   (rows) and criteria (columns), rename headers, edit cells, mark a column
-   *lower-is-better* with the `↓` toggle, and pick the reference (top-right) option.
-   Or **upload a CSV / XLSX** file (Excel is read server-side via pandas + openpyxl)
-   and **download** the edited table as CSV or XLSX.
+   (rows) and criteria (columns), rename headers, edit cells, flip a column between
+   ⬆️ higher-is-better and ⬇️ lower-is-better, and pick the reference (top-right)
+   option. Or **upload a CSV / XLSX** file (Excel is read server-side via pandas +
+   openpyxl) and **download** the edited table as CSV or XLSX.
 2. **Generate** — the grid is serialized to CSV and POSTed to `/api/position`, which
    runs the real `positioning()` pipeline.
 3. **See the quadrant** — the returned Vega-Lite spec is rendered live, with a
-   transparent/white background toggle and the vega-embed export menu (PNG/SVG).
-4. **Read the analysis** — the Markdown interpretation is rendered beside the map;
-   the YAML and Markdown are downloadable.
+   transparent/white background toggle and explicit **PNG / SVG** export buttons.
+4. **Read the analysis** — the Markdown interpretation is rendered below the map and
+   **colour-coded**: each highlighted option is tinted by its role (leader red,
+   weakest brown, top-pole purple, right-pole blue) to match the dots on the map.
+   Downloadable as Markdown.
 
-Optionally tick *"name axes + write analysis with the local model"* to get
-LLM-named poles and the written narrative (slower); unticked, it is instant and
-deterministic.
+The whole interface uses the ["Good Colors"](https://harchaoui.org/warith/colors/)
+palette — the same hues as the map — with accessible labels and keyboard focus rings.
+
+Optionally tick *"name the axes and write the analysis with the local model"* to get
+LLM-named poles and a decision-useful written narrative (slower); unticked, it is
+instant and deterministic.
 
 ## Architecture
 

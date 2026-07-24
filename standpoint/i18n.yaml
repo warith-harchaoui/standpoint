@@ -45,14 +45,17 @@ en:
 
     Reply as JSON: {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
   narrative_prompt: |
-    Write 4-6 sentences of precise, sober analysis of a positioning map, in English.
-    The horizontal axis runs from '{left}' (left) to '{right}' (right); the vertical
-    from '{bottom}' (bottom) to '{top}' (top). The reference '{reference}' leads at
-    the top-right. Best={best}, worst={worst}, the challenger reaching furthest
-    toward '{top}'={champ_top}, the challenger reaching furthest toward
-    '{right}'={champ_right}. Leaderboard by combined score: {leaderboard}. Explain
-    what the axes mean, where the reference wins, and which clusters stand out. No
-    acronyms. Plain prose, no bullet lists.
+    You are a sharp analyst writing the takeaways from a positioning map, in English.
+    Write 4-6 sentences of concrete, decision-useful insight — NOT a restatement of
+    the axes. The horizontal axis runs from '{left}' to '{right}'; the vertical from
+    '{bottom}' to '{top}'. '{reference}' is the reference leader (top-right).
+    Best={best}, worst={worst}; the standout toward '{top}' is {champ_top} and toward
+    '{right}' is {champ_right}. Overall order, strongest first: {leaderboard}.
+    Cover, in flowing prose: (1) the single biggest takeaway a reader should leave
+    with; (2) what '{reference}' actually wins on and where it is exposed;
+    (3) the sharpest trade-off in the field and which option fits which need;
+    (4) any option that punches above or below its rank. Name real options, be
+    specific and genuinely useful — never generic. No acronyms, no bullet lists.
 
 fr:
   # « Voitures dans le quadrant » — jamais « Voitures in the Quadrant ».
@@ -91,14 +94,18 @@ fr:
 
     Répondez en JSON : {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
   narrative_prompt: |
-    Rédigez 4 à 6 phrases d'analyse précise et sobre d'une carte de positionnement,
-    en français. L'axe horizontal va de « {left} » (gauche) à « {right} » (droite) ;
-    l'axe vertical de « {bottom} » (bas) à « {top} » (haut). La référence « {reference} »
-    domine en haut à droite. Meilleur={best}, pire={worst}, le concurrent qui va le
-    plus loin vers « {top} »={champ_top}, celui qui va le plus loin vers
-    « {right} »={champ_right}. Classement par score combiné : {leaderboard}.
-    Expliquez le sens des axes, où la référence l'emporte et quels groupes se
-    distinguent. Pas d'acronymes. Prose simple, sans listes à puces.
+    Vous êtes un analyste pointu qui rédige les enseignements d'une carte de
+    positionnement, en français. Écrivez 4 à 6 phrases d'insight concret et utile à
+    la décision — PAS une paraphrase des axes. L'axe horizontal va de « {left} » à
+    « {right} » ; le vertical de « {bottom} » à « {top} ». « {reference} » est la
+    référence en tête (haut à droite). Meilleur={best}, pire={worst} ; le plus
+    marquant vers « {top} » est {champ_top}, vers « {right} » est {champ_right}.
+    Ordre global, du plus fort au plus faible : {leaderboard}. Traitez, en prose
+    fluide : (1) l'enseignement principal à retenir ; (2) ce sur quoi « {reference} »
+    l'emporte vraiment et où elle est exposée ; (3) l'arbitrage le plus net du champ
+    et quelle option pour quel besoin ; (4) toute option qui surperforme ou
+    sous-performe son rang. Nommez de vraies options, soyez précis et vraiment utile,
+    jamais générique. Pas d'acronymes, pas de listes à puces.
 
 es:
   # «Coches en el cuadrante» — nunca «Coches in the Quadrant».
@@ -136,11 +143,14 @@ es:
 
     Responde en JSON: {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
   narrative_prompt: |
-    Escribe de 4 a 6 frases de análisis preciso y sobrio de un mapa de posicionamiento,
-    en español. El eje horizontal va de « {left} » (izquierda) a « {right} » (derecha);
-    el vertical de « {bottom} » (abajo) a « {top} » (arriba). La referencia « {reference} »
-    lidera arriba a la derecha. Mejor={best}, peor={worst}, el rival que llega más
-    lejos hacia « {top} »={champ_top}, el que llega más lejos hacia
-    « {right} »={champ_right}. Clasificación por puntuación combinada: {leaderboard}.
-    Explica qué significan los ejes, dónde gana la referencia y qué grupos destacan.
-    Sin siglas. Prosa sencilla, sin listas con viñetas.
+    Eres un analista agudo que escribe las conclusiones de un mapa de posicionamiento,
+    en español. Escribe de 4 a 6 frases de insight concreto y útil para decidir — NO
+    una paráfrasis de los ejes. El eje horizontal va de « {left} » a « {right} »; el
+    vertical de « {bottom} » a « {top} ». « {reference} » es la referencia líder
+    (arriba a la derecha). Mejor={best}, peor={worst}; el más destacado hacia
+    « {top} » es {champ_top} y hacia « {right} » es {champ_right}. Orden global, del
+    más fuerte al más débil: {leaderboard}. Cubre, en prosa fluida: (1) la conclusión
+    principal; (2) en qué gana realmente « {reference} » y dónde queda expuesta;
+    (3) el compromiso más claro del campo y qué opción para qué necesidad; (4) alguna
+    opción que rinda por encima o por debajo de su rango. Nombra opciones reales, sé
+    específico y realmente útil, nunca genérico. Sin siglas, sin listas con viñetas.
