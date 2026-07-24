@@ -7,7 +7,7 @@ positionnement (carte perceptuelle) ? La façon honnête d'y répondre est d'*ut
 Standpoint sur lui-même* — cette page est donc un tableau de comparaison passé dans
 l'outil, exactement comme n'importe quel autre exemple.
 
-La comparaison (plus haut vaut mieux, sur une échelle de 1 à 5) :
+La comparaison (le plus haut, le meilleur, sur une échelle de 1 à 5) :
 
 <!-- TABLE:START -->
 | Cartes de positionnement | Nommage Automatique des Axes | Sortie Multilingue | Exécution Locale | Une Seule Commande | Livrable Triple | Reproductibilité | Axes Lisibles | Simplicité d'Installation |
@@ -59,7 +59,7 @@ volets, en une seule commande.
 
 - **Standpoint est ici la référence**, donc pivoté en haut à droite par
   construction. Cette carte est notre *lecture des compromis*, pas un classement
-  objectif : les notes sont subjectives et « plus haut vaut mieux » partout. Changez
+  objectif : les notes sont subjectives et « le plus haut, le meilleur » partout. Changez
   la référence (`--reference "PCA (scikit-learn)"`) et les mêmes données se
   réorientent autour d'elle.
 - Le cœur mathématique (ACP de corrélation, loadings lisibles) est **exactement ce

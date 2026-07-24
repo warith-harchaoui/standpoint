@@ -244,7 +244,7 @@ reste.
 - Les noms d'axes viennent d'un modèle local. Un garde-fou les garde positifs,
   distincts et sans acronymes ; un `--model` plus gros aide, et `--check` demande au
   modèle de vision si la figure se lit correctement.
-- Plus haut vaut mieux, par défaut. Pour une colonne où plus bas vaut mieux, marquez
+- Le plus haut, le meilleur, par défaut. Pour une colonne où le plus bas est le meilleur, marquez
   son en-tête avec `(↓)` (`Price (↓)`, `Latency (↓)`) ou passez `--lower Price,Latency`.
   Standpoint la négativise et nomme le pôle pour le bénéfice (« Abordable »,
   « Léger »), jamais l'inconvénient.
