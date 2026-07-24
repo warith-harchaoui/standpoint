@@ -36,7 +36,8 @@ def test_example_endpoint_returns_csv() -> None:
     """`GET /api/example` returns a non-empty CSV starter table."""
     r = client.get("/api/example")
     assert r.status_code == 200
-    assert r.text.splitlines()[0].startswith("Language,")
+    header = r.text.splitlines()[0]
+    assert "," in header and "Performance" in header  # a real criteria table
 
 
 def test_position_roundtrip_deterministic() -> None:

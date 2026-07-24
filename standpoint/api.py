@@ -20,6 +20,7 @@ package, so the library and CLIs carry no web dependency.
 from __future__ import annotations
 
 import io
+from pathlib import Path
 
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -34,9 +35,11 @@ _XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 app = FastAPI(title="Standpoint GUI", version="0.1.0")
 
-# A small starter table shipped so the grid is never empty on first load.
+# The grid is seeded from the tracked example so the GUI always mirrors it; this
+# small built-in table is the fallback when the file isn't on disk (installed package).
+_EXAMPLE_CSV = Path(__file__).resolve().parents[1] / "examples" / "programming_languages.csv"
 _STARTER_TABLE = (
-    "Language,Performance,Ease of Learning,Ecosystem,Concurrency,Type Safety,Job Market,Tooling\n"
+    "Programming Language,Performance,Ease of Learning,Ecosystem,Concurrency,Type Safety,Job Market,Tooling\n"
     "Python,2,5,5,2,2,5,4\n"
     "Rust,5,2,3,5,5,3,4\n"
     "Go,4,4,4,5,4,4,4\n"
@@ -95,8 +98,15 @@ def gui() -> str:
 
 @app.get("/api/example", response_class=PlainTextResponse)
 def example() -> str:
-    """Return a starter table (CSV text) to populate an empty grid."""
-    return _STARTER_TABLE
+    """Return a starter table (CSV text) to populate an empty grid.
+
+    Prefer the tracked `examples/programming_languages.csv` so the GUI stays in sync
+    with it; fall back to the small built-in table when the file isn't present.
+    """
+    try:
+        return _EXAMPLE_CSV.read_text(encoding="utf-8")
+    except OSError:
+        return _STARTER_TABLE
 
 
 def _df_to_csv(df: pd.DataFrame) -> str:

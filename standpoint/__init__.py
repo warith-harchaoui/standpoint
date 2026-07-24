@@ -1243,6 +1243,15 @@ def _llm_text(prompt: str, model: str, use_llm: bool, fallback: str) -> str:
         return fallback
 
 
+def _approx_pct(fraction: float) -> str:
+    """Format a fraction as an approximate percentage — nearest 5, with a '~' prefix.
+
+    An exact figure like '89%' reads as false precision in a written takeaway; '~90%'
+    conveys the same magnitude at an honest resolution.
+    """
+    return f"~{round(fraction * 20) * 5}%"
+
+
 def analysis_markdown(
     result: PCAResult,
     roles: list[str],
@@ -1299,7 +1308,7 @@ def analysis_markdown(
         fallback=(
             f"The map's horizontal axis contrasts **{left}** (left) with **{right}** "
             f"(right); the vertical contrasts **{bottom}** (bottom) with **{top}** "
-            f"(top), together capturing {evr.sum():.0%} of the information that tells "
+            f"(top), together capturing {_approx_pct(evr.sum())} of the information that tells "
             f"these approaches apart. **{result.reference}** anchors the top-right as the "
             f"reference leader, strongest on the {right.lower()} and {top.lower()} "
             f"directions. **{role_rows['worst']}** sits opposite as the weakest on "
@@ -1318,15 +1327,15 @@ def analysis_markdown(
         "",
         "## Axes",
         "",
-        f"**Horizontal — {left} ↔ {right}** — {evr[0]:.0%} of the information.",
+        f"**Horizontal — {left} ↔ {right}** — {_approx_pct(evr[0])} of the information.",
         "",
         f"Relevant columns for axis: {order_line(0)}.",
         "",
-        f"**Vertical — {bottom} ↔ {top}** — {evr[1]:.0%} of the information.",
+        f"**Vertical — {bottom} ↔ {top}** — {_approx_pct(evr[1])} of the information.",
         "",
         f"Relevant columns for axis: {order_line(1)}.",
         "",
-        f"In two axes, we preserved **{evr.sum():.0%}** of the information.",
+        f"In two axes, we preserved **{_approx_pct(evr.sum())}** of the information.",
         "",
         "## Highlighted approaches",
         "",

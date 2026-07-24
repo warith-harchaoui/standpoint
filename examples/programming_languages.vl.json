@@ -1,7 +1,7 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
-    "text": "Languages in the Quadrant",
+    "text": "Programming languages in the Quadrant",
     "font": "Roboto, -apple-system, Helvetica, Arial, sans-serif",
     "fontSize": 18
   },
@@ -585,7 +585,7 @@
             ]
           },
           "legend": {
-            "title": "Languages",
+            "title": "Programming languages",
             "symbolLimit": 0,
             "labelFontSize": 12,
             "symbolOpacity": 1
