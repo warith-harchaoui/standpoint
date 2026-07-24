@@ -80,8 +80,8 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
 - **Quatre options mises en avant** : le leader, le plus faible globalement, et les
   deux concurrents qui vont le plus loin vers les pôles haut et droit.
 - **Consciente de la polarité** : marquez une colonne « le plus bas, le meilleur » avec
-  `(↓)` (ou `--lower`) et Standpoint nomme le bénéfice (*Abordable*, *Léger*),
-  jamais l'inconvénient.
+  `(↓)` (ou `--lower`) et `standpoint` reformule un inconvénient en bénéfice
+  (*Abordable* au lieu de « pas cher »).
 - **Repli déterministe** : `--no-llm` ne requiert ni modèle ni réseau.
 - **Auto-vérification visuelle** : `--check` demande à un modèle de vision local si
   la figure se lit correctement (leader en haut à droite, étiquettes lisibles,
