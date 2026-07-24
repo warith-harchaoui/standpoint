@@ -38,6 +38,10 @@ dev = ["pytest>=7.0", "ruff>=0.5"]
 # a separate, heavier extra: the eval is skipped unless both deepeval and a local
 # Ollama model are available, so it runs on a workstation, not in the default CI job.
 eval = ["deepeval>=1.0"]
+# `gui` powers the browser GUI investigated on the dev-gui branch (standpoint.api +
+# standpoint.webgui). The core library and CLIs never import it. python-multipart is
+# needed for file uploads; openpyxl for the CSV<->XLSX conversions.
+gui = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9", "openpyxl>=3.1"]
 
 [project.urls]
 Homepage = "https://github.com/warith-harchaoui/standingpoint"
@@ -46,6 +50,7 @@ Author = "https://www.linkedin.com/in/warith-harchaoui"
 [project.scripts]
 standpoint = "standpoint:main"
 standpoint-click = "standpoint.click_cli:main_click"
+standpoint-gui = "standpoint.api:main_gui"
 
 [tool.setuptools]
 packages = ["standpoint"]
@@ -69,6 +74,7 @@ select = ["E", "F", "W", "I", "B", "C4", "UP", "SIM"]
 ignore = [
     "E501",   # line length is enforced by the formatter, not the linter
     "SIM108", # ternary-over-if/else sometimes hurts readability
+    "B008",   # call in arg default is the idiomatic FastAPI pattern (File/Depends)
 ]
 
 [tool.ruff.lint.per-file-ignores]

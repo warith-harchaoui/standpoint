@@ -2,36 +2,29 @@
 
 ## Interpretation
 
-The positioning map illustrates how different programming languages are ranked based on their performance across four dimensions: scalability (left), versatility (right), flexibility (bottom), and accessibility (top). At the top-right corner is Python, which leads in both 'Versatility' and 'Accessibility', indicating its strong presence in diverse applications and ease of use. Rust, positioned at the bottom-left, is considered the worst performer among those listed on this map due to its poor scores across all dimensions.
+The single biggest takeaway from this positioning map is Python's unparalleled dominance across scalability and versatility while maintaining a high level of accessibility. Python excels in these areas due to its simplicity and readability, which make it an ideal choice for both beginners and experienced developers alike. However, when it comes to pure scalability, Python faces some limitations as its performance can be outmatched by languages like Rust or Go.
 
-Ruby stands out as a challenger with high accessibility but lower versatility compared to Python. Java, another notable language, excels in 'Versatility' while being less accessible than Python and Ruby. The leaderboard shows that Python takes the top spot followed by JavaScript, Ruby, TypeScript, Java, Go, C#, and Kotlin. This indicates that these languages are well-positioned across a range of criteria, with Python leading in most areas due to its balance between scalability, versatility, flexibility, and accessibility.
+The trade-off most evident is between Python's versatility and accessibility; while Python offers a broad range of applications from web development to data science, its accessibility makes it less suitable for high-performance computing tasks where speed and efficiency are paramount. Conversely, languages like Java offer greater scalability but at the cost of reduced flexibility in terms of syntax and ease of use.
+
+Interestingly, Ruby stands out as an option that punches above its rank on both versatility and accessibility. Despite its niche position compared to Python or JavaScript, Ruby's dynamic nature allows it to handle complex applications with relative ease while maintaining a user-friendly interface for developers. This makes Ruby particularly appealing in specific domains like web development where flexibility is key.
+
+Lastly, TypeScript, often considered an extension of JavaScript, demonstrates remarkable potential by offering enhanced type safety without significantly impacting its accessibility or versatility. Its ability to integrate seamlessly into existing JavaScript ecosystems makes it a compelling choice for projects requiring robust typing but still aiming for broad compatibility and ease of use.
 
 ## Axes
 
-- **Horizontal — Scalability ↔ Versatility** (49% of variance). Columns by weight: Ecosystem (+0.60) · Job Market (+0.60) · Tooling (+0.36) · Ease of Learning (+0.24) · Type Safety (-0.03) · Performance (-0.11) · Concurrency (-0.28).
-- **Vertical — Flexibility ↔ Accessibility** (30% of variance). Columns by weight: Ease of Learning (+0.35) · Job Market (-0.08) · Ecosystem (-0.10) · Concurrency (-0.39) · Tooling (-0.42) · Performance (-0.50) · Type Safety (-0.53).
-- Together the two axes retain **80%** of the total variation; the reference was rotated -127.9° to reach the top-right.
+**Horizontal — Scalability ↔ Versatility** — ~50% of the information.
+
+Relevant columns for axis: Ecosystem · Job Market · Tooling · Ease of Learning · Type Safety · Performance · Concurrency.
+
+**Vertical — Flexibility ↔ Accessibility** — ~30% of the information.
+
+Relevant columns for axis: Ease of Learning · Job Market · Ecosystem · Concurrency · Tooling · Performance · Type Safety.
+
+In two axes, we preserved **~80%** of the information.
 
 ## Highlighted approaches
 
-- **Leader (reference):** Python
-- **Weakest overall:** Rust (lowest projection on the leader diagonal)
+- **Chosen leader reference:** Python
+- **Exact reference opposite:** Rust (diametrically opposite the leader on the map)
 - **Strongest toward Accessibility:** Ruby (challenger furthest up the vertical axis)
 - **Strongest toward Versatility:** Java (challenger furthest along the horizontal axis)
-
-## Leaderboard (by combined axis score)
-
-1. Python  (+2.45, +2.86)
-2. JavaScript  (+2.08, +1.57)
-3. Ruby  (+0.01, +2.86)
-4. TypeScript  (+2.32, -0.50)
-5. Java  (+2.45, -2.02)
-6. Go  (+0.65, -1.26)
-7. C#  (+1.22, -1.84)
-8. Kotlin  (+0.08, -1.15)
-9. Swift  (-0.55, -1.04)
-10. C++  (-0.41, -1.29)
-11. Elixir  (-2.45, +0.46)
-12. Rust  (-1.21, -2.86)
-
-*Coordinates are PCA units; see the companion YAML for full coefficients.*

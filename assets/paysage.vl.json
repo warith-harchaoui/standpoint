@@ -1,7 +1,7 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
-    "text": "Outils dans le quadrant",
+    "text": "Cartes de positionnement dans le quadrant",
     "font": "Roboto, -apple-system, Helvetica, Arial, sans-serif",
     "fontSize": 18
   },
@@ -513,7 +513,7 @@
             ]
           },
           "legend": {
-            "title": "Outils",
+            "title": "Cartes de positionnement",
             "symbolLimit": 0,
             "labelFontSize": 13,
             "symbolOpacity": 1

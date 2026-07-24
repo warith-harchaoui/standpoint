@@ -2,28 +2,33 @@
 
 ## Interpretation
 
-La carte de positionnement montre que Standpoint est le meilleur en termes de précision et de compréhensibilité, dominant clairement les autres solutions. QuadrantMaker se distingue par sa facilité d'utilisation tout en conservant une bonne simplicité. Diapositives ou tableau blanc offrent un bon équilibre entre simplicité et facilité d'utilisation. Factoextra + FactoMineR allie bien la compréhensibilité à une certaine complexité, tandis que PCA (scikit-learn) est le moins performant en termes de précision mais reste facile à utiliser. Les solutions comme prince se situent entre ces deux extrêmes selon les critères choisis.
+Lorsque vous choisissez un outil pour la visualisation des données en analyse factorielle, il est essentiel de comprendre les avantages et limites de chaque option. Le Standpoint offre une précision exceptionnelle et une simplicité incomparable dans l'interprétation des résultats, ce qui le rend parfaitement adapté aux chercheurs expérimentés cherchant à dégager des insights approfondis.
+
+Le QuadrantMaker, quant à lui, excelle en facilité d'utilisation tout en conservant une bonne compréhensibilité. Il est idéal pour les utilisateurs débutants qui souhaitent rapidement comprendre et communiquer les résultats de leur analyse factorielle sans avoir besoin de profondeur technique.
+
+Diapositives ou tableau blanc offrent un compromis entre simplicité et facilité d'utilisation, permettant une communication efficace des résultats tout en restant facile à utiliser. C'est une option solide pour les présentations rapides ou les ateliers interactifs où l'essentiel est de partager les insights clés.
+
+factoextra + FactoMineR, bien qu'offrant une grande flexibilité et une profondeur technique, peuvent être plus complexes à utiliser. Ils sont particulièrement utiles pour les experts en statistiques qui cherchent des fonctionnalités avancées ou des analyses approfondies, mais nécessitent un investissement supplémentaire en termes de temps d'apprentissage.
+
+Enfin, PCA (scikit-learn) est le plus simple à utiliser et offre une bonne compréhensibilité pour les utilisateurs qui ne cherchent pas une analyse détaillée. C'est l'option la plus appropriée pour les projets où la simplicité et l'efficacité sont les principales priorités, sans nécessiter des connaissances approfondies en statistiques ou en programmation.
+
+En résumé, le choix de l'outil dépendra de vos besoins spécifiques. Si vous cherchez une solution simple et efficace pour partager rapidement les résultats d'une analyse factorielle, QuadrantMaker serait la meilleure option. Pour ceux qui ont besoin d'une visualisation plus approfondie et peuvent investir du temps dans l'apprentissage, factoextra + FactoMineR offrirait les fonctionnalités les plus avancées.
 
 ## Axes
 
-- **Horizontal — Précision ↔ Facilité d'utilisation** (48% of variance). Columns by weight: Une Seule Commande (+0.46) · Sortie Multilingue (+0.44) · Simplicité d'Installation (+0.43) · Nommage Automatique des Axes (+0.35) · Livrable Triple (+0.29) · Reproductibilité (-0.23) · Exécution Locale (-0.23) · Axes Lisibles (-0.31).
-- **Vertical — Simplicité ↔ Compréhensibilité** (41% of variance). Columns by weight: Reproductibilité (+0.46) · Livrable Triple (+0.44) · Nommage Automatique des Axes (+0.40) · Axes Lisibles (+0.40) · Exécution Locale (+0.37) · Sortie Multilingue (+0.21) · Une Seule Commande (+0.14) · Simplicité d'Installation (-0.26).
-- Together the two axes retain **89%** of the total variation; the reference was rotated -0.5° to reach the top-right.
+**Horizontal — Précision ↔ Facilité d'utilisation** — ~50% of the information.
+
+Relevant columns for axis: Une Seule Commande · Sortie Multilingue · Simplicité d'Installation · Nommage Automatique des Axes · Livrable Triple · Reproductibilité · Exécution Locale · Axes Lisibles.
+
+**Vertical — Simplicité ↔ Compréhensibilité** — ~40% of the information.
+
+Relevant columns for axis: Reproductibilité · Livrable Triple · Nommage Automatique des Axes · Axes Lisibles · Exécution Locale · Sortie Multilingue · Une Seule Commande · Simplicité d'Installation.
+
+In two axes, we preserved **~90%** of the information.
 
 ## Highlighted approaches
 
-- **Leader (reference):** Standpoint
-- **Weakest overall:** PCA (scikit-learn) (lowest projection on the leader diagonal)
+- **Chosen leader reference:** Standpoint
+- **Exact reference opposite:** PCA (scikit-learn) (diametrically opposite the leader on the map)
 - **Strongest toward Compréhensibilité:** factoextra + FactoMineR (challenger furthest up the vertical axis)
 - **Strongest toward Facilité d'utilisation:** QuadrantMaker (challenger furthest along the horizontal axis)
-
-## Leaderboard (by combined axis score)
-
-1. Standpoint  (+2.03, +1.84)
-2. QuadrantMaker  (+2.03, -1.84)
-3. Diapositives ou tableau blanc  (+0.49, -0.67)
-4. factoextra + FactoMineR  (-2.03, +1.84)
-5. prince  (-1.78, +1.27)
-6. PCA (scikit-learn)  (-1.53, +0.94)
-
-*Coordinates are PCA units; see the companion YAML for full coefficients.*

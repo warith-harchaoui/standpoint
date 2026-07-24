@@ -2,35 +2,29 @@
 
 ## Interpretation
 
-The positioning map illustrates how different cloud service providers compare across two key dimensions: ease of use on one axis and scalability on another. The vertical axis represents affordability at its base and flexibility towards the top. AWS leads in both 'Ease of Use' and 'Scalability,' as it reaches the top-right corner, indicating a strong position in these areas. Microsoft Azure stands out by extending furthest toward 'Flexibility,' suggesting it offers highly adaptable solutions that can cater to diverse needs. IBM Cloud, on the other hand, excels in 'Scalability,' making it a compelling choice for businesses requiring robust and scalable cloud services. The leaderboard, determined by combining scores across all dimensions, places AWS at the top followed closely by Microsoft Azure, Google Cloud, IBM Cloud, Alibaba Cloud, Cloudflare, Oracle Cloud, and Vercel. This analysis highlights that while AWS leads overall, there are distinct clusters of providers excelling in specific areas, catering to different strategic needs within the cloud computing landscape.
+The single biggest takeaway from this positioning map is that AWS remains the undisputed leader in both ease of use and scalability, with a strong emphasis on affordability and flexibility. AWS excels at providing robust infrastructure solutions for businesses looking to scale their operations efficiently without compromising on cost-effectiveness.
+
+While AWS maintains its top position, it faces notable exposure when it comes to flexibility compared to Microsoft Azure, which stands out as the standout option in this area. This trade-off is particularly relevant for companies that require a high degree of customization and adaptability in their cloud services; Azure offers more granular control over resources and configurations.
+
+IBM Cloud, on the other hand, excels in scalability but falls short when it comes to affordability, which might be a deciding factor for cost-conscious enterprises. IBM's strength lies in its ability to handle large-scale applications with ease, making it an ideal choice for businesses that need to manage extensive data processing or complex workflows.
+
+Cloudflare, while not typically considered a cloud provider, punches above its rank by offering exceptional scalability and flexibility at a relatively affordable cost. This makes Cloudflare particularly attractive for developers who require high-performance web services without the overhead of maintaining their own infrastructure.
 
 ## Axes
 
-- **Horizontal — Ease of Use ↔ Scalability** (55% of variance). Columns by weight: Compute Breadth (+0.54) · Enterprise Trust (+0.44) · Managed AI/ML (+0.35) · Global Reach (+0.05) · Pricing Value (-0.15) · Serverless (-0.20) · Developer Experience (-0.57).
-- **Vertical — Affordability ↔ Flexibility** (28% of variance). Columns by weight: Serverless (+0.59) · Global Reach (+0.52) · Developer Experience (+0.30) · Managed AI/ML (+0.26) · Enterprise Trust (+0.22) · Compute Breadth (+0.03) · Pricing Value (-0.41).
-- Together the two axes retain **84%** of the total variation; the reference was rotated +51.1° to reach the top-right.
+**Horizontal — Ease of Use ↔ Scalability** — ~55% of the information.
+
+Relevant columns for axis: Compute Breadth · Enterprise Trust · Managed AI/ML · Global Reach · Pricing Value · Serverless · Developer Experience.
+
+**Vertical — Affordability ↔ Flexibility** — ~30% of the information.
+
+Relevant columns for axis: Serverless · Global Reach · Developer Experience · Managed AI/ML · Enterprise Trust · Compute Breadth · Pricing Value.
+
+In two axes, we preserved **~85%** of the information.
 
 ## Highlighted approaches
 
-- **Leader (reference):** AWS
-- **Weakest overall:** DigitalOcean (lowest projection on the leader diagonal)
+- **Chosen leader reference:** AWS
+- **Exact reference opposite:** DigitalOcean (diametrically opposite the leader on the map)
 - **Strongest toward Flexibility:** Microsoft Azure (challenger furthest up the vertical axis)
 - **Strongest toward Scalability:** IBM Cloud (challenger furthest along the horizontal axis)
-
-## Leaderboard (by combined axis score)
-
-1. AWS  (+2.20, +2.55)
-2. Microsoft Azure  (+2.20, +2.55)
-3. Google Cloud  (+1.38, +1.84)
-4. IBM Cloud  (+1.77, +0.04)
-5. Alibaba Cloud  (+1.08, +0.50)
-6. Cloudflare  (-1.20, +2.32)
-7. Oracle Cloud  (+1.26, -0.76)
-8. Vercel  (-2.20, +1.96)
-9. Fly.io  (-1.24, +0.73)
-10. Render  (-1.82, +0.53)
-11. Vast.ai  (-0.13, -2.24)
-12. Hetzner  (-0.89, -2.55)
-13. DigitalOcean  (-2.09, -1.57)
-
-*Coordinates are PCA units; see the companion YAML for full coefficients.*
