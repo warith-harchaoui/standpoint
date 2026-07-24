@@ -120,17 +120,14 @@ GUI_HTML = r"""<!doctype html>
           <select id="reference" class="border rounded-lg px-3 py-2 min-w-[13rem]"></select>
         </label>
 
-        <label class="flex items-center justify-between gap-4 text-sm">
-          <span class="font-medium">Figure background</span>
-          <select id="bg" class="border rounded-lg px-3 py-2 min-w-[13rem]">
-            <option value="transparent">transparent</option>
-            <option value="white" selected>white</option>
-          </select>
+        <label class="flex items-center gap-3 text-sm">
+          <input type="checkbox" id="bgTransparent" class="w-4 h-4" />
+          <span class="font-medium">Transparent background</span>
         </label>
 
         <label class="flex items-center gap-3 text-sm">
           <input type="checkbox" id="useLlm" class="w-4 h-4" />
-          <span class="font-medium">AI Naming of axis + Analysis</span>
+          <span class="font-medium">AI Naming of Axes + Analysis</span>
         </label>
       </div>
 
@@ -351,8 +348,9 @@ $("run").onclick = async () => {
     const data = await res.json();
     // Render the quadrant. Background toggle applies to the preview only.
     const spec = data.vega;
-    spec.background = $("bg").value === "white" ? "white" : null;
-    $("chart").classList.toggle("checker", $("bg").value === "transparent");
+    const transparent = $("bgTransparent").checked;  // checked = transparent, else white
+    spec.background = transparent ? null : "white";
+    $("chart").classList.toggle("checker", transparent);
     $("chart").textContent = "";
     // No vega-embed "⋯" menu — the explicit PNG / SVG buttons replace it. SVG
     // renderer so the map stays crisp when CSS scales it to fit the card.
