@@ -38,10 +38,13 @@ dev = ["pytest>=7.0", "ruff>=0.5"]
 # a separate, heavier extra: the eval is skipped unless both deepeval and a local
 # Ollama model are available, so it runs on a workstation, not in the default CI job.
 eval = ["deepeval>=1.0"]
-# `gui` powers the browser GUI investigated on the dev-gui branch (standpoint.api +
-# standpoint.webgui). The core library and CLIs never import it. python-multipart is
-# needed for file uploads; openpyxl for the CSV<->XLSX conversions.
+# `gui` is the browser app + its FastAPI backend (standpoint.api + standpoint.webgui).
+# The core library and CLIs never import it. python-multipart handles file uploads,
+# openpyxl the CSV<->XLSX conversions.
 gui = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9", "openpyxl>=3.1"]
+# `mcp` exposes the same FastAPI app as MCP tools (standpoint.mcp); it needs the gui
+# backend plus fastapi-mcp.
+mcp = ["standpoint[gui]", "fastapi-mcp>=0.3,<1"]
 
 [project.urls]
 Homepage = "https://github.com/warith-harchaoui/standingpoint"
@@ -51,6 +54,7 @@ Author = "https://www.linkedin.com/in/warith-harchaoui"
 standpoint = "standpoint:main"
 standpoint-click = "standpoint.click_cli:main_click"
 standpoint-gui = "standpoint.api:main_gui"
+standpoint-mcp = "standpoint.mcp:main"
 
 [tool.setuptools]
 packages = ["standpoint"]
@@ -59,7 +63,7 @@ packages = ["standpoint"]
 version = { attr = "standpoint.__version__" }
 
 [tool.setuptools.package-data]
-standpoint = ["i18n.yaml"]
+standpoint = ["locales/*.yaml"]
 
 [tool.ruff]
 # One source of truth for lint + format (Rule 17). 100 cols matches the prose-heavy

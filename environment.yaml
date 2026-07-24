@@ -1,0 +1,17 @@
+# Conda environment for working on standpoint locally.
+#
+#     conda env create -f environment.yaml
+#     conda activate env-for-standpoint
+#     pip install -e .            # standpoint itself (editable)
+#
+# Deliberately thin: conda only provides the interpreter and pip, then pip reads the
+# single source of truth (requirements.txt). Swap to requirements-dev.txt below to
+# get the test + lint tooling as well.
+name: env-for-standpoint
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - -r requirements.txt

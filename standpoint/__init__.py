@@ -34,7 +34,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 import argparse
 import json
@@ -175,7 +175,7 @@ def parse_table(source: str) -> pd.DataFrame:
 # i18n — detect the table's language and localize the LLM prompts
 # --------------------------------------------------------------------------- #
 SUPPORTED_LANGS = ("en", "fr", "es")
-_I18N_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "i18n.yaml")
+_I18N_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "locales", "i18n.yaml")
 _I18N_CACHE: dict | None = None
 
 

@@ -90,11 +90,19 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
   la figure se lit correctement (leader en haut à droite, étiquettes lisibles,
   légende visible).
 
-**Deux surfaces, une boîte à outils** — chaque opération est accessible via :
+**Un moteur, six accès** — le même pipeline `positioning()` s'utilise via :
 
 - **Bibliothèque** : `import standpoint as sp`.
 - **CLI ×2** : `standpoint` (argparse, toujours installée) et `standpoint-click`
   (jumelle click), aux options identiques.
+- **GUI** : `standpoint-gui` → une page web sur `/gui` (extra `[gui]`).
+- **API HTTP** : une application FastAPI (`POST /api/position`), même extra `[gui]`.
+- **MCP** : `standpoint-mcp` publie l'API comme outils MCP sur `/mcp` (extra `[mcp]`).
+
+Elle s'installe aussi comme **skill Claude / OpenCode** — voir
+[skills/standpoint/SKILL.md](https://github.com/warith-harchaoui/standingpoint/blob/main/skills/standpoint/SKILL.md)
+et le catalogue exhaustif
+[TRIGGERS.md](https://github.com/warith-harchaoui/standingpoint/blob/main/TRIGGERS.md).
 
 ## Installation
 
@@ -116,7 +124,9 @@ Nous recommandons un environnement Python. Si vous ne savez pas comment faire : 
 ### Depuis PyPI (recommandé)
 
 ```bash
-pip install standpoint
+pip install standpoint             # la bibliothèque + les deux CLI
+pip install "standpoint[gui]"      # + la GUI navigateur et l'API HTTP
+pip install "standpoint[mcp]"      # + le serveur MCP (au-dessus de l'API)
 ```
 
 ### Depuis les sources
@@ -161,6 +171,38 @@ standpoint mon_tableau.csv --model qwen3:8b
 ```
 
 Plus d'exemples dans [EXAMPLES.md](https://github.com/warith-harchaoui/standingpoint/blob/main/EXAMPLES.md).
+
+## En service — GUI, API, MCP, Docker
+
+```bash
+pip install "standpoint[gui]"
+standpoint-gui                     # appli web → http://localhost:8000/gui
+```
+
+![La GUI Standpoint — éditez un tableau, générez le quadrant et l'analyse](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/gui-preview.png)
+
+Le back-end de la GUI est une application FastAPI : `POST /api/position` renvoie le
+spec Vega-Lite, l'analyse Markdown et le YAML. Servez-la avec l'endpoint MCP monté,
+pour qu'un agent puisse appeler `position` comme un outil :
+
+```bash
+pip install "standpoint[mcp]"
+standpoint-mcp                     # API + MCP sur /mcp (la GUI reste sur /gui)
+```
+
+Ou tout dans un conteneur (installe depuis `requirements.txt`, sert l'API + MCP) :
+
+```bash
+docker build -t standpoint .
+docker run --rm -p 8000:8000 standpoint
+```
+
+Pour travailler la bibliothèque en local, un environnement conda minimal enveloppe le
+même `requirements.txt` :
+
+```bash
+conda env create -f environment.yaml && conda activate env-for-standpoint && pip install -e .
+```
 
 ## Format d'entrée
 

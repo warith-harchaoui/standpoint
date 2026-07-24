@@ -82,11 +82,19 @@ coordinates, role, colour, and original values.
 - **Vision self-check**: `--check` asks a local vision model whether the figure reads
   correctly (leader top-right, labels legible, legend visible).
 
-**Two surfaces, one toolkit** — every operation is reachable as:
+**One engine, six ways** — the same `positioning()` pipeline is reachable as:
 
 - **Library**: `import standpoint as sp`.
 - **CLI ×2**: `standpoint` (argparse, always installed) and `standpoint-click`
   (click twin) with identical flags.
+- **GUI**: `standpoint-gui` → a single-page browser app at `/gui` (`[gui]` extra).
+- **HTTP API**: a FastAPI app (`POST /api/position`), same `[gui]` extra.
+- **MCP**: `standpoint-mcp` publishes the API as MCP tools at `/mcp` (`[mcp]` extra).
+
+It also ships as a **Claude / OpenCode skill** — see
+[skills/standpoint/SKILL.md](https://github.com/warith-harchaoui/standingpoint/blob/main/skills/standpoint/SKILL.md)
+and the exhaustive
+[TRIGGERS.md](https://github.com/warith-harchaoui/standingpoint/blob/main/TRIGGERS.md).
 
 ## Installation
 
@@ -108,7 +116,9 @@ We recommend a Python environment. If you're new to that, see [🥸 Tech tips](h
 ### From PyPI (recommended)
 
 ```bash
-pip install standpoint
+pip install standpoint             # library + the two CLIs
+pip install "standpoint[gui]"      # + the browser GUI and HTTP API
+pip install "standpoint[mcp]"      # + the MCP server (over the API)
 ```
 
 ### From source
@@ -153,6 +163,37 @@ standpoint my_table.csv --model qwen3:8b
 ```
 
 More in [EXAMPLES.md](https://github.com/warith-harchaoui/standingpoint/blob/main/EXAMPLES.md).
+
+## As a service — GUI, API, MCP, Docker
+
+```bash
+pip install "standpoint[gui]"
+standpoint-gui                     # browser app → http://localhost:8000/gui
+```
+
+![The Standpoint GUI — edit a table, generate the quadrant and analysis](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/gui-preview.png)
+
+The GUI's backend is a FastAPI app: `POST /api/position` returns the Vega-Lite spec,
+the Markdown analysis, and the YAML. Serve it with the MCP endpoint mounted so an
+agent can call `position` as a tool:
+
+```bash
+pip install "standpoint[mcp]"
+standpoint-mcp                     # API + MCP at /mcp (GUI still at /gui)
+```
+
+Or run it all in a container (installs from `requirements.txt`, serves API + MCP):
+
+```bash
+docker build -t standpoint .
+docker run --rm -p 8000:8000 standpoint
+```
+
+For local library work, a thin conda env wraps the same `requirements.txt`:
+
+```bash
+conda env create -f environment.yaml && conda activate env-for-standpoint && pip install -e .
+```
 
 ## Input format
 

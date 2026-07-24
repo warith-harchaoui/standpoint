@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-24
+
+### Added
+
+- **MCP surface** (`standpoint.mcp`, `standpoint-mcp`, `[mcp]` extra): `fastapi-mcp`
+  publishes the existing FastAPI endpoints as MCP tools at `/mcp`, so an MCP-aware host
+  can call `position` (table → map + analysis) as a first-class tool. Smoke-tested.
+- **Claude / OpenCode skill** under `skills/standpoint/`: a trigger-rich `SKILL.md`,
+  `references/` (interfaces, input/output), and a `scripts/positioning_summary.py`
+  helper (table → figure + analysis, printing the paths). Exhaustive `TRIGGERS.md` at
+  the repo root, referenced from README/LISEZMOI.
+- **Container + environments**: a `Dockerfile` (installs from `requirements.txt`, serves
+  the API + MCP) with `.dockerignore`, a thin conda `environment.yaml` wrapping
+  `requirements.txt`, and an expanded `requirements-dev.txt` that installs the server
+  surfaces so the GUI/MCP tests run.
+
+### Changed
+
+- The six surfaces (library, two CLIs, GUI, HTTP API, MCP) all funnel into the same
+  `positioning()` engine — no logic is duplicated across them.
+- Prompt templates moved to `standpoint/locales/i18n.yaml` (still en/fr/es,
+  auto-detected from the column names).
+
 ## [0.3.0] - 2026-07-24
 
 ### Added
@@ -102,7 +125,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Two console commands (`standpoint`, `standpoint-click`) and a `positioning()`
   library API returning a `Positioning` object.
 
-[Unreleased]: https://github.com/warith-harchaoui/standingpoint/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/warith-harchaoui/standingpoint/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/warith-harchaoui/standingpoint/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/warith-harchaoui/standingpoint/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/warith-harchaoui/standingpoint/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/warith-harchaoui/standingpoint/releases/tag/v0.1.0

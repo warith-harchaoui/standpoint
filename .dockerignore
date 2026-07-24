@@ -1,0 +1,29 @@
+# Keep the build context (and the image) small: only pyproject, README, LICENSE,
+# requirements.txt and the standpoint/ package are needed to install and serve.
+.git
+.github
+.private
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+.deepeval
+.venv
+venv
+env
+build
+dist
+*.egg-info
+
+# Tests, docs, examples and generated assets aren't needed at runtime.
+tests
+examples
+assets
+skills
+data
+out
+*.md
+!README.md
+environment.yaml
+Dockerfile
+.dockerignore

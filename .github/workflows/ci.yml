@@ -54,24 +54,25 @@ jobs:
       - name: Install ruff
         run: pip install ruff
       - name: Lint
-        run: ruff check standpoint tests
+        run: ruff check standpoint tests skills
       - name: Format check
-        run: ruff format --check standpoint tests
+        run: ruff format --check standpoint tests skills
 
-  gui:
-    name: gui endpoints
+  surfaces:
+    name: gui + mcp endpoints
     runs-on: ubuntu-latest
-    # Exercise the browser-GUI backend (FastAPI) with the `gui` extra installed.
-    # The Playwright end-to-end test skips here (no Chromium); the endpoint tests run.
+    # Exercise the FastAPI backend and the MCP surface with the `mcp` extra (which
+    # pulls in `gui`). The Playwright e2e test skips here (no Chromium); the endpoint
+    # and MCP smoke tests run.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-      - name: Install package + dev + gui extras
+      - name: Install package + dev + mcp extras
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev,gui]"
-      - name: Run GUI tests
-        run: pytest -q tests/test_gui.py
+          pip install -e ".[dev,mcp]"
+      - name: Run GUI + MCP tests
+        run: pytest -q tests/test_gui.py tests/test_mcp.py
