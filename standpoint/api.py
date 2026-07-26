@@ -1,4 +1,4 @@
-"""FastAPI backend for the Standpoint browser GUI (investigation, `dev-gui` branch).
+"""FastAPI backend for the Standpoint browser GUI.
 
 This is the thin server behind the single-page GUI: it turns an edited table into a
 positioning result the browser can render. The heavy lifting stays in the library —
@@ -27,13 +27,20 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from pydantic import BaseModel
 
-from standpoint import DEFAULT_MODEL, analysis_markdown, parse_table, positioning
+from standpoint import (
+    DEFAULT_MODEL,
+    __version__,
+    analysis_markdown,
+    parse_table,
+    positioning,
+)
 from standpoint.webgui import GUI_HTML
 
 # Excel MIME type for the .xlsx download response.
 _XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
-app = FastAPI(title="Standpoint GUI", version="0.1.0")
+# Keep the OpenAPI version in step with the package (single source of truth).
+app = FastAPI(title="Standpoint GUI", version=__version__)
 
 # The grid is seeded from the tracked example so the GUI always mirrors it; this
 # small built-in table is the fallback when the file isn't on disk (installed package).

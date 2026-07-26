@@ -1,10 +1,11 @@
-# GUI — feasibility investigation (`dev-gui` branch)
+# GUI (browser front-end)
 
-> Status: **working proof-of-concept**, not a shipped feature. This branch explores
-> whether Standpoint deserves a browser GUI that goes *from table editing to a
-> quadrant image and written comments*, and what it would cost to build well.
+> Status: **shipped**, one of Standpoint's access surfaces. Install the `gui` extra
+> (`pip install "standpoint[gui]"`) and run `standpoint-gui`. It takes you from
+> editing a table to a quadrant image and written comments, all in the browser, all
+> on your machine. The rest of this page explains why it exists and how it is built.
 
-![Standpoint GUI — edit a table, generate the quadrant and analysis](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/dev-gui/assets/gui-preview.png)
+![Standpoint GUI: edit a table, generate the quadrant and analysis](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/gui-preview.png)
 
 ## The opportunity
 

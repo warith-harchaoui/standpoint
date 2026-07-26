@@ -299,6 +299,34 @@ def _rotation(alpha: float) -> np.ndarray:
 
 @dataclass
 class PCAResult:
+    """The oriented 2D PCA of one comparison table: the map's raw geometry.
+
+    Produced by :func:`analyze` and consumed by everything downstream (roles, pole
+    naming, figure, YAML). It holds the two-component projection *after* the rotation
+    that puts the reference option in the top-right, so ``scores`` are ready to plot.
+
+    Attributes
+    ----------
+    names : list[str]
+        Option (row) labels, in input order.
+    features : list[str]
+        Criterion (column) names, in input order.
+    scores : np.ndarray
+        ``(n, 2)`` oriented coordinates, one row per option (axis-1, axis-2).
+    components : np.ndarray
+        ``(2, p)`` oriented canonical axes, i.e. the per-criterion loadings.
+    explained_variance_ratio : np.ndarray
+        Fraction of variance each of the two axes carries, from the PCA fit.
+    rotation_deg : float
+        The rotation (degrees) applied to bring the reference onto the +45° diagonal.
+    reference : str
+        Name of the option placed top-right.
+    x_std : np.ndarray
+        ``(n, p)`` normalized feature matrix that was fed to the PCA.
+    lower : frozenset[str]
+        Criteria where lower is better (their sign was flipped before the PCA).
+    """
+
     names: list[str]  # row labels
     features: list[str]  # attribute names
     scores: np.ndarray  # (n, 2) oriented coordinates

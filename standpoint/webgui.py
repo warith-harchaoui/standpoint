@@ -4,8 +4,8 @@ No build step, no framework, no npm: vanilla JavaScript + Tailwind (Play CDN) +
 vega-embed (to render the Vega-Lite spec live in the browser) + marked (to render the
 Markdown analysis). `standpoint.api` serves this at ``GET /gui``.
 
-Kept as a Python string (rather than a static file) so it ships inside the package
-and the ``dev-gui`` investigation stays a two-file backend + one-string frontend.
+Kept as a Python string (rather than a static file) so it ships inside the package:
+the whole GUI is a two-file backend plus this one-string frontend.
 """
 
 from __future__ import annotations
