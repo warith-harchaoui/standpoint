@@ -28,17 +28,17 @@ df = pd.read_csv("examples/cloud_providers.csv", index_col=0)
 sp.positioning(df, reference="AWS").export("out")
 ```
 
-Skip the model for a fast, deterministic run:
+Choose a different local model for the axis names and analysis:
 
 ```python
-sp.positioning(df, use_llm=False).export("out")
+sp.positioning(df, model="qwen2.5vl:7b").export("out")
 ```
 
 ## From the command line
 
 ```bash
 standpoint examples/cloud_providers.csv --reference AWS --outdir out
-standpoint examples/programming_languages.csv --no-llm --outdir out
+standpoint examples/programming_languages.csv --lower "Ease of Learning" --outdir out
 standpoint examples/voitures_electriques.csv --model qwen2.5vl:7b --check --outdir out
 ```
 

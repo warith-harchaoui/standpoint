@@ -8,13 +8,13 @@ Vega-Lite spec) — plus the same figure as PNG, each on a transparent and a whi
 background — alongside the Vega-Lite spec, the Markdown analysis, and the YAML. It then
 prints the analysis and the list of files it wrote.
 
-Axis naming and the narrative use a local Ollama model when available; ``--no-llm``
-keeps it fully deterministic. Requires the ``standpoint`` package.
+Axis naming and the narrative come from a local Ollama model (``--model``, default
+``qwen2.5vl:7b``). Requires the ``standpoint`` package.
 
 Examples
 --------
     python positioning_summary.py table.csv --outdir out
-    python positioning_summary.py table.csv --no-llm --reference AWS --lower Price,Latency
+    python positioning_summary.py table.csv --reference AWS --lower Price,Latency
     cat table.csv | python positioning_summary.py - --outdir out
 """
 
@@ -54,9 +54,9 @@ def main(argv: list[str] | None = None) -> int:
         help="comma-separated criteria where lower is better (e.g. Price,Latency)",
     )
     ap.add_argument(
-        "--no-llm",
-        action="store_true",
-        help="skip the local model; deterministic axis names, no narrative",
+        "--model",
+        default="qwen2.5vl:7b",
+        help="Ollama model for axis naming and the narrative (default qwen2.5vl:7b)",
     )
     a = ap.parse_args(argv)
 
@@ -69,16 +69,16 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         pos = sp.positioning(
-            _read_table(a.table), reference=ref, lower_is_better=lower, use_llm=not a.no_llm
+            _read_table(a.table), reference=ref, lower_is_better=lower, model=a.model
         )
         # Write the deliverable: <name>.{svg,png,white.svg,white.png,vl.json,md,yaml}.
-        files = pos.export(a.outdir, use_llm=not a.no_llm)
+        files = pos.export(a.outdir, model=a.model)
     except (ValueError, OSError) as exc:  # bad table / unknown reference / missing file
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
     # The analysis for the reader, then the paths — the .svg is the figure.
-    print(pos.to_markdown(use_llm=not a.no_llm))
+    print(pos.to_markdown(model=a.model))
     print("\nFiles written:")
     for path in files:
         print(f"  {path}")

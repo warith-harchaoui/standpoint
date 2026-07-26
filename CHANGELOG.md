@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- The `--no-llm` flag and the `use_llm=` parameter are gone; the local Ollama model is
+  always used (pick one with `--model` / `model=`). This removal landed in the engine
+  earlier; the docs, the Docker example, and the skill helper are now aligned with it.
+
+### Fixed
+
+- `skills/standpoint/scripts/positioning_summary.py` crashed on every run because it
+  still passed the removed `use_llm=` keyword to `positioning()`, `export()`, and
+  `to_markdown()`. It now takes `--model` and calls the current API.
+- Stale `--no-llm` / `use_llm=` references in README, LISEZMOI, EXAMPLES, the Dockerfile,
+  `SKILL.md`, and `references/interfaces.md` (including a non-existent `use_llm` field in
+  the documented `POST /api/position` body, corrected to `model`).
+
+### Changed
+
+- GUI: the header now carries the tagline and a short plain-language explanation of what
+  the tool does and how to read the map (first-fold clarity), and the "Generate quadrant"
+  button locks itself (with `aria-busy`) while a run is in flight, so a second click can
+  no longer fire a concurrent request.
+
 ## [0.4.0] - 2026-07-24
 
 ### Added

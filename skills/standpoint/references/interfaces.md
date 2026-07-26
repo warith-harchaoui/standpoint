@@ -7,7 +7,7 @@ All six surfaces run the same `positioning()` pipeline. Pick by who is calling.
 ```python
 import standpoint as sp
 
-pos = sp.positioning("table.csv", reference=0, lower_is_better=["Price"], use_llm=True)
+pos = sp.positioning("table.csv", reference=0, lower_is_better=["Price"], model="qwen2.5vl:7b")
 pos.coords        # DataFrame: axis-1 / axis-2 per option
 pos.loadings      # DataFrame: criterion weights per axis
 pos.axes          # {'x': 'Cost ↔ Scalability', 'y': 'Simplicity ↔ Power'}
@@ -29,7 +29,6 @@ DataFrame. Lower-level building blocks are exported too: `parse_table`, `analyze
 standpoint table.csv --outdir out            # argparse CLI (always installed)
 standpoint-click table.csv --outdir out      # click twin ([gui] extra not required)
 
-standpoint table.csv --no-llm                # skip the model (instant, deterministic)
 standpoint table.csv --reference "AWS"       # option placed top-right
 standpoint table.csv --lower Price,Latency   # lower-is-better criteria
 standpoint table.csv --model qwen3:8b        # a different Ollama model
@@ -56,7 +55,7 @@ The GUI's backend is a FastAPI app; the useful endpoint for programs is:
 
 ```
 POST /api/position
-  { "table": "<csv text>", "reference": "0", "lower": "Price", "use_llm": false }
+  { "table": "<csv text>", "reference": "0", "lower": "Price", "model": "qwen2.5vl:7b" }
 → { "vega": {...}, "markdown": "...", "yaml": "...", "axes": {...},
     "poles": [...], "reference": "...", "roles": {...} }
 ```

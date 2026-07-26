@@ -18,6 +18,7 @@ GUI_HTML = r"""<!doctype html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Standpoint turns a comparison table into a 2D positioning map with a written analysis. Everything runs on your machine." />
   <title>Standpoint — table to quadrant</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
@@ -75,8 +76,17 @@ GUI_HTML = r"""<!doctype html>
 <body class="text-slate-800">
   <div class="max-w-[1400px] mx-auto px-6 py-10 space-y-10">
 
-    <header>
+    <header class="space-y-3">
       <h1 class="text-4xl font-extrabold tracking-tight text-slate-900">Standpoint</h1>
+      <p class="text-lg text-slate-600 font-medium">Know where each option actually stands.</p>
+      <p class="text-sm text-slate-500 max-w-3xl leading-relaxed">
+        Fill in the table below (options as rows, criteria as columns, a number in each cell),
+        pick the option you want anchored in the top-right corner, and generate. Standpoint runs
+        a Principal Component Analysis on your machine and draws a map: the two axes are the
+        combinations of your criteria that separate the options most, and each is named in plain
+        words. You get the map, a short written analysis, and downloadable files. Nothing is
+        uploaded.
+      </p>
     </header>
 
     <!-- 1 · Your table -->
@@ -101,7 +111,7 @@ GUI_HTML = r"""<!doctype html>
       </div>
       <p class="text-xs text-slate-500 leading-relaxed">
         Higher is better by default.<br>
-        Toggle ⬇️ / ⬆️ on a column to choose whether it is lower or higher that is better.
+        Toggle ⬇️ / ⬆️ on a column to set whether lower or higher is the better score.
       </p>
 
       <div class="overflow-x-auto">
@@ -325,6 +335,16 @@ function colorizeRoles(html, roles) {
 // --- generate: POST the table, render the spec + markdown --------------------
 let lastMd = "", chartView = null;
 $("run").onclick = async () => {
+  const btn = $("run");
+  // A run calls a local model and can take a while on a cold start; lock the
+  // button (and mark it busy for assistive tech) so a second click can't fire a
+  // concurrent request. The `finally` below always restores it.
+  if (btn.disabled) return;
+  const btnLabel = btn.textContent;
+  btn.disabled = true;
+  btn.setAttribute("aria-busy", "true");
+  btn.classList.add("opacity-60", "cursor-not-allowed");
+  btn.textContent = "Generating…";
   $("error").classList.add("hidden");
   $("status").textContent =
     "Running PCA and asking the local model… (this can take ~10–25 s)";
@@ -366,6 +386,12 @@ $("run").onclick = async () => {
     $("status").classList.add("hidden");
     $("error").textContent = "Error: " + e.message;
     $("error").classList.remove("hidden");
+  } finally {
+    // Always restore the button, whether the run succeeded or errored.
+    btn.disabled = false;
+    btn.removeAttribute("aria-busy");
+    btn.classList.remove("opacity-60", "cursor-not-allowed");
+    btn.textContent = btnLabel;
   }
 };
 

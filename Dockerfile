@@ -10,7 +10,7 @@
 #
 # One-shot CLI instead of the server (mount a folder for I/O):
 #   docker run --rm -v "$PWD:/data" standpoint \
-#       standpoint /data/table.csv --outdir /data/out --no-llm
+#       standpoint /data/table.csv --outdir /data/out
 #
 # LLM axis-naming needs a reachable Ollama. Point the container at one on the host:
 #   docker run --rm -p 8000:8000 \

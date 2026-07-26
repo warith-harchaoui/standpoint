@@ -62,8 +62,8 @@ pip install "standpoint[mcp]"          # + MCP server (over the API)
 ```
 
 Axis names and the written analysis use a local [Ollama](https://ollama.com) model
-(default `qwen2.5vl:7b`). Without it, pass `--no-llm` / `use_llm=False`: you still get
-the full map, with axis names taken from the strongest criterion at each end.
+(default `qwen2.5vl:7b`); pick another with `--model` / `model=`. The map geometry is
+computed without the model, so it is the same every run.
 
 ## The fast path
 
@@ -71,7 +71,7 @@ CLI, from a CSV or Markdown table:
 
 ```bash
 standpoint table.csv --outdir out
-standpoint table.csv --no-llm                 # instant, no model
+standpoint table.csv --model qwen3:8b         # a different local model
 standpoint table.csv --reference "AWS"        # which option sits top-right
 standpoint table.csv --lower Price,Latency    # criteria where lower is better
 ```
@@ -119,8 +119,7 @@ One command does the common case — write the figure + analysis and print where
 went:
 
 ```bash
-python scripts/positioning_summary.py table.csv --outdir out         # with the model
-python scripts/positioning_summary.py table.csv --no-llm --outdir out # instant
+python scripts/positioning_summary.py table.csv --outdir out
 ```
 
 See `references/interfaces.md` for the full library / CLI / API / MCP / Docker surface,
@@ -130,10 +129,10 @@ and `references/input-and-output.md` for the table rules and the exact files wri
 
 - It is a **2D projection**: the axes carry a stated fraction of the information, so
   read the map as a summary, not the whole truth.
-- The model only **names** things (axes, analysis) — the geometry is deterministic, so
-  `--no-llm` gives the same map, just with plainer axis names and no narrative.
+- The model only **names** things (axes, analysis); the geometry is deterministic, so
+  the map is the same run to run whatever model you pick.
 - Everything is **local**: the table never leaves the machine; the only network touch
-  is Ollama pulling its model once, and even that is optional.
+  is Ollama pulling its model the first time.
 
 The exhaustive list of what should (and should not) invoke this tool lives in
 [TRIGGERS.md](https://github.com/warith-harchaoui/standingpoint/blob/main/TRIGGERS.md).

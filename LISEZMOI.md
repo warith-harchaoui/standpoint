@@ -32,9 +32,7 @@ créer.
 
 Seuls le nommage des axes et l'analyse rédigée sollicitent un modèle
 [Ollama](https://ollama.com) tournant sur `localhost`. Ollama récupère les poids du
-modèle la première fois, puis fonctionne hors ligne. Et vous pouvez très bien vous en
-passer : avec `--no-llm`, vous obtenez la carte entière, les axes prenant simplement le
-nom de la colonne la plus forte à chaque extrémité.
+modèle la première fois, puis fonctionne hors ligne.
 
 ## Documentation
 
@@ -109,7 +107,7 @@ et le catalogue exhaustif
 - 🪟 **Windows** (PowerShell) : `winget install Python.Python.3.12 Git.Git`
 
 Pour les noms d'axes et l'analyse rédigée, installez [Ollama](https://ollama.com) et
-téléchargez le modèle par défaut une fois (optionnel — sinon, utilisez `--no-llm`) :
+téléchargez le modèle par défaut une fois :
 
 - 🍎 **macOS** : `brew install ollama` — puis `ollama serve &` et `ollama pull qwen2.5vl:7b`
 - 🐧 **Ubuntu/Debian** : `curl -fsSL https://ollama.com/install.sh | sh` — puis `ollama pull qwen2.5vl:7b`
@@ -159,10 +157,9 @@ print(pos.axes)
 # {'x': 'Concurrency ↔ Ecosystem', 'y': 'Safety ↔ Learning'}
 ```
 
-Sautez le modèle pour un rendu rapide et déterministe (Ollama inutile) :
+Choisissez un autre modèle local pour les noms d'axes et l'analyse :
 
 ```bash
-standpoint mon_tableau.csv --no-llm
 standpoint mon_tableau.csv --model qwen3:8b
 ```
 

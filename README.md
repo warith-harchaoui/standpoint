@@ -29,9 +29,7 @@ uploaded, and there is no telemetry, no account, and nothing to sign up for.
 
 The one thing that reaches out is the axis naming and the written analysis, which ask a
 [Ollama](https://ollama.com) model running on `localhost`. Ollama fetches the model
-weights the first time, then works offline. You can also leave the model out entirely:
-with `--no-llm` you still get the whole map, and the axes are named after the strongest
-column at each end.
+weights the first time, then works offline.
 
 ## Documentation
 
@@ -101,7 +99,7 @@ and the exhaustive
 - 🪟 **Windows** (PowerShell): `winget install Python.Python.3.12 Git.Git`
 
 For axis names and the written analysis, install [Ollama](https://ollama.com) and pull
-the default model once (optional — skip it and use `--no-llm`):
+the default model once:
 
 - 🍎 **macOS**: `brew install ollama` — then `ollama serve &` and `ollama pull qwen2.5vl:7b`
 - 🐧 **Ubuntu/Debian**: `curl -fsSL https://ollama.com/install.sh | sh` — then `ollama pull qwen2.5vl:7b`
@@ -151,10 +149,9 @@ print(pos.axes)
 # {'x': 'Concurrency ↔ Ecosystem', 'y': 'Safety ↔ Learning'}
 ```
 
-Skip the model for a fast, deterministic run (no Ollama needed):
+Pick a different local model for the axis names and the analysis:
 
 ```bash
-standpoint my_table.csv --no-llm
 standpoint my_table.csv --model qwen3:8b
 ```
 
