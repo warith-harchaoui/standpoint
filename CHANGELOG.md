@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-27
+
 ### Removed
 
 - The `--no-llm` flag and the `use_llm=` parameter are gone; the local Ollama model is
@@ -17,7 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `skills/standpoint/scripts/positioning_summary.py` crashed on every run because it
   still passed the removed `use_llm=` keyword to `positioning()`, `export()`, and
-  `to_markdown()`. It now takes `--model` and calls the current API.
+  `to_markdown()`. It now takes `--model` and calls the current API, with tests
+  (`tests/test_skill_script.py`) guarding the argument wiring so the regression cannot
+  return.
 - Stale `--no-llm` / `use_llm=` references in README, LISEZMOI, EXAMPLES, the Dockerfile,
   `SKILL.md`, and `references/interfaces.md` (including a non-existent `use_llm` field in
   the documented `POST /api/position` body, corrected to `model`).
@@ -27,7 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GUI: the header now carries the tagline and a short plain-language explanation of what
   the tool does and how to read the map (first-fold clarity), and the "Generate quadrant"
   button locks itself (with `aria-busy`) while a run is in flight, so a second click can
-  no longer fire a concurrent request.
+  no longer fire a concurrent request. The browser GUI is documented as a shipped access
+  surface (it was still labelled a `dev-gui` "feasibility investigation").
+- Writing standard: the generated deliverable no longer uses dash punctuation. The
+  en/fr/es prompt templates were reworded (and no longer nudge the model to emit dashes),
+  the Axes section of the analysis reads `Horizontal (X ↔ Y)`, and the front-door docs
+  (README, LISEZMOI, PAYSAGE) were cleaned to match.
+- The FastAPI app version now tracks `standpoint.__version__` instead of a hard-coded
+  string; added the missing `__main__` module docstring and a `PCAResult` class docstring.
 
 ## [0.4.0] - 2026-07-24
 

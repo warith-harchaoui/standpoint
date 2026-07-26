@@ -34,7 +34,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 import argparse
 import json
