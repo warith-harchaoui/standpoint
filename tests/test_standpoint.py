@@ -241,6 +241,7 @@ def test_to_vega_structure(result):
         pytest.fail("no legend domain found")
 
 
+@pytest.mark.needs_model
 def test_export_all_writes_three_fold(tmp_path, df, result, roles):
     poles = p4m.axis_poles(result)
     names = p4m._poles_to_names(poles)
@@ -259,6 +260,7 @@ def test_export_all_writes_three_fold(tmp_path, df, result, roles):
     assert f"# {result.reference}" in Path(f"{stem}.md").read_text()
 
 
+@pytest.mark.needs_model
 def test_markdown_is_focused(result, roles):
     # The analysis ends at the highlighted approaches — no leaderboard coordinate
     # dump and no PCA-units footer (dropped as noise).
@@ -315,6 +317,7 @@ def test_lower_is_better_flips_the_axis():
     assert hi.x_std[ci, j] < hi.x_std[pi, j]  # opposite without it
 
 
+@pytest.mark.needs_model
 def test_positioning_lower_marker_cleaned():
     marked = pd.DataFrame(
         {"Price (↓)": [1, 5, 3, 2], "Quality": [3, 2, 4, 5]}, index=["a", "b", "c", "d"]
@@ -324,6 +327,7 @@ def test_positioning_lower_marker_cleaned():
     assert "Price" in pos.df.columns  # marker stripped
 
 
+@pytest.mark.needs_model
 def test_positioning_api(df):
     pos = p4m.positioning(df)
     assert isinstance(pos, p4m.Positioning)
@@ -334,6 +338,7 @@ def test_positioning_api(df):
     assert yaml.safe_load(pos.to_yaml())["meta"]["reference"] == "Python"
 
 
+@pytest.mark.needs_model
 def test_positioning_export(tmp_path, df):
     pos = p4m.positioning(df)
     written = pos.export(str(tmp_path), stem="demo")
@@ -348,6 +353,7 @@ def test_positioning_export(tmp_path, df):
     }
 
 
+@pytest.mark.needs_model
 def test_positioning_accepts_path_and_string(df):
     from_path = p4m.positioning(str(EXAMPLE))
     assert from_path.df.shape == df.shape
@@ -356,6 +362,7 @@ def test_positioning_accepts_path_and_string(df):
 # --------------------------------------------------------------------------- #
 # model-backed (the local model is a hard prerequisite; see tests/conftest.py)
 # --------------------------------------------------------------------------- #
+@pytest.mark.needs_model
 def test_axis_poles_llm_quality(result):
     poles = p4m.axis_poles(result)
     assert len(poles) == 4 and len(set(poles)) == 4
@@ -363,6 +370,7 @@ def test_axis_poles_llm_quality(result):
     assert not (joined & p4m._NEGATIVE_WORDS)  # only positive qualities
 
 
+@pytest.mark.needs_model
 def test_vlm_assessment_of_rendered_figure(result):
     # Assess a white-composited render (the exported figure is transparent, which the
     # model's backend would flatten onto black and misread — see png_on_white).

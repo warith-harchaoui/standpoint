@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stale `--no-llm` / `use_llm=` references in README, LISEZMOI, EXAMPLES, the Dockerfile,
   `SKILL.md`, and `references/interfaces.md` (including a non-existent `use_llm` field in
   the documented `POST /api/position` body, corrected to `model`).
+- CI was red: making the local model a hard prerequisite turned the `tests/conftest.py`
+  guard into a fixture that errored the whole suite when Ollama was absent (as on the
+  hosted runner). The guard now only gates tests marked `@pytest.mark.needs_model`, and
+  for those it skips in CI while still failing loudly on a developer machine. The
+  model-free suite (parsing, geometry, roles, colours, i18n, Vega structure) runs in CI
+  again, so the badge reflects real state.
 
 ### Changed
 
