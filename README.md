@@ -66,7 +66,7 @@ coordinates, role, colour, and original values.
   negatives, and antonym pairs.
 - **Multilingual**: axis names, the written analysis, and the figure title come out
   in the table's own language (English, French, or Spanish), auto-detected from the
-  column names — a French table reads *Voitures dans le quadrant*.
+  column names, so a French table reads *Voitures dans le quadrant*.
 - **Reference-oriented**: the option you care about is rotated to the top-right; an
   all-max reference is placed just past the best competitor rather than as an outlier.
 - **Four highlighted options**: the leader, the weakest overall, and the two
@@ -76,7 +76,7 @@ coordinates, role, colour, and original values.
 - **Vision self-check**: `--check` asks a local vision model whether the figure reads
   correctly (leader top-right, labels legible, legend visible).
 
-**One engine, six access surfaces** — the same `positioning()` pipeline is reachable as:
+**One engine, six access surfaces.** The same `positioning()` pipeline is reachable as:
 
 - **Library**: `import standpoint as sp`.
 - **CLI ×2**: `standpoint` (argparse, always installed) and `standpoint-click`
@@ -85,14 +85,14 @@ coordinates, role, colour, and original values.
 - **HTTP API**: a FastAPI app (`POST /api/position`), same `[gui]` extra.
 - **MCP**: `standpoint-mcp` publishes the API as MCP tools at `/mcp` (`[mcp]` extra).
 
-It also ships as a **Claude / OpenCode skill** — see
+It also ships as a **Claude / OpenCode skill**; see
 [skills/standpoint/SKILL.md](https://github.com/warith-harchaoui/standingpoint/blob/main/skills/standpoint/SKILL.md)
 and the exhaustive
 [TRIGGERS.md](https://github.com/warith-harchaoui/standingpoint/blob/main/TRIGGERS.md).
 
 ## Installation
 
-**Prerequisites** — **Python 3.10–3.13** and **git**, cross-platform:
+**Prerequisites:** **Python 3.10–3.13** and **git**, cross-platform:
 
 - 🍎 **macOS** ([Homebrew](https://brew.sh)): `brew install python git`
 - 🐧 **Ubuntu/Debian**: `sudo apt update && sudo apt install -y python3 python3-pip git`
@@ -101,8 +101,8 @@ and the exhaustive
 For axis names and the written analysis, install [Ollama](https://ollama.com) and pull
 the default model once:
 
-- 🍎 **macOS**: `brew install ollama` — then `ollama serve &` and `ollama pull qwen2.5vl:7b`
-- 🐧 **Ubuntu/Debian**: `curl -fsSL https://ollama.com/install.sh | sh` — then `ollama pull qwen2.5vl:7b`
+- 🍎 **macOS**: `brew install ollama`, then `ollama serve &` and `ollama pull qwen2.5vl:7b`
+- 🐧 **Ubuntu/Debian**: `curl -fsSL https://ollama.com/install.sh | sh`, then `ollama pull qwen2.5vl:7b`
 - 🪟 **Windows**: install from [ollama.com/download](https://ollama.com/download), then `ollama pull qwen2.5vl:7b`
 
 We recommend a Python environment. If you're new to that, see [🥸 Tech tips](https://harchaoui.org/warith/4ml/#install).
@@ -157,14 +157,14 @@ standpoint my_table.csv --model qwen3:8b
 
 More in [EXAMPLES.md](https://github.com/warith-harchaoui/standingpoint/blob/main/EXAMPLES.md).
 
-## As a service — GUI, API, MCP, Docker
+## As a service: GUI, API, MCP, Docker
 
 ```bash
 pip install "standpoint[gui]"
 standpoint-gui                     # browser app → http://localhost:8000/gui
 ```
 
-![The Standpoint GUI — edit a table, generate the quadrant and analysis](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/gui-preview.png)
+![The Standpoint GUI: edit a table, generate the quadrant and analysis](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/gui-preview.png)
 
 The GUI's backend is a FastAPI app: `POST /api/position` returns the Vega-Lite spec,
 the Markdown analysis, and the YAML. Serve it with the MCP endpoint mounted so an

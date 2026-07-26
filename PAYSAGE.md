@@ -4,7 +4,7 @@
 
 Où se situe Standpoint parmi les manières habituelles de dessiner une carte de
 positionnement (carte perceptuelle) ? La façon honnête d'y répondre est d'*utiliser
-Standpoint sur lui-même* — cette page est donc un tableau de comparaison passé dans
+Standpoint sur lui-même* : cette page est donc un tableau de comparaison passé dans
 l'outil, exactement comme n'importe quel autre exemple.
 
 La comparaison (le plus haut, le meilleur, sur une échelle de 1 à 5) :
@@ -27,7 +27,7 @@ Représentation 2D du tableau ci-dessus.
 
 ![Carte de positionnement](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/paysage.png)
 
-La carte est un résumé en 2D des 8 critères : à lire comme une forme, pas comme un classement. « Standpoint » se situe dans le coin en haut à droite. Les axes se lisent **Horizontal — Précision ↔ Facilité d'utilisation** et **Vertical — Simplicité ↔ Compréhensibilité**.
+La carte est un résumé en 2D des 8 critères : à lire comme une forme, pas comme un classement. « Standpoint » se situe dans le coin en haut à droite. Les axes se lisent **Horizontal (Précision ↔ Facilité d'utilisation)** et **Vertical (Simplicité ↔ Compréhensibilité)**.
 <!-- FIGURE:END -->
 
 Les en-têtes du tableau étant en français, la carte sort **entièrement en français** :
@@ -52,7 +52,7 @@ Deux familles se font face :
 
 Standpoint occupe le coin que ni l'une ni l'autre famille ne couvre : la
 carte **dérivée** d'une boîte à outils ACP *plus* l'artéfact **fini, étiqueté et
-rédigé** d'un faiseur manuel — noms d'axes, sortie multilingue et livrable en trois
+rédigé** d'un faiseur manuel : noms d'axes, sortie multilingue et livrable en trois
 volets, en une seule commande.
 
 ## Réserves honnêtes

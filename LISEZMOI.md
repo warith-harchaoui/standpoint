@@ -70,8 +70,8 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
   avec un garde-fou contre les acronymes, les négatifs et les paires d'antonymes.
 - **Multilingue** : les noms d'axes, l'analyse rédigée et le titre de la figure
   sortent dans la langue même du tableau (anglais, français ou espagnol),
-  détectée automatiquement à partir des noms de colonnes — un tableau français
-  affiche *Voitures dans le quadrant*.
+  détectée automatiquement à partir des noms de colonnes, si bien qu'un tableau
+  français affiche *Voitures dans le quadrant*.
 - **Orienté sur une référence** : l'option qui vous intéresse est pivotée en haut à
   droite ; une référence maximale sur tous les critères est placée juste au-delà du
   meilleur concurrent, plutôt qu'en valeur aberrante.
@@ -84,7 +84,7 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
   la figure se lit correctement (leader en haut à droite, étiquettes lisibles,
   légende visible).
 
-**Un moteur, six surfaces d'accès** — le même pipeline `positioning()` s'utilise via :
+**Un moteur, six surfaces d'accès.** Le même pipeline `positioning()` s'utilise via :
 
 - **Bibliothèque** : `import standpoint as sp`.
 - **CLI ×2** : `standpoint` (argparse, toujours installée) et `standpoint-click`
@@ -93,14 +93,14 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
 - **API HTTP** : une application FastAPI (`POST /api/position`), même extra `[gui]`.
 - **MCP** : `standpoint-mcp` publie l'API comme outils MCP sur `/mcp` (extra `[mcp]`).
 
-Elle s'installe aussi comme **skill Claude / OpenCode** — voir
+Elle s'installe aussi comme **skill Claude / OpenCode** ; voir
 [skills/standpoint/SKILL.md](https://github.com/warith-harchaoui/standingpoint/blob/main/skills/standpoint/SKILL.md)
 et le catalogue exhaustif
 [TRIGGERS.md](https://github.com/warith-harchaoui/standingpoint/blob/main/TRIGGERS.md).
 
 ## Installation
 
-**Prérequis** — **Python 3.10–3.13** et **git**, multiplateforme :
+**Prérequis :** **Python 3.10–3.13** et **git**, multiplateforme :
 
 - 🍎 **macOS** ([Homebrew](https://brew.sh)) : `brew install python git`
 - 🐧 **Ubuntu/Debian** : `sudo apt update && sudo apt install -y python3 python3-pip git`
@@ -109,8 +109,8 @@ et le catalogue exhaustif
 Pour les noms d'axes et l'analyse rédigée, installez [Ollama](https://ollama.com) et
 téléchargez le modèle par défaut une fois :
 
-- 🍎 **macOS** : `brew install ollama` — puis `ollama serve &` et `ollama pull qwen2.5vl:7b`
-- 🐧 **Ubuntu/Debian** : `curl -fsSL https://ollama.com/install.sh | sh` — puis `ollama pull qwen2.5vl:7b`
+- 🍎 **macOS** : `brew install ollama`, puis `ollama serve &` et `ollama pull qwen2.5vl:7b`
+- 🐧 **Ubuntu/Debian** : `curl -fsSL https://ollama.com/install.sh | sh`, puis `ollama pull qwen2.5vl:7b`
 - 🪟 **Windows** : installez depuis [ollama.com/download](https://ollama.com/download), puis `ollama pull qwen2.5vl:7b`
 
 Nous recommandons un environnement Python. Si vous ne savez pas comment faire : [🥸 Conseils techniques](https://harchaoui.org/warith/4ml/#install).
@@ -165,14 +165,14 @@ standpoint mon_tableau.csv --model qwen3:8b
 
 Plus d'exemples dans [EXAMPLES.md](https://github.com/warith-harchaoui/standingpoint/blob/main/EXAMPLES.md).
 
-## En service — GUI, API, MCP, Docker
+## En service : GUI, API, MCP, Docker
 
 ```bash
 pip install "standpoint[gui]"
 standpoint-gui                     # appli web → http://localhost:8000/gui
 ```
 
-![La GUI Standpoint — éditez un tableau, générez le quadrant et l'analyse](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/gui-preview.png)
+![La GUI Standpoint : éditez un tableau, générez le quadrant et l'analyse](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/gui-preview.png)
 
 Le back-end de la GUI est une application FastAPI : `POST /api/position` renvoie le
 spec Vega-Lite, l'analyse Markdown et le YAML. Servez-la avec l'endpoint MCP monté,
