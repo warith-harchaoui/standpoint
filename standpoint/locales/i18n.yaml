@@ -1,4 +1,4 @@
-# Standpoint — localized LLM prompt templates.
+# Standpoint: localized LLM prompt templates.
 # Language is auto-detected from the table's column names (langdetect); the
 # detected language drives the pole names and the written analysis so the whole
 # deliverable comes out in the table's own language. Supported: en, fr, es.
@@ -17,36 +17,36 @@ en:
     Give the singular and plural of EXACTLY this word, in English, capitalized, without
     replacing it by a synonym: "{word}".
     Reply as JSON: {{"singular": "...", "plural": "..."}}.
-  glossary_prefix: "Glossary — translate these to plain words, never output the acronym: "
+  glossary_prefix: "Glossary, translate these to plain words, never output the acronym: "
   axis_prompt: |
     You are naming the four poles of a 2D map whose two axes are weighted
     combinations of the input criteria. Every criterion is rated higher-is-better:
     a higher value always means more of a good thing.
 
-    Each label names a POSITIVE QUALITY — a strength an approach at that end can be
+    Each label names a POSITIVE QUALITY, a strength an approach at that end can be
     praised for. Give a concise label of ONE to THREE real English words. Rules:
     - ALWAYS a positive quality. NEVER a drawback, cost, or negative. Forbidden
       examples: 'High Cost', 'Expensive', 'Slow', 'Complex', 'Insecure'. If a
       criterion is an inverse quantity (cost, price, latency, errors) where a high
       rating means LESS of it, name the benefit instead ('Affordable', 'Fast',
       'Reliable', 'Simple', 'Secure').
-    - The four labels are four DIFFERENT positive qualities — never an opposite pair
+    - The four labels are four DIFFERENT positive qualities, never an opposite pair
       or antonyms (not 'Affordable' and 'Expensive', not 'Fast' and 'Slow'), and
       never reuse a word across labels.
-    - Never output an acronym or abbreviation — spell out the idea.
+    - Never output an acronym or abbreviation; spell out the idea.
     - Write the labels in English.
 
-    Each pole below lists the criteria that approaches THERE score highest on — name
+    Each pole below lists the criteria that approaches THERE score highest on. Name
     the shared positive quality of that list:
-    {glossary}LEFT pole — strongest at: {left}
-    RIGHT pole — strongest at: {right}
-    BOTTOM pole — strongest at: {bottom}
-    TOP pole — strongest at: {top}
+    {glossary}LEFT pole, strongest at: {left}
+    RIGHT pole, strongest at: {right}
+    BOTTOM pole, strongest at: {bottom}
+    TOP pole, strongest at: {top}
 
     Reply as JSON: {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
   narrative_prompt: |
     You are a sharp analyst writing the takeaways from a positioning map, in English.
-    Write 4-6 sentences of concrete, decision-useful insight — NOT a restatement of
+    Write 4-6 sentences of concrete, decision-useful insight, NOT a restatement of
     the axes. The horizontal axis runs from '{left}' to '{right}'; the vertical from
     '{bottom}' to '{top}'. '{reference}' is the reference leader (top-right).
     Best={best}, worst={worst}; the standout toward '{top}' is {champ_top} and toward
@@ -55,23 +55,25 @@ en:
     with; (2) what '{reference}' actually wins on and where it is exposed;
     (3) the sharpest trade-off in the field and which option fits which need;
     (4) any option that punches above or below its rank. Name real options, be
-    specific and genuinely useful — never generic. No acronyms, no bullet lists.
+    specific and genuinely useful, never generic. No acronyms, no bullet lists.
+    Write plain prose with no dash punctuation: use commas, colons, semicolons, or
+    separate sentences instead of em dashes or en dashes.
 
 fr:
-  # « Voitures dans le quadrant » — jamais « Voitures in the Quadrant ».
+  # « Voitures dans le quadrant », jamais « Voitures in the Quadrant ».
   title_template: "{plural} dans le quadrant"
   noun_prompt: |
     Donnez le singulier et le pluriel EXACTEMENT de ce mot, en français, avec une
     majuscule, sans le remplacer par un synonyme : « {word} ».
     Répondez en JSON : {{"singular": "...", "plural": "..."}}.
-  glossary_prefix: "Glossaire — traduisez en mots simples, n'affichez jamais l'acronyme : "
+  glossary_prefix: "Glossaire, traduisez en mots simples, n'affichez jamais l'acronyme : "
   axis_prompt: |
     Vous nommez les quatre pôles d'une carte 2D dont les deux axes sont des
     combinaisons pondérées des critères d'entrée. Chaque critère est noté « plus
     c'est haut, mieux c'est » : une valeur plus élevée signifie toujours plus d'une
     bonne chose.
 
-    Chaque étiquette nomme une QUALITÉ POSITIVE — une force pour laquelle une
+    Chaque étiquette nomme une QUALITÉ POSITIVE, une force pour laquelle une
     approche de ce côté peut être louée. Donnez une étiquette de UN à TROIS vrais
     mots français. Règles :
     - TOUJOURS une qualité positive. JAMAIS un inconvénient, un coût ni un négatif.
@@ -79,24 +81,24 @@ fr:
       critère est une quantité inverse (coût, prix, latence, erreurs) où une note
       élevée signifie MOINS, nommez plutôt le bénéfice (« Abordable », « Rapide »,
       « Fiable », « Simple », « Sécurisé »).
-    - Les quatre étiquettes sont quatre qualités positives DIFFÉRENTES — jamais une
+    - Les quatre étiquettes sont quatre qualités positives DIFFÉRENTES, jamais une
       paire opposée ni des antonymes (pas « Abordable » et « Cher », pas « Rapide »
       et « Lent »), et ne réutilisez jamais un mot d'une étiquette à l'autre.
-    - N'affichez jamais d'acronyme ni d'abréviation — explicitez l'idée.
+    - N'affichez jamais d'acronyme ni d'abréviation ; explicitez l'idée.
     - Rédigez les étiquettes en français.
 
     Chaque pôle ci-dessous liste les critères où les approches obtiennent les
-    meilleures notes — nommez la qualité positive commune de cette liste :
-    {glossary}Pôle GAUCHE — les plus fortes en : {left}
-    Pôle DROIT — les plus fortes en : {right}
-    Pôle BAS — les plus fortes en : {bottom}
-    Pôle HAUT — les plus fortes en : {top}
+    meilleures notes. Nommez la qualité positive commune de cette liste :
+    {glossary}Pôle GAUCHE, les plus fortes en : {left}
+    Pôle DROIT, les plus fortes en : {right}
+    Pôle BAS, les plus fortes en : {bottom}
+    Pôle HAUT, les plus fortes en : {top}
 
     Répondez en JSON : {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
   narrative_prompt: |
     Vous êtes un analyste pointu qui rédige les enseignements d'une carte de
-    positionnement, en français. Écrivez 4 à 6 phrases d'insight concret et utile à
-    la décision — PAS une paraphrase des axes. L'axe horizontal va de « {left} » à
+    positionnement, en français. Écrivez 4 à 6 phrases d'analyse concrète et utile à
+    la décision, PAS une paraphrase des axes. L'axe horizontal va de « {left} » à
     « {right} » ; le vertical de « {bottom} » à « {top} ». « {reference} » est la
     référence en tête (haut à droite). Meilleur={best}, pire={worst} ; le plus
     marquant vers « {top} » est {champ_top}, vers « {right} » est {champ_right}.
@@ -105,22 +107,24 @@ fr:
     l'emporte vraiment et où elle est exposée ; (3) l'arbitrage le plus net du champ
     et quelle option pour quel besoin ; (4) toute option qui surperforme ou
     sous-performe son rang. Nommez de vraies options, soyez précis et vraiment utile,
-    jamais générique. Pas d'acronymes, pas de listes à puces.
+    jamais générique. Pas d'acronymes, pas de listes à puces. Écrivez une prose sans
+    tiret de ponctuation : virgules, deux-points, points-virgules ou phrases séparées
+    à la place des cadratins ou demi-cadratins.
 
 es:
-  # «Coches en el cuadrante» — nunca «Coches in the Quadrant».
+  # «Coches en el cuadrante», nunca «Coches in the Quadrant».
   title_template: "{plural} en el cuadrante"
   noun_prompt: |
     Da el singular y el plural EXACTAMENTE de esta palabra, en español, con mayúscula,
     sin reemplazarla por un sinónimo: «{word}».
     Responde en JSON: {{"singular": "...", "plural": "..."}}.
-  glossary_prefix: "Glosario — traduce a palabras simples, nunca muestres la sigla: "
+  glossary_prefix: "Glosario, traduce a palabras simples, nunca muestres la sigla: "
   axis_prompt: |
     Estás nombrando los cuatro polos de un mapa 2D cuyos dos ejes son combinaciones
     ponderadas de los criterios de entrada. Cada criterio se valora « cuanto más
     alto, mejor » : un valor más alto siempre significa más de algo bueno.
 
-    Cada etiqueta nombra una CUALIDAD POSITIVA — una fortaleza por la que una
+    Cada etiqueta nombra una CUALIDAD POSITIVA, una fortaleza por la que una
     propuesta de ese extremo puede ser elogiada. Da una etiqueta de UNA a TRES
     palabras reales en español. Reglas:
     - SIEMPRE una cualidad positiva. NUNCA un inconveniente, un coste ni un negativo.
@@ -128,23 +132,23 @@ es:
       criterio es una cantidad inversa (coste, precio, latencia, errores) donde una
       puntuación alta significa MENOS, nombra el beneficio (« Asequible », « Rápido »,
       « Fiable », « Sencillo », « Seguro »).
-    - Las cuatro etiquetas son cuatro cualidades positivas DIFERENTES — nunca un par
+    - Las cuatro etiquetas son cuatro cualidades positivas DIFERENTES, nunca un par
       opuesto ni antónimos (no « Asequible » y « Caro », no « Rápido » y « Lento »),
       y nunca reutilices una palabra entre etiquetas.
-    - Nunca muestres una sigla ni una abreviatura — explica la idea.
+    - Nunca muestres una sigla ni una abreviatura; explica la idea.
     - Escribe las etiquetas en español.
 
-    Cada polo abajo lista los criterios donde las propuestas puntúan más alto —
-    nombra la cualidad positiva común de esa lista:
-    {glossary}Polo IZQUIERDO — más fuertes en: {left}
-    Polo DERECHO — más fuertes en: {right}
-    Polo INFERIOR — más fuertes en: {bottom}
-    Polo SUPERIOR — más fuertes en: {top}
+    Cada polo abajo lista los criterios donde las propuestas puntúan más alto.
+    Nombra la cualidad positiva común de esa lista:
+    {glossary}Polo IZQUIERDO, más fuertes en: {left}
+    Polo DERECHO, más fuertes en: {right}
+    Polo INFERIOR, más fuertes en: {bottom}
+    Polo SUPERIOR, más fuertes en: {top}
 
     Responde en JSON: {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
   narrative_prompt: |
     Eres un analista agudo que escribe las conclusiones de un mapa de posicionamiento,
-    en español. Escribe de 4 a 6 frases de insight concreto y útil para decidir — NO
+    en español. Escribe de 4 a 6 frases de análisis concreto y útil para decidir, NO
     una paráfrasis de los ejes. El eje horizontal va de « {left} » a « {right} »; el
     vertical de « {bottom} » a « {top} ». « {reference} » es la referencia líder
     (arriba a la derecha). Mejor={best}, peor={worst}; el más destacado hacia
@@ -154,3 +158,5 @@ es:
     (3) el compromiso más claro del campo y qué opción para qué necesidad; (4) alguna
     opción que rinda por encima o por debajo de su rango. Nombra opciones reales, sé
     específico y realmente útil, nunca genérico. Sin siglas, sin listas con viñetas.
+    Escribe en prosa sin guiones de puntuación: usa comas, dos puntos, puntos y coma
+    o frases separadas en lugar de rayas o guiones largos.
