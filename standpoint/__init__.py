@@ -816,9 +816,7 @@ def _poles_to_names(poles: list[str]) -> list[str]:
     return [f"{left} ↔ {right}", f"{bottom} ↔ {top}"]
 
 
-def axis_poles(
-    result: PCAResult, model: str = DEFAULT_MODEL, lang: str | None = None
-) -> list[str]:
+def axis_poles(result: PCAResult, model: str = DEFAULT_MODEL, lang: str | None = None) -> list[str]:
     """Four distinct pole labels [left, right, bottom, top] for the two axes.
 
     Each PCA axis is a weighted mix of the criteria. The local LLM names each pole
@@ -900,9 +898,7 @@ def axis_poles(
         raise
 
 
-def noun_forms(
-    word: str, model: str = DEFAULT_MODEL, lang: str | None = None
-) -> tuple[str, str]:
+def noun_forms(word: str, model: str = DEFAULT_MODEL, lang: str | None = None) -> tuple[str, str]:
     """Singular and plural of `word` (the first-column name), in its own language.
 
     Used for the figure title and legend heading, so a table of "Language" reads
@@ -1547,9 +1543,7 @@ def positioning(
     roles = assign_roles(result, top=top, right=right)
     lang = detect_language(result.features)
     poles = axis_poles(result, model=model, lang=lang)
-    singular, plural = noun_forms(
-        str(df.index.name or "Approach"), model=model, lang=lang
-    )
+    singular, plural = noun_forms(str(df.index.name or "Approach"), model=model, lang=lang)
     # Localize the whole title, not just the noun: a French table reads
     # "Voitures dans le quadrant", never "Voitures in the Quadrant".
     title = i18n(lang)["title_template"].format(plural=plural)
