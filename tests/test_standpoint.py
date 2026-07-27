@@ -376,4 +376,6 @@ def test_vlm_assessment_of_rendered_figure(result):
     # model's backend would flatten onto black and misread; see png_on_white).
     verdict = p4m.vlm_assess(p4m.png_on_white(p4m.to_vega(result)))
     assert verdict.get("leader_top_right") is True
-    assert verdict.get("legend_visible") is True
+    # The four italic pole labels at the edges are always drawn; the per-dot legend is
+    # now shown only when crowding drops a label, so the check looks at the poles.
+    assert verdict.get("axis_labels_visible") is True

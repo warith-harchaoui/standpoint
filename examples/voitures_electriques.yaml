@@ -17,9 +17,9 @@ meta:
   lower_is_better: []
 axes:
   axis_1:
-    name: Accessibilité ↔ Durabilité
-    pole_left: Accessibilité
-    pole_right: Durabilité
+    name: Économique ↔ Technologique
+    pole_left: Économique
+    pole_right: Technologique
     loadings:
       Autonomie: 0.3777
       Performances: 0.3917
@@ -29,9 +29,9 @@ axes:
       Sécurité: 0.4527
       Réseau de recharge: 0.0321
   axis_2:
-    name: Simplicité ↔ Connectivité
-    pole_bottom: Simplicité
-    pole_top: Connectivité
+    name: Sécurité ↔ Rapide
+    pole_bottom: Sécurité
+    pole_top: Rapide
     loadings:
       Autonomie: 0.1887
       Performances: 0.1109

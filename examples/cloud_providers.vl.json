@@ -596,12 +596,7 @@
               "#E482A1"
             ]
           },
-          "legend": {
-            "title": "Providers",
-            "symbolLimit": 0,
-            "labelFontSize": 12,
-            "symbolOpacity": 1
-          }
+          "legend": null
         },
         "tooltip": [
           {

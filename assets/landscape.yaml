@@ -31,9 +31,9 @@ axes:
       Readable Axes: -0.3058
       Ease of Setup: 0.4307
   axis_2:
-    name: Ease ↔ Comprehensive
+    name: Ease ↔ Completeness
     pole_bottom: Ease
-    pole_top: Comprehensive
+    pole_top: Completeness
     loadings:
       Automated Axis Naming: 0.4019
       Multilingual Output: 0.2072

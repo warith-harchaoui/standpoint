@@ -584,12 +584,7 @@
               "#A52A2A"
             ]
           },
-          "legend": {
-            "title": "Programming languages",
-            "symbolLimit": 0,
-            "labelFontSize": 12,
-            "symbolOpacity": 1
-          }
+          "legend": null
         },
         "tooltip": [
           {

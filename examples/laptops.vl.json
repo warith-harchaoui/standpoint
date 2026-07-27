@@ -560,12 +560,7 @@
               "#A52A2A"
             ]
           },
-          "legend": {
-            "title": "Laptops",
-            "symbolLimit": 0,
-            "labelFontSize": 13,
-            "symbolOpacity": 1
-          }
+          "legend": null
         },
         "tooltip": [
           {

@@ -271,7 +271,7 @@
           {
             "x": 0.08107511051449116,
             "y": 2.8012796553485497,
-            "t": "Compréhensibilité"
+            "t": "Complétude"
           }
         ]
       },
@@ -512,12 +512,7 @@
               "#A52A2A"
             ]
           },
-          "legend": {
-            "title": "Cartes de positionnement",
-            "symbolLimit": 0,
-            "labelFontSize": 13,
-            "symbolOpacity": 1
-          }
+          "legend": null
         },
         "tooltip": [
           {

@@ -34,7 +34,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 import argparse
 import json
@@ -1038,10 +1038,28 @@ def to_vega(
 
     placements = label_placements(result, view_x, view_y, font_px=label_font)
 
-    # Legend follows the map: rows top -> bottom, left -> right within each row.
+    # Colour scale follows the map: rows top -> bottom, left -> right within each row,
+    # so if the legend is shown it reads in the same order the eye scans the plot.
     order = legend_order(result.scores)
     legend_names = [names[i] for i in order]
     legend_colors = [colors[i] for i in order]
+
+    # A label is dropped only when the map is too crowded to place it without
+    # overlapping another. In that case the colour legend earns its keep as the
+    # fallback way to identify those dots. When every dot is labelled in place (the
+    # common case) the legend would just repeat all N names, so it is hidden and the
+    # plot keeps the whole canvas.
+    all_labelled = len(placements) == len(names)
+    color_legend = (
+        None
+        if all_labelled
+        else {
+            "title": noun_plural,
+            "symbolLimit": 0,
+            "labelFontSize": legend_font,
+            "symbolOpacity": 1,
+        }
+    )
 
     points = [
         {
@@ -1106,7 +1124,7 @@ def to_vega(
         pole_label(-edge_x, gap_y, left, "left", "bottom"),
         pole_label(gap_x, edge_y, top, "left", "top"),
         pole_label(gap_x, -edge_y, bottom, "left", "bottom"),
-        {  # every dot coloured by position; legend maps name -> colour
+        {  # every dot coloured by position; no legend, each dot is labelled in place
             "data": {"values": points},
             "mark": {
                 "type": "point",
@@ -1123,12 +1141,9 @@ def to_vega(
                     "field": "name",
                     "type": "nominal",
                     "scale": {"domain": legend_names, "range": legend_colors},
-                    "legend": {
-                        "title": noun_plural,
-                        "symbolLimit": 0,
-                        "labelFontSize": legend_font,
-                        "symbolOpacity": 1,
-                    },
+                    # Hidden when every dot is labelled in place; shown only as the
+                    # fallback identity key when crowding dropped a label (see above).
+                    "legend": color_legend,
                 },
                 "tooltip": [
                     {"field": "name", "type": "nominal"},
@@ -1156,8 +1171,9 @@ def to_vega(
         },
     ]
 
-    # The plotting area is tall enough that the one-row-per-approach legend beside
-    # it is never taller than the canvas (so it can't be clipped).
+    # Height floor keeps a comfortable landscape aspect; the per-approach term only
+    # matters on a crowded map, where the fallback legend (one row per approach) then
+    # fits beside the plot without being clipped.
     height = max(720, 24 * n + 140)
     if title is None:  # direct callers get the English default; localized via i18n
         title = f"{noun_plural} in the Quadrant"
@@ -1169,7 +1185,7 @@ def to_vega(
         "background": None,
         "width": 1000,
         "height": height,
-        "autosize": {"type": "pad", "resize": True},  # grow to fit the legend
+        "autosize": {"type": "pad", "resize": True},  # grow to fit a fallback legend
         "config": {
             "font": FONT,
             "padding": 12,
@@ -1218,7 +1234,7 @@ def png_on_white(spec: dict) -> bytes:
 
     The exported figures are transparent, but the vision self-check sends the image
     to a model whose backend flattens transparency onto a dark canvas, which would
-    hide the near-black labels and legend and make the check misfire. White is the
+    hide the near-black labels and make the check misfire. White is the
     figure's intended reading surface, so the check runs against a white-composited
     copy rather than the transparent file on disk.
     """
@@ -1230,26 +1246,27 @@ def vlm_assess(image: str | bytes, model: str = DEFAULT_MODEL) -> dict:
 
     `image` is a PNG path or raw PNG bytes (bytes let the caller assess a
     white-composited render without touching the transparent file on disk). Returns
-    a verdict dict: whether the red leader dot sits top-right, whether the labels
-    are readable, and whether the legend is fully visible, plus free-text notes.
-    Empty dict if the model or a rendered image is unavailable.
+    a verdict dict: whether the red leader dot sits top-right, whether the point
+    labels are readable, and whether the four axis pole labels are visible, plus
+    free-text notes. Empty dict if the model or a rendered image is unavailable.
     """
     schema = {
         "type": "object",
         "properties": {
             "leader_top_right": {"type": "boolean"},
             "readable": {"type": "boolean"},
-            "legend_visible": {"type": "boolean"},
+            "axis_labels_visible": {"type": "boolean"},
             "notes": {"type": "string"},
         },
-        "required": ["leader_top_right", "readable", "legend_visible", "notes"],
+        "required": ["leader_top_right", "readable", "axis_labels_visible", "notes"],
     }
     prompt = (
         "This image is a 2D competitor positioning map. The single RED dot is the "
-        "leader and should sit in the TOP-RIGHT area. Assess three things: (1) is "
-        "the red leader dot in the top-right? (2) are the point labels readable and "
-        "not badly overlapping? (3) is the legend on the right fully visible, not "
-        "cut off? Reply as JSON."
+        "leader and should sit in the TOP-RIGHT area. The four axis poles are named "
+        "in italic text at the top, bottom, left, and right edges. Assess three "
+        "things: (1) is the red leader dot in the top-right? (2) are the point "
+        "labels readable and not badly overlapping? (3) are the four italic axis "
+        "pole labels at the edges present and legible? Reply as JSON."
     )
     try:
         resp = ollama.chat(

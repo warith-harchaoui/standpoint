@@ -153,7 +153,7 @@
           {
             "x": 5.257599514510107,
             "y": 0.01754190038073662,
-            "t": "Durabilité"
+            "t": "Technologique"
           }
         ]
       },
@@ -212,7 +212,7 @@
           {
             "x": -5.257599514510107,
             "y": 0.01754190038073662,
-            "t": "Accessibilité"
+            "t": "Économique"
           }
         ]
       },
@@ -271,7 +271,7 @@
           {
             "x": 0.1384489668073761,
             "y": 0.6661536669584731,
-            "t": "Connectivité"
+            "t": "Rapide"
           }
         ]
       },
@@ -330,7 +330,7 @@
           {
             "x": 0.1384489668073761,
             "y": -0.6661536669584731,
-            "t": "Simplicité"
+            "t": "Sécurité"
           }
         ]
       },
@@ -584,12 +584,7 @@
               "#A52A2A"
             ]
           },
-          "legend": {
-            "title": "Voitures",
-            "symbolLimit": 0,
-            "labelFontSize": 12,
-            "symbolOpacity": 1
-          }
+          "legend": null
         },
         "tooltip": [
           {

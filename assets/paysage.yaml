@@ -31,9 +31,9 @@ axes:
       Axes Lisibles: -0.3058
       Simplicité d'Installation: 0.4307
   axis_2:
-    name: Simplicité ↔ Compréhensibilité
+    name: Simplicité ↔ Complétude
     pole_bottom: Simplicité
-    pole_top: Compréhensibilité
+    pole_top: Complétude
     loadings:
       Nommage Automatique des Axes: 0.4019
       Sortie Multilingue: 0.2072

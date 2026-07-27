@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-07-27
+
+### Changed
+
+- **Cleaner map (Ralph Eyeball Loop).** The positioning map no longer draws a colour
+  legend when every dot is already labelled in place, which is the common case. The
+  legend was pure redundancy there and it squeezed the plot; hiding it lets the map use
+  the whole canvas. The legend still appears as a fallback when a crowded map forces a
+  label to drop, so densely packed dots stay identifiable. All shipped example and
+  landscape figures were regenerated.
+- The `--check` vision self-check (`vlm_assess`) now reports `axis_labels_visible`
+  (are the four italic pole labels legible) instead of `legend_visible`, since the
+  legend is now conditional. The four pole labels are always drawn.
+
 ## [0.4.1] - 2026-07-27
 
 ### Removed
