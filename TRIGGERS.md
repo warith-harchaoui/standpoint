@@ -1,9 +1,9 @@
 # When to use standpoint (TRIGGERS)
 
-`standpoint` turns one comparison table — options in rows, criteria in columns, numbers
-in the cells — into a labelled 2D **positioning map** (a quadrant / perceptual /
+`standpoint` turns one comparison table (options in rows, criteria in columns, numbers
+in the cells) into a labelled 2D **positioning map** (a quadrant / perceptual /
 competitive-landscape map), a short written analysis, and a YAML of every coordinate.
-This page is the exhaustive list of what should, and should not, reach for it — for a
+This page is the exhaustive list of what should, and should not, reach for it: for a
 human skimming, and for an agent deciding whether to invoke the
 [skill](skills/standpoint/SKILL.md).
 
@@ -20,7 +20,7 @@ human skimming, and for an agent deciding whether to invoke the
 - A CSV or Markdown table whose first column is names and the rest are numeric ratings.
 - A scorecard / rating grid / feature-comparison matrix they want turned into a picture.
 - "Reduce these criteria to two readable axes." · "PCA / perceptual map of this ratings
-  table." (the *labelled* map, not feature engineering — see below).
+  table." (the *labelled* map, not feature engineering; see below).
 
 **The user names the tool or its symbols.**
 - Commands: `standpoint`, `standpoint-click`, `standpoint-gui`, `standpoint-mcp`,
@@ -36,15 +36,15 @@ human skimming, and for an agent deciding whether to invoke the
 
 ## Skip it when
 
-- **Ordinary plotting of one or two variables** — a bar / line / scatter / pie of a
+- **Ordinary plotting of one or two variables**: a bar / line / scatter / pie of a
   series or a time axis. That is plain charting, not a positioning map; reach for a
   figures / Vega skill instead.
-- **PCA for dimensionality reduction inside an ML pipeline** — use scikit-learn
+- **PCA for dimensionality reduction inside an ML pipeline**: use scikit-learn
   directly. standpoint is for the *labelled competitive map*, not feature engineering
   or model input.
-- **A single-criterion ranking** — if the answer is "sort by one column", no 2D map is
+- **A single-criterion ranking**: if the answer is "sort by one column", no 2D map is
   needed.
-- **Building, cleaning, or gathering the table** — standpoint maps a table that already
+- **Building, cleaning, or gathering the table**: standpoint maps a table that already
   exists; it does not collect the data, scrape it, or fit a predictor.
 
 ## Interfaces (same engine, six ways)

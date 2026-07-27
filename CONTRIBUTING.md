@@ -22,7 +22,7 @@ objects. The single source of truth for the version is `standpoint.__version__`.
 
 ## Running the checks locally
 
-CI is intentionally light — one Python, `ruff check`, and the deterministic core
+CI is intentionally light: one Python, `ruff check`, and the deterministic core
 tests. The full gate runs **locally before you push** (shift validation left, coding
 standard Rule 18). Run it all:
 
@@ -43,7 +43,7 @@ pip install playwright && playwright install chromium   # the headless-Chromium 
 
 Notes:
 
-- `ruff check` and `ruff format --check` must both exit 0 — a lint or format violation
+- `ruff check` and `ruff format --check` must both exit 0; a lint or format violation
   is a blocker, like a failing test. (CI pins `ruff` so its result is reproducible;
   match it locally if a new ruff release disagrees.)
 - The deterministic tests need no model. The two model-backed tests and the DeepEval
@@ -57,10 +57,10 @@ Notes:
 Summarized from [CODING.md](CODING.md); read it before a non-trivial change:
 
 - **Docstrings and typing on every function**, including private (`_name`) and nested
-  ones — numpydoc style, full annotations.
+  ones, in numpydoc style with full annotations.
 - **Comment the *why*.** Aim for roughly one comment line per three or four lines of
   code; explain trade-offs and non-obvious choices, not the syntax.
-- **No bare `print` in library code** — use the module `logger`. The CLI in `run()`
+- **No bare `print` in library code**: use the module `logger`. The CLI in `run()`
   is the one place that prints on purpose.
 - **Keep the diff focused.** Update tests and docs alongside behaviour changes; don't
   fold in unrelated rewrites.
