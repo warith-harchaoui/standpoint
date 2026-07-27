@@ -1,9 +1,9 @@
-"""Standpoint — Model Context Protocol (MCP) surface.
+"""Standpoint: Model Context Protocol (MCP) surface.
 
 A thin adapter that exposes the FastAPI app from :mod:`standpoint.api` as MCP tools,
 so any MCP-aware host (an agent runtime, an IDE integration, a custom shell) can call
-``position`` — turn a comparison table into a labelled 2D positioning map plus a
-written analysis — as a first-class tool. It uses `fastapi-mcp`
+``position`` (turn a comparison table into a labelled 2D positioning map plus a
+written analysis) as a first-class tool. It uses `fastapi-mcp`
 (https://github.com/tadata-org/fastapi_mcp): one wrapper publishes the whole existing
 HTTP surface, so the routes are never duplicated.
 
@@ -18,7 +18,7 @@ Then run the server (HTTP API + MCP endpoint at ``/mcp``)::
 
 Author
 ------
-Warith Harchaoui — https://www.linkedin.com/in/warith-harchaoui
+Warith Harchaoui, https://www.linkedin.com/in/warith-harchaoui
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ except ImportError as exc:  # pragma: no cover - exercised only without the extr
         'The MCP surface needs the [mcp] extra: pip install "standpoint[mcp]"'
     ) from exc
 
-# Reuse the exact same FastAPI app — MCP is a thin wrapper on top, no new routes.
+# Reuse the exact same FastAPI app: MCP is a thin wrapper on top, no new routes.
 from standpoint.api import app
 
 # Publish the HTTP endpoints (position / example / upload / download) as MCP tools.
@@ -54,8 +54,8 @@ else:  # pragma: no cover - legacy fastapi-mcp
 def main() -> None:
     """Console entry point (``standpoint-mcp``): serve the API + MCP endpoint.
 
-    Boots the FastAPI app — now serving both the ``/api/...`` routes and the ``/mcp``
-    MCP endpoint — with uvicorn in a single worker. Local-first: binds to loopback by
+    Boots the FastAPI app (now serving both the ``/api/...`` routes and the ``/mcp``
+    MCP endpoint) with uvicorn in a single worker. Local-first: binds to loopback by
     default (override with ``STANDPOINT_HOST`` / ``STANDPOINT_PORT``).
     """
     import os

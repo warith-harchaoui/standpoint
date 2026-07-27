@@ -4,7 +4,7 @@ Standpoint uses a local model to name the four axis poles. The deterministic
 `finalize_poles` guard already enforces the hard invariants in code; this file adds
 an *evaluation* layer on top, expressed with DeepEval, that scores the model's real
 output on every tracked example: the four labels must be distinct, positive (no
-drawback word), and free of acronyms — the qualities a good pole label has.
+drawback word), and free of acronyms: the qualities a good pole label has.
 
 It is intentionally heavy and model-dependent: it runs whenever `deepeval` (the
 ``eval`` extra) is installed, and drives the real local model, which is a hard
@@ -39,7 +39,7 @@ class PoleQualityMetric(BaseMetric):
     Scores 1.0 only when the four poles (carried in ``test_case.actual_output``,
     joined by ``_JOIN``) are all distinct, contain no negative/drawback word, and
     show no leftover acronym; otherwise 0.0 with a human-readable reason. No external
-    judge model is used — the invariants are Standpoint's own, checked in code.
+    judge model is used: the invariants are Standpoint's own, checked in code.
     """
 
     def __init__(self, threshold: float = 1.0) -> None:

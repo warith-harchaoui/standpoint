@@ -19,7 +19,7 @@ GUI_HTML = r"""<!doctype html>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Standpoint turns a comparison table into a 2D positioning map with a written analysis. Everything runs on your machine." />
-  <title>Standpoint — table to quadrant</title>
+  <title>Standpoint: table to quadrant</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
@@ -27,7 +27,7 @@ GUI_HTML = r"""<!doctype html>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     /* The "Good Colors" DATA palette (https://harchaoui.org/warith/colors/) is
-       reserved for DATA only — the dots on the map and the role-tinted names in the
+       reserved for DATA only: the dots on the map and the role-tinted names in the
        analysis. The UI chrome (accents, buttons, headings) stays NEUTRAL slate/ink,
        so a colour in this app always means "data", never decoration. */
     :root {
@@ -42,7 +42,7 @@ GUI_HTML = r"""<!doctype html>
     .cell-head { width: 7rem; }     /* criterion / column names (header) */
     /* A small NEUTRAL accent bar that heads each step (chrome, not data). */
     .accent { width: .6rem; height: 1.6rem; border-radius: .3rem; display: inline-block; background: var(--slate); }
-    /* Visible keyboard focus everywhere (accessibility) — neutral, not the data blue. */
+    /* Visible keyboard focus everywhere (accessibility), neutral, not the data blue. */
     input:focus-visible, select:focus-visible, button:focus-visible, label:focus-within {
       outline: 2px solid #64748b; outline-offset: 2px;
     }
@@ -217,7 +217,7 @@ function renderGrid() {
         <input aria-label="Criterion ${i + 1} name" class="cell-head border rounded px-1 py-1 text-center text-xs" value="${h}"
                oninput="headers[${i}]=this.value"/>
         <div class="flex gap-1 text-xs">
-          <button aria-label="${lowerCols.has(i) ? 'Lower is better — click to make higher better' : 'Higher is better — click to make lower better'}"
+          <button aria-label="${lowerCols.has(i) ? 'Lower is better, click to make higher better' : 'Higher is better, click to make lower better'}"
                   title="${lowerCols.has(i) ? 'lower is better (click to flip)' : 'higher is better (click to flip)'}"
                   class="px-1 rounded ${lowerCols.has(i) ? 'bg-slate-300' : 'bg-slate-100'} hover:bg-slate-200"
                   onclick="toggleLower(${i})">${lowerCols.has(i) ? '⬇️' : '⬆️'}</button>
@@ -367,7 +367,7 @@ $("run").onclick = async () => {
     spec.background = transparent ? null : "white";
     $("chart").classList.toggle("checker", transparent);
     $("chart").textContent = "";
-    // No vega-embed "⋯" menu — the explicit PNG / SVG buttons replace it. SVG
+    // No vega-embed "⋯" menu: the explicit PNG / SVG buttons replace it. SVG
     // renderer so the map stays crisp when CSS scales it to fit the card.
     const embed = await vegaEmbed("#chart", spec, { actions: false, renderer: "svg" });
     chartView = embed.view;  // used by the explicit PNG / SVG export buttons
@@ -377,7 +377,7 @@ $("run").onclick = async () => {
     lastMd = data.markdown;
     $("comments").className = "analysis max-w-none";
     $("comments").innerHTML = colorizeRoles(
-      marked.parse(data.markdown || "*(no analysis — enable the model)*"),
+      marked.parse(data.markdown || "*(no analysis, enable the model)*"),
       data.roles || {},
     );
     $("dlMd").classList.remove("hidden");

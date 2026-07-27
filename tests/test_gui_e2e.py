@@ -1,7 +1,7 @@
 """End-to-end GUI test: drive the real page in headless Chromium (dev-gui).
 
 This is the one test that exercises the *frontend* JavaScript rather than the
-endpoints — it loads `/gui`, clicks Generate, and checks that the quadrant actually
+endpoints: it loads `/gui`, clicks Generate, and checks that the quadrant actually
 renders, the analysis comes out role-colorized, and no JavaScript error fires.
 Generating always names the axes with the local model (a hard prerequisite that
 `tests/conftest.py` guarantees). It is otherwise heavily gated on test infrastructure:

@@ -1,7 +1,7 @@
 """FastAPI backend for the Standpoint browser GUI.
 
 This is the thin server behind the single-page GUI: it turns an edited table into a
-positioning result the browser can render. The heavy lifting stays in the library —
+positioning result the browser can render. The heavy lifting stays in the library:
 `positioning()` runs the PCA, orientation, colouring, LLM pole naming, and analysis;
 this module only exposes it over HTTP and serves the static page.
 
@@ -56,7 +56,7 @@ _STARTER_TABLE = (
 
 
 class PositionRequest(BaseModel):
-    """Body of ``POST /api/position`` — one edited table plus a few options.
+    """Body of ``POST /api/position``: one edited table plus a few options.
 
     Attributes
     ----------
@@ -153,7 +153,7 @@ async def upload(file: UploadFile = File(...)) -> str:
 
 
 class TableText(BaseModel):
-    """A table as CSV text — the body of the XLSX download request."""
+    """A table as CSV text: the body of the XLSX download request."""
 
     table: str
 
@@ -209,7 +209,7 @@ def position(req: PositionRequest) -> PositionResponse:
     Raises
     ------
     HTTPException
-        400 if the table is empty or degenerate, or the reference is unknown —
+        400 if the table is empty or degenerate, or the reference is unknown;
         the library's ``ValueError`` message is passed straight through to the UI.
     """
     if not req.table.strip():
@@ -231,14 +231,18 @@ def position(req: PositionRequest) -> PositionResponse:
     # The Markdown narrative is a separate call so a slow model doesn't block the
     # spec; here we compute it inline since the whole request is already synchronous.
     markdown = analysis_markdown(pos.result, pos.roles, pos.poles, model=req.model)
+    # One payload with everything the page draws from: the Vega-Lite spec for the
+    # chart, the Markdown write-up, the YAML dump for download, and the axis names /
+    # poles / per-option roles the front-end uses to colour the analysis. Bundling
+    # them means the browser draws the whole result from a single round-trip.
     return PositionResponse(
-        vega=pos.to_vega(),
-        markdown=markdown,
-        yaml=pos.to_yaml(),
-        axes=pos.axes,
-        poles=pos.poles,
-        reference=pos.result.reference,
-        roles=pos.role_of,
+        vega=pos.to_vega(),  # spec vega-embed renders client-side
+        markdown=markdown,  # the written interpretation
+        yaml=pos.to_yaml(),  # coordinates + coefficients, offered as a download
+        axes=pos.axes,  # {'x': ..., 'y': ...} axis titles
+        poles=pos.poles,  # the four pole labels
+        reference=pos.result.reference,  # resolved name of the top-right anchor
+        roles=pos.role_of,  # option -> role, drives the name tinting
     )
 
 

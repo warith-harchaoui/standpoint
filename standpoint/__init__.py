@@ -1,10 +1,10 @@
-"""Standpoint — know where each option actually stands.
+"""Standpoint: know where each option actually stands.
 
 Explainable 2D PCA positioning map from any comparison table.
 
 Turn a table of *approaches x criteria* (CSV or Markdown, numeric ratings on any
 scale) into a competitive positioning map, plus a written interpretation and a
-full dump of the coefficients — a three-fold deliverable from one input file.
+full dump of the coefficients: a three-fold deliverable from one input file.
 
 Pipeline
 --------
@@ -27,7 +27,7 @@ Vega-Lite figure. `export_all` writes PNG + SVG + Vega JSON + a Markdown analysi
 
 Author
 ------
-Warith Harchaoui — https://www.linkedin.com/in/warith-harchaoui
+Warith Harchaoui, https://www.linkedin.com/in/warith-harchaoui
 """
 
 from __future__ import annotations
@@ -60,15 +60,15 @@ DetectorFactory.seed = 0  # deterministic language detection
 # grab stdout). The CLI in `run()` is the one place that prints on purpose.
 logger = logging.getLogger("standpoint")
 
-# "Good Colors" Apple-base palette — https://harchaoui.org/warith/colors/.
+# "Good Colors" Apple-base palette: https://harchaoui.org/warith/colors/.
 # The four highlighted roles keep a fixed identity hue; the axis cross and labels
 # use neutrals. Every other dot is coloured by its map position (`gradient_colors`).
 PALETTE = {
-    "reference": "#FF3B30",  # Red    — the reference leader (best), sits top-right
-    "right": "#007AFF",  # Blue   — challenger that most defines the right pole
-    "worst": "#A52A2A",  # Brown  — weakest overall, sits bottom-left
-    "top": "#AF52DE",  # Purple — challenger that most defines the top pole
-    "competitor": "#8E8E93",  # Gray   — placeholder; overridden by gradient_colors
+    "reference": "#FF3B30",  # Red    the reference leader (best), sits top-right
+    "right": "#007AFF",  # Blue   challenger that most defines the right pole
+    "worst": "#A52A2A",  # Brown  weakest overall, sits bottom-left
+    "top": "#AF52DE",  # Purple challenger that most defines the top pole
+    "competitor": "#8E8E93",  # Gray   placeholder; overridden by gradient_colors
     "axis": "#C7C7CC",  # light gray for the centred, dotted axis cross
     "label": "#1C1C1E",  # near-black label text
 }
@@ -174,7 +174,7 @@ def parse_table(source: str) -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- #
-# i18n — detect the table's language and localize the LLM prompts
+# i18n: detect the table's language and localize the LLM prompts
 # --------------------------------------------------------------------------- #
 SUPPORTED_LANGS = ("en", "fr", "es")
 _I18N_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "locales", "i18n.yaml")
@@ -213,7 +213,7 @@ def validate_table(df: pd.DataFrame) -> None:
     """Raise a clear ``ValueError`` if the table can't be positioned.
 
     Needs at least 2 options (rows) and 2 numeric criteria (columns) with some
-    variation, and no fully-empty column — otherwise PCA is undefined or degenerate.
+    variation, and no fully-empty column; otherwise PCA is undefined or degenerate.
     """
     if df.shape[0] < 2:
         raise ValueError(f"need at least 2 options (rows); got {df.shape[0]}.")
@@ -242,7 +242,7 @@ def impute(df: pd.DataFrame) -> pd.DataFrame:
     """Fill missing cells with each column's minimum observed value.
 
     A blank criterion is treated as the worst (minimum) value for that criterion,
-    rather than the mean — a missing rating should not flatter an approach.
+    rather than the mean; a missing rating should not flatter an approach.
     """
     return df.fillna(df.min(numeric_only=True))
 
@@ -441,10 +441,13 @@ def _rgb_to_hex(rgb: tuple[float, float, float]) -> str:
 
 def _oklab_to_hex(lightness: float, a: float, b: float) -> str:
     """Convert an OKLab colour (Ottosson 2020) to a clamped sRGB hex string."""
+    # Ottosson's fixed constants: OKLab -> LMS' (the matrix below), cube back to
+    # cone responses (LMS), then LMS -> linear sRGB (the second matrix). These are
+    # the published coefficients, not tuning knobs; do not hand-edit them.
     l_ = lightness + 0.3963377774 * a + 0.2158037573 * b
     m_ = lightness - 0.1055613458 * a - 0.0638541728 * b
     s_ = lightness - 0.0894841775 * a - 1.2914855480 * b
-    lc, mc, sc = l_**3, m_**3, s_**3
+    lc, mc, sc = l_**3, m_**3, s_**3  # undo the cube-root that OKLab applies to LMS
     rgb_lin = (
         +4.0767416621 * lc - 3.3077115913 * mc + 0.2309699292 * sc,
         -1.2684380046 * lc + 2.6097574011 * mc - 0.3413193965 * sc,
@@ -460,8 +463,8 @@ def _oklab_to_hex(lightness: float, a: float, b: float) -> str:
 
 
 # Dot-colour tuning: competitors get vivid OKLCH hues spread EVENLY around the
-# circle (ordered by map direction) so hues are balanced — no muddy midtones, no
-# clumping toward pink — with a gentle per-name lightness spread for extra variety.
+# circle (ordered by map direction) so hues are balanced: no muddy midtones, no
+# clumping toward pink, with a gentle per-name lightness spread for extra variety.
 _DOT_CHROMA = 0.125
 _L_LO, _L_HI = 0.62, 0.82
 
@@ -470,7 +473,7 @@ def gradient_colors(result: PCAResult, roles: list[str]) -> list[str]:
     """Distinct, clean per-approach colours.
 
     Competitors are placed at EVENLY spaced hues around the OKLCH circle in order
-    of their direction on the map — balanced hues, every colour vivid (fixed
+    of their direction on the map: balanced hues, every colour vivid (fixed
     chroma, never a muddy centre), all distinct. Lightness gets a small per-name
     spread for extra separation. Named roles keep their fixed identity hue.
     """
@@ -505,6 +508,8 @@ def legend_order(scores: np.ndarray) -> list[int]:
     n = len(scores)
     if n == 0:
         return []
+    # ~sqrt(n) horizontal bands so the legend reads like the map's rows (a squarish
+    # grid), rather than one long column that ignores the vertical spread.
     bands = max(1, round(n**0.5))
     per = math.ceil(n / bands)
     top_to_bottom = sorted(range(n), key=lambda i: -float(scores[i][1]))
@@ -528,7 +533,7 @@ def corner_extremes(scores: np.ndarray) -> dict[str, int]:
 
 
 # Candidate label placements around a dot, as (dir_x, dir_y): right, left, up, down,
-# then the four diagonals — the first that doesn't collide wins.
+# then the four diagonals: the first that doesn't collide wins.
 _LABEL_DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, 1), (1, -1), (-1, -1)]
 
 
@@ -560,17 +565,23 @@ def label_placements(
     dot_rx, dot_ry = 7 * sx, 7 * sy
     boxes = [(x - dot_rx, y - dot_ry, x + dot_rx, y + dot_ry) for x, y in scores]
 
+    # Placement order matters: the four corner extremes go first (they anchor the
+    # reading of the map), then the rest from the outermost inward. Whoever places
+    # first gets the side it wants before the canvas fills up.
     corners = list(corner_extremes(scores).values())
     others = sorted(
         (i for i in range(len(result.names)) if i not in corners),
         key=lambda i: -float(np.hypot(*scores[i])),
     )
+    # Greedy: for each point try the candidate sides and keep the closest one whose
+    # label box clears every dot and every label already placed. Points can go
+    # unplaced (no free side); those simply carry no label rather than overlap.
     placements: dict[int, tuple[float, float]] = {}
     for i in corners + others:
         x, y = scores[i]
         w = len(result.names[i]) * 0.58 * font_px * sx
         h = 1.3 * font_px * sy
-        best = None  # (distance, box, (lx, ly)) — pick the free side nearest the dot
+        best = None  # (distance, box, (lx, ly)): pick the free side nearest the dot
         for ox, oy in _LABEL_DIRS:
             lx = x + ox * (dot_rx + pad + w / 2)  # clear the dot marker, then pad
             ly = y + oy * (dot_ry + pad + h / 2)
@@ -619,9 +630,9 @@ def assign_roles(
     best   the reference, sitting at the top-right corner by construction;
     worst  the weakest overall: the minimum projection onto the top-right hero
            diagonal (equivalently the smallest axis-1 + axis-2);
-    top    the challenger reaching furthest up the vertical axis — the peer that
+    top    the challenger reaching furthest up the vertical axis, the peer that
            most defines the map's *top* pole (the leader excluded);
-    right  the challenger reaching furthest along the horizontal axis — the peer
+    right  the challenger reaching furthest along the horizontal axis, the peer
            that most defines the *right* pole (leader and top champion excluded).
 
     Parameters
@@ -647,7 +658,7 @@ def assign_roles(
     worst_idx = int(next(i for i in np.argsort(hero_projection) if i != best_idx))
 
     # The leader is the max on both axes, so a champion is the *next* option out
-    # along each axis — the challenger that best embodies that winning pole.
+    # along each axis: the challenger that best embodies that winning pole.
     top_idx = names.index(top) if top is not None else _axis_champion(scores[:, 1], {best_idx})
     right_idx = (
         names.index(right)
@@ -665,7 +676,7 @@ def assign_roles(
 # --------------------------------------------------------------------------- #
 # axis naming (local LLM interprets the loading weights + column names)
 # --------------------------------------------------------------------------- #
-# Expand common acronyms to real words — never show acronyms in the figure.
+# Expand common acronyms to real words; never show acronyms in the figure.
 _ACRONYM_WORDS = {
     "tco": "Cost",
     "pii": "Privacy",
@@ -696,7 +707,7 @@ def _deacronym(label: str) -> str:
 
 
 def _one_word(feature: str) -> str:
-    """A single real word from an attribute name — longest non-acronym token,
+    """A single real word from an attribute name: longest non-acronym token,
     expanding known acronyms so the figure never shows abbreviations.
     """
     toks = re.findall(r"[^\W\d_]+", feature, re.UNICODE)  # Unicode letters (keeps é, à, ç…)
@@ -730,7 +741,7 @@ _LABEL_STOP = {
 }
 
 # A pole must be a positive quality; these markers signal a drawback (en/fr/es) and
-# get the label rejected — e.g. "High Cost", "Slow", "Expensive" never appear.
+# get the label rejected, e.g. "High Cost", "Slow", "Expensive" never appear.
 _NEGATIVE_WORDS = {
     "high",
     "low",
@@ -788,7 +799,7 @@ def finalize_poles(raw: list[str], fallback: list[str]) -> list[str]:
     """Turn raw LLM pole labels into four clean, distinct, non-antonymous labels.
 
     Enforces: real words (no acronyms), at most three words, no label repeated, and
-    no two labels sharing a content word — which rules out antonym pairs such as
+    no two labels sharing a content word, which rules out antonym pairs such as
     'Cost Efficient' / 'High Cost'. A rejected label is replaced by its
     loading-derived fallback (drawn from a different criterion).
     """
@@ -849,7 +860,7 @@ def axis_poles(result: PCAResult, model: str = DEFAULT_MODEL, lang: str | None =
 
     Each PCA axis is a weighted mix of the criteria. The local LLM names each pole
     (1-3 words) for what the approaches at that end are collectively strongest at,
-    from the signed loadings and the original column names — in the table's own
+    from the signed loadings and the original column names, in the table's own
     language (auto-detected from the column names; see `i18n.yaml`). Always uses the
     local model; loading-derived words only serve as the per-label robustness fallback
     when the model returns a bad label (see `finalize_poles`).
@@ -1127,7 +1138,7 @@ def to_vega(
                 ],
             },
         },
-        {  # labels — de-cluttered, placed on whichever side is free
+        {  # labels: de-cluttered, placed on whichever side is free
             "data": {"values": points},
             "transform": [{"filter": "datum.label != ''"}],
             "mark": {
@@ -1185,7 +1196,7 @@ def render_figures(spec: dict, stem: str) -> list[str]:
 
     Writes four files: the transparent `<stem>.png` / `<stem>.svg` (the default, for
     dropping onto any coloured page) and a white-background `<stem>.white.png` /
-    `<stem>.white.svg` (for dark surfaces — e.g. GitHub dark mode — where the map's
+    `<stem>.white.svg` (for dark surfaces (e.g. GitHub dark mode) where the map's
     near-black labels would otherwise vanish on a transparent background). Returns
     the four paths in that order.
     """
@@ -1206,7 +1217,7 @@ def png_on_white(spec: dict) -> bytes:
     """Render `spec` to PNG bytes on an opaque white background.
 
     The exported figures are transparent, but the vision self-check sends the image
-    to a model whose backend flattens transparency onto a dark canvas — which would
+    to a model whose backend flattens transparency onto a dark canvas, which would
     hide the near-black labels and legend and make the check misfire. White is the
     figure's intended reading surface, so the check runs against a white-composited
     copy rather than the transparent file on disk.
@@ -1219,8 +1230,8 @@ def vlm_assess(image: str | bytes, model: str = DEFAULT_MODEL) -> dict:
 
     `image` is a PNG path or raw PNG bytes (bytes let the caller assess a
     white-composited render without touching the transparent file on disk). Returns
-    a verdict dict — whether the red leader dot sits top-right, whether the labels
-    are readable, and whether the legend is fully visible — plus free-text notes.
+    a verdict dict: whether the red leader dot sits top-right, whether the labels
+    are readable, and whether the legend is fully visible, plus free-text notes.
     Empty dict if the model or a rendered image is unavailable.
     """
     schema = {
@@ -1266,7 +1277,7 @@ def _llm_text(prompt: str, model: str, fallback: str) -> str:
 
 
 def _approx_pct(fraction: float) -> str:
-    """Format a fraction as an approximate percentage — nearest 5, with a '~' prefix.
+    """Format a fraction as an approximate percentage: nearest 5, with a '~' prefix.
 
     An exact figure like '89%' reads as false precision in a written takeaway; '~90%'
     conveys the same magnitude at an honest resolution.
@@ -1296,7 +1307,7 @@ def analysis_markdown(
         lang = detect_language(result.features)
 
     def order_line(k: int) -> str:
-        """Axis `k`'s criteria in order — from the ones pulling toward its positive
+        """Axis `k`'s criteria in order, from the ones pulling toward its positive
         (right/top) pole to those pulling toward the negative one. Names only: the
         ordering is what a reader can use; the raw weights are noise here.
         """
@@ -1461,11 +1472,11 @@ def export_all(
 
 
 # --------------------------------------------------------------------------- #
-# Convenience API — the one-liner library face
+# Convenience API: the one-liner library face
 # --------------------------------------------------------------------------- #
 @dataclass
 class Positioning:
-    """Result of `positioning()` — the map plus everything computed for it."""
+    """Result of `positioning()`: the map plus everything computed for it."""
 
     df: pd.DataFrame
     result: PCAResult
@@ -1565,16 +1576,23 @@ def positioning(
     >>> pos = positioning("examples/programming_languages.csv")
     >>> pos.export("out")
     """
+    # The one-call pipeline, in dependency order. Everything geometric (parse,
+    # polarity, PCA, roles) is deterministic; only the naming steps below touch the
+    # model, so the map itself never changes run to run.
     df = data if isinstance(data, pd.DataFrame) else parse_table(data)
     df, lower = resolve_polarity(df, lower_is_better)  # clean names + lower set
     result = analyze(df, reference=reference, lower_is_better=list(lower))
     roles = assign_roles(result, top=top, right=right)
+    # Detect the language once from the column names; it drives every naming call
+    # (poles, noun, title) so the whole deliverable comes out in the table's tongue.
     lang = detect_language(result.features)
     poles = axis_poles(result, model=model, lang=lang)
     singular, plural = noun_forms(str(df.index.name or "Approach"), model=model, lang=lang)
     # Localize the whole title, not just the noun: a French table reads
     # "Voitures dans le quadrant", never "Voitures in the Quadrant".
     title = i18n(lang)["title_template"].format(plural=plural)
+    # Bundle the geometry and the model-named parts into the façade the caller drives
+    # (.coords / .loadings / .to_vega / .to_markdown / .to_yaml / .export).
     return Positioning(
         df,
         result,

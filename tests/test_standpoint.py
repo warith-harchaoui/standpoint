@@ -3,8 +3,8 @@
 Standpoint always names the axes and writes the analysis with the local model, so the
 model is a hard prerequisite of the suite, not an optional extra: `tests/conftest.py`
 guarantees `standpoint.DEFAULT_MODEL` is present (pulling it once if needed) before
-any test runs. Tests that exercise the model — axis naming in the table's own
-language and the vision assessment of the rendered figure — therefore always call the
+any test runs. Tests that exercise the model (axis naming in the table's own
+language and the vision assessment of the rendered figure) therefore always call the
 real local LLM.
 """
 
@@ -262,7 +262,7 @@ def test_export_all_writes_three_fold(tmp_path, df, result, roles):
 
 @pytest.mark.needs_model
 def test_markdown_is_focused(result, roles):
-    # The analysis ends at the highlighted approaches — no leaderboard coordinate
+    # The analysis ends at the highlighted approaches: no leaderboard coordinate
     # dump and no PCA-units footer (dropped as noise).
     poles = p4m.axis_poles(result)
     md = p4m.analysis_markdown(result, roles, poles)
@@ -373,7 +373,7 @@ def test_axis_poles_llm_quality(result):
 @pytest.mark.needs_model
 def test_vlm_assessment_of_rendered_figure(result):
     # Assess a white-composited render (the exported figure is transparent, which the
-    # model's backend would flatten onto black and misread — see png_on_white).
+    # model's backend would flatten onto black and misread; see png_on_white).
     verdict = p4m.vlm_assess(p4m.png_on_white(p4m.to_vega(result)))
     assert verdict.get("leader_top_right") is True
     assert verdict.get("legend_visible") is True

@@ -4,8 +4,8 @@
 A thin, deterministic wrapper the skill can call instead of re-writing the glue. It
 reads a table (a path argument, or ``-`` for stdin), runs ``standpoint.positioning()``,
 and writes the deliverable to disk. The figure is an **SVG** (rendered from the
-Vega-Lite spec) — plus the same figure as PNG, each on a transparent and a white
-background — alongside the Vega-Lite spec, the Markdown analysis, and the YAML. It then
+Vega-Lite spec), plus the same figure as PNG, each on a transparent and a white
+background, alongside the Vega-Lite spec, the Markdown analysis, and the YAML. It then
 prints the analysis and the list of files it wrote.
 
 Axis naming and the narrative come from a local Ollama model (``--model``, default
@@ -25,7 +25,7 @@ import sys
 
 
 def _read_table(source: str) -> str:
-    """Return the raw table text — from stdin when `source` is ``-``, else from a file."""
+    """Return the raw table text: from stdin when `source` is ``-``, else from a file."""
     if source == "-":
         return sys.stdin.read()
     with open(source, encoding="utf-8") as fh:
@@ -77,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
-    # The analysis for the reader, then the paths — the .svg is the figure.
+    # The analysis for the reader, then the paths; the .svg is the figure.
     print(pos.to_markdown(model=a.model))
     print("\nFiles written:")
     for path in files:
