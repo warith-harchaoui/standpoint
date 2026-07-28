@@ -83,6 +83,7 @@ class PoleQualityMetric(BaseMetric):
     "csv",
     ["programming_languages.csv", "cloud_providers.csv", "voitures_electriques.csv"],
 )
+@pytest.mark.needs_model
 def test_pole_naming_quality(csv: str) -> None:
     """Every example's model-named poles pass the DeepEval quality metric."""
     pos = sp.positioning(str(EXAMPLES / csv))

@@ -41,6 +41,7 @@ def test_example_endpoint_returns_csv() -> None:
     assert "," in header and "Performance" in header  # a real criteria table
 
 
+@pytest.mark.needs_model
 def test_position_roundtrip() -> None:
     """`POST /api/position` returns a full, drawable result on a valid table."""
     table = "Language,Speed,Safety,Jobs\nPython,2,2,5\nRust,5,5,3\nGo,4,4,4\nJava,4,4,5"
@@ -54,6 +55,7 @@ def test_position_roundtrip() -> None:
     assert "meta:" in data["yaml"]
 
 
+@pytest.mark.needs_model
 def test_position_response_has_full_frontend_contract() -> None:
     """The response carries everything the browser needs to draw and colorize."""
     table = "Language,Speed,Safety,Jobs\nPython,2,2,5\nRust,5,5,3\nGo,4,4,4\nJava,4,4,5"

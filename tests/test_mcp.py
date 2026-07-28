@@ -24,6 +24,7 @@ def test_mcp_endpoint_is_mounted() -> None:
     assert mcp_module.mcp.name == "standpoint"
 
 
+@pytest.mark.needs_model
 def test_api_still_served_next_to_mcp() -> None:
     """The FastAPI routes still work once the MCP endpoint is mounted."""
     client = starlette_testclient.TestClient(mcp_module.app)
