@@ -394,7 +394,7 @@
             "color": "#FF3B30",
             "label": "Python",
             "labelx": 2.4530230882570265,
-            "labely": 3.098996142263121
+            "labely": 3.3897423220564833
           },
           {
             "name": "Rust",
@@ -403,8 +403,8 @@
             "role": "worst",
             "color": "#A52A2A",
             "label": "Rust",
-            "labelx": -1.2120785950922737,
-            "labely": -2.6251387836643714
+            "labelx": -0.936969330163039,
+            "labely": -2.862067462963746
           },
           {
             "name": "Go",
@@ -413,8 +413,8 @@
             "role": "competitor",
             "color": "#75A857",
             "label": "Go",
-            "labelx": 0.8195509380222206,
-            "labely": -1.262448314651634
+            "labelx": 0.6481990985638397,
+            "labely": -0.9775972845219265
           },
           {
             "name": "JavaScript",
@@ -424,7 +424,7 @@
             "color": "#9CB7FF",
             "label": "JavaScript",
             "labelx": 2.0837170619103262,
-            "labely": 1.8101620779778422
+            "labely": 1.8580844288081753
           },
           {
             "name": "TypeScript",
@@ -434,7 +434,7 @@
             "color": "#59D5FF",
             "label": "TypeScript",
             "labelx": 2.3178900904340023,
-            "labely": -0.7385580487004533
+            "labely": -1.0293042284938156
           },
           {
             "name": "Java",
@@ -444,7 +444,7 @@
             "color": "#007AFF",
             "label": "Java",
             "labelx": 2.4530230882570265,
-            "labely": -1.7879998020190173
+            "labely": -1.7400774511886843
           },
           {
             "name": "C++",
@@ -453,8 +453,8 @@
             "role": "competitor",
             "color": "#CC744A",
             "label": "C++",
-            "labelx": -0.2029977068555715,
-            "labely": -1.2902140379717828
+            "labelx": -0.413554306426718,
+            "labely": -1.5750650681014904
           },
           {
             "name": "C#",
@@ -463,8 +463,8 @@
             "role": "competitor",
             "color": "#009E89",
             "label": "C#",
-            "labelx": 1.389099383285947,
-            "labely": -1.8374408134420461
+            "labelx": 1.2177475438275662,
+            "labely": -1.5525897833123385
           },
           {
             "name": "Ruby",
@@ -473,8 +473,8 @@
             "role": "top",
             "color": "#AF52DE",
             "label": "Ruby",
-            "labelx": 0.008386360390015168,
-            "labely": 3.098996142263121
+            "labelx": 0.2834956253192499,
+            "labely": 2.862067462963746
           },
           {
             "name": "Kotlin",
@@ -484,7 +484,7 @@
             "color": "#D1AE49",
             "label": "Kotlin",
             "labelx": 0.08360924300626704,
-            "labely": -0.9101323701523836
+            "labely": -0.8622100193220505
           },
           {
             "name": "Swift",
@@ -493,8 +493,8 @@
             "role": "competitor",
             "color": "#DF7D9D",
             "label": "Swift",
-            "labelx": -0.5478813857635256,
-            "labely": -0.8035840828815983
+            "labelx": -0.862195410805526,
+            "labely": -1.3253637923106805
           },
           {
             "name": "Elixir",
@@ -504,7 +504,7 @@
             "color": "#C790DF",
             "label": "Elixir",
             "labelx": -2.4530230882570265,
-            "labely": 0.69609422055696
+            "labely": 0.9868404003503225
           }
         ]
       },
@@ -619,7 +619,7 @@
             "color": "#FF3B30",
             "label": "Python",
             "labelx": 2.4530230882570265,
-            "labely": 3.098996142263121
+            "labely": 3.3897423220564833
           },
           {
             "name": "Rust",
@@ -628,8 +628,8 @@
             "role": "worst",
             "color": "#A52A2A",
             "label": "Rust",
-            "labelx": -1.2120785950922737,
-            "labely": -2.6251387836643714
+            "labelx": -0.936969330163039,
+            "labely": -2.862067462963746
           },
           {
             "name": "Go",
@@ -638,8 +638,8 @@
             "role": "competitor",
             "color": "#75A857",
             "label": "Go",
-            "labelx": 0.8195509380222206,
-            "labely": -1.262448314651634
+            "labelx": 0.6481990985638397,
+            "labely": -0.9775972845219265
           },
           {
             "name": "JavaScript",
@@ -649,7 +649,7 @@
             "color": "#9CB7FF",
             "label": "JavaScript",
             "labelx": 2.0837170619103262,
-            "labely": 1.8101620779778422
+            "labely": 1.8580844288081753
           },
           {
             "name": "TypeScript",
@@ -659,7 +659,7 @@
             "color": "#59D5FF",
             "label": "TypeScript",
             "labelx": 2.3178900904340023,
-            "labely": -0.7385580487004533
+            "labely": -1.0293042284938156
           },
           {
             "name": "Java",
@@ -669,7 +669,7 @@
             "color": "#007AFF",
             "label": "Java",
             "labelx": 2.4530230882570265,
-            "labely": -1.7879998020190173
+            "labely": -1.7400774511886843
           },
           {
             "name": "C++",
@@ -678,8 +678,8 @@
             "role": "competitor",
             "color": "#CC744A",
             "label": "C++",
-            "labelx": -0.2029977068555715,
-            "labely": -1.2902140379717828
+            "labelx": -0.413554306426718,
+            "labely": -1.5750650681014904
           },
           {
             "name": "C#",
@@ -688,8 +688,8 @@
             "role": "competitor",
             "color": "#009E89",
             "label": "C#",
-            "labelx": 1.389099383285947,
-            "labely": -1.8374408134420461
+            "labelx": 1.2177475438275662,
+            "labely": -1.5525897833123385
           },
           {
             "name": "Ruby",
@@ -698,8 +698,8 @@
             "role": "top",
             "color": "#AF52DE",
             "label": "Ruby",
-            "labelx": 0.008386360390015168,
-            "labely": 3.098996142263121
+            "labelx": 0.2834956253192499,
+            "labely": 2.862067462963746
           },
           {
             "name": "Kotlin",
@@ -709,7 +709,7 @@
             "color": "#D1AE49",
             "label": "Kotlin",
             "labelx": 0.08360924300626704,
-            "labely": -0.9101323701523836
+            "labely": -0.8622100193220505
           },
           {
             "name": "Swift",
@@ -718,8 +718,8 @@
             "role": "competitor",
             "color": "#DF7D9D",
             "label": "Swift",
-            "labelx": -0.5478813857635256,
-            "labely": -0.8035840828815983
+            "labelx": -0.862195410805526,
+            "labely": -1.3253637923106805
           },
           {
             "name": "Elixir",
@@ -729,7 +729,7 @@
             "color": "#C790DF",
             "label": "Elixir",
             "labelx": -2.4530230882570265,
-            "labely": 0.69609422055696
+            "labely": 0.9868404003503225
           }
         ]
       },

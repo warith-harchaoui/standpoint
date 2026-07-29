@@ -242,8 +242,8 @@ reste.
   modèle de vision si la figure se lit correctement.
 - Le plus haut, le meilleur, par défaut. Pour une colonne où le plus bas est le meilleur, marquez
   son en-tête avec `(↓)` (`Price (↓)`, `Latency (↓)`) ou passez `--lower Price,Latency`.
-  Standpoint la négativise et nomme le pôle pour le bénéfice (« Abordable »,
-  « Léger »), jamais l'inconvénient.
+  Standpoint la négativise et nomme le pôle par le bénéfice (« Abordable »,
+  « Léger »), jamais par l'inconvénient.
 - Chaque figure est écrite deux fois : un `.png` / `.svg` **transparent** qui se pose
   sur n'importe quelle page, et une version **fond blanc** `.white.png` / `.white.svg`
   pour les surfaces sombres où les étiquettes presque noires disparaîtraient sur la

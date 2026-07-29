@@ -394,7 +394,7 @@
             "color": "#FF3B30",
             "label": "MacBook Air",
             "labelx": 2.3614176539294798,
-            "labely": 2.8843835478581417
+            "labely": 3.1671418888549283
           },
           {
             "name": "MacBook Pro",
@@ -404,7 +404,7 @@
             "color": "#007AFF",
             "label": "MacBook Pro",
             "labelx": 2.3614176539294798,
-            "labely": -1.084755360240281
+            "labely": -1.0414466678234457
           },
           {
             "name": "Dell XPS",
@@ -414,7 +414,7 @@
             "color": "#BC722B",
             "label": "Dell XPS",
             "labelx": 0.8910170758152786,
-            "labely": -0.626790477953626
+            "labely": -0.12727440141772217
           },
           {
             "name": "ThinkPad X1",
@@ -424,7 +424,7 @@
             "color": "#A1B656",
             "label": "ThinkPad X1",
             "labelx": 1.464765139653159,
-            "labely": 1.1579216470352456
+            "labely": 1.201230339452081
           },
           {
             "name": "Framework",
@@ -433,8 +433,8 @@
             "role": "competitor",
             "color": "#AB8CE0",
             "label": "Framework",
-            "labelx": -1.1959366512540603,
-            "labely": 0.702474447748463
+            "labelx": -1.6707049181713687,
+            "labely": 1.201990524284367
           },
           {
             "name": "Asus Zenbook",
@@ -444,7 +444,7 @@
             "color": "#72CFFF",
             "label": "Asus Zenbook",
             "labelx": -0.879314930374814,
-            "labely": 1.5384211217592358
+            "labely": 1.5817298141760712
           },
           {
             "name": "HP Spectre",
@@ -454,7 +454,7 @@
             "color": "#00AA95",
             "label": "HP Spectre",
             "labelx": 0.06947362733546453,
-            "labely": 1.1548582173284971
+            "labely": 0.41589249221264246
           },
           {
             "name": "Lenovo Legion",
@@ -464,7 +464,7 @@
             "color": "#A52A2A",
             "label": "Lenovo Legion",
             "labelx": -1.3039498673778236,
-            "labely": -2.0613107597051528
+            "labely": -1.7785524187083663
           },
           {
             "name": "Acer Swift",
@@ -474,7 +474,7 @@
             "color": "#AF52DE",
             "label": "Acer Swift",
             "labelx": -2.3614176539294798,
-            "labely": 2.8843835478581417
+            "labely": 3.1671418888549283
           },
           {
             "name": "Razer Blade",
@@ -483,8 +483,8 @@
             "role": "competitor",
             "color": "#F894B4",
             "label": "Razer Blade",
-            "labelx": 0.24968969384712805,
-            "labely": -2.4281761637390735
+            "labelx": -0.30527756419241203,
+            "labely": -2.6562798557986076
           }
         ]
       },
@@ -595,7 +595,7 @@
             "color": "#FF3B30",
             "label": "MacBook Air",
             "labelx": 2.3614176539294798,
-            "labely": 2.8843835478581417
+            "labely": 3.1671418888549283
           },
           {
             "name": "MacBook Pro",
@@ -605,7 +605,7 @@
             "color": "#007AFF",
             "label": "MacBook Pro",
             "labelx": 2.3614176539294798,
-            "labely": -1.084755360240281
+            "labely": -1.0414466678234457
           },
           {
             "name": "Dell XPS",
@@ -615,7 +615,7 @@
             "color": "#BC722B",
             "label": "Dell XPS",
             "labelx": 0.8910170758152786,
-            "labely": -0.626790477953626
+            "labely": -0.12727440141772217
           },
           {
             "name": "ThinkPad X1",
@@ -625,7 +625,7 @@
             "color": "#A1B656",
             "label": "ThinkPad X1",
             "labelx": 1.464765139653159,
-            "labely": 1.1579216470352456
+            "labely": 1.201230339452081
           },
           {
             "name": "Framework",
@@ -634,8 +634,8 @@
             "role": "competitor",
             "color": "#AB8CE0",
             "label": "Framework",
-            "labelx": -1.1959366512540603,
-            "labely": 0.702474447748463
+            "labelx": -1.6707049181713687,
+            "labely": 1.201990524284367
           },
           {
             "name": "Asus Zenbook",
@@ -645,7 +645,7 @@
             "color": "#72CFFF",
             "label": "Asus Zenbook",
             "labelx": -0.879314930374814,
-            "labely": 1.5384211217592358
+            "labely": 1.5817298141760712
           },
           {
             "name": "HP Spectre",
@@ -655,7 +655,7 @@
             "color": "#00AA95",
             "label": "HP Spectre",
             "labelx": 0.06947362733546453,
-            "labely": 1.1548582173284971
+            "labely": 0.41589249221264246
           },
           {
             "name": "Lenovo Legion",
@@ -665,7 +665,7 @@
             "color": "#A52A2A",
             "label": "Lenovo Legion",
             "labelx": -1.3039498673778236,
-            "labely": -2.0613107597051528
+            "labely": -1.7785524187083663
           },
           {
             "name": "Acer Swift",
@@ -675,7 +675,7 @@
             "color": "#AF52DE",
             "label": "Acer Swift",
             "labelx": -2.3614176539294798,
-            "labely": 2.8843835478581417
+            "labely": 3.1671418888549283
           },
           {
             "name": "Razer Blade",
@@ -684,8 +684,8 @@
             "role": "competitor",
             "color": "#F894B4",
             "label": "Razer Blade",
-            "labelx": 0.24968969384712805,
-            "labely": -2.4281761637390735
+            "labelx": -0.30527756419241203,
+            "labely": -2.6562798557986076
           }
         ]
       },

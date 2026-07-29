@@ -24,7 +24,8 @@ objects. The single source of truth for the version is `standpoint.__version__`.
 
 CI is intentionally light: one Python, `ruff check`, and the deterministic core
 tests. The full gate runs **locally before you push** (shift validation left, coding
-standard Rule 18). Run it all:
+standard Rule 18). The one-command shortcut is `make check` (it runs
+`scripts/check.sh`); the steps it wraps are:
 
 ```bash
 pip install -e ".[dev,mcp]"                        # library + tests + GUI/API/MCP surfaces

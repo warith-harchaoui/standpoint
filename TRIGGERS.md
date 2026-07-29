@@ -47,7 +47,7 @@ human skimming, and for an agent deciding whether to invoke the
 - **Building, cleaning, or gathering the table**: standpoint maps a table that already
   exists; it does not collect the data, scrape it, or fit a predictor.
 
-## Interfaces (same engine, six ways)
+## One engine, six access surfaces
 
 | Reach for | When |
 |---|---|
@@ -56,7 +56,10 @@ human skimming, and for an agent deciding whether to invoke the
 | **GUI** `standpoint-gui` (`/gui`) | a human editing tables interactively in the browser |
 | **HTTP API** `POST /api/position` | another program calling over HTTP |
 | **MCP** `standpoint-mcp` (`/mcp`) | an MCP-aware agent/host calling `position` as a tool |
-| **Docker** `docker run … standpoint` | serving the API + MCP in a container |
+| **Skill** `skills/standpoint/` | a Claude / OpenCode agent driving the tool from a chat |
+
+Any of the server surfaces also runs in a container: `docker run … standpoint`
+serves the API with the MCP endpoint mounted.
 
 See the [README](README.md) for install and usage, and the
 [skill](skills/standpoint/SKILL.md) for the agent-facing instructions.

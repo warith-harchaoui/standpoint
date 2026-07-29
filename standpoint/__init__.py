@@ -536,6 +536,11 @@ def corner_extremes(scores: np.ndarray) -> dict[str, int]:
 # then the four diagonals: the first that doesn't collide wins.
 _LABEL_DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, 1), (1, -1), (-1, -1)]
 
+# Concentric rings tried in order: 0 hugs the dot, higher rings push the label one
+# extra row outward. A dot in a tight cluster whose near sides are all taken escapes
+# to a further ring instead of squeezing against a neighbour (or dropping its label).
+_LABEL_RINGS = (0.0, 1.0, 2.0, 3.0)
+
 
 def _overlaps(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> bool:
     """True if two axis-aligned boxes ``(x0, y0, x1, y1)`` intersect."""
@@ -551,9 +556,10 @@ def label_placements(
     font_px: float = 11.0,
 ) -> dict[int, tuple[float, float]]:
     """Greedy de-clutter: choose which approaches to label and *where* to put each
-    label. For every dot (corner extremes first, then outermost), try eight
-    placements around it and keep the first that overlaps neither another label nor
-    any dot marker. Returns {index: (label_x, label_y)} for the labels that fit.
+    label. For every dot (corner extremes first, then outermost), try eight sides
+    across a few concentric rings and keep the closest placement that clears every
+    dot and every label already placed, with a small breathing gap. Returns
+    {index: (label_x, label_y)} for the labels that fit.
 
     `view_x` / `view_y` are the half-extents of each axis's domain (they can differ),
     so the pixel-to-data conversion is correct even when the map is not square.
@@ -561,8 +567,11 @@ def label_placements(
     scores = result.scores
     sx = 2 * view_x / width_px  # data units per pixel, x
     sy = 2 * view_y / height_px  # data units per pixel, y
-    pad = 4 * sx
+    # A per-axis breathing gap: labels clear their neighbours by this much rather than
+    # butting right up against them, which is what made tight clusters read as glued.
+    pad_x, pad_y = 7 * sx, 7 * sy
     dot_rx, dot_ry = 7 * sx, 7 * sy
+    row_x, row_y = 1.3 * font_px * sx, 1.3 * font_px * sy  # one ring's worth of push-out
     boxes = [(x - dot_rx, y - dot_ry, x + dot_rx, y + dot_ry) for x, y in scores]
 
     # Placement order matters: the four corner extremes go first (they anchor the
@@ -573,24 +582,30 @@ def label_placements(
         (i for i in range(len(result.names)) if i not in corners),
         key=lambda i: -float(np.hypot(*scores[i])),
     )
-    # Greedy: for each point try the candidate sides and keep the closest one whose
-    # label box clears every dot and every label already placed. Points can go
-    # unplaced (no free side); those simply carry no label rather than overlap.
+    # Greedy: for each point walk the rings outward and, in the first ring with any
+    # free side, keep the side closest to the dot. The clearance test pads the
+    # candidate box on every edge, so a kept label keeps its gap from dots and from
+    # labels already placed. Points with no free side anywhere carry no label rather
+    # than overlap; the caller then falls back to the colour legend to name them.
     placements: dict[int, tuple[float, float]] = {}
     for i in corners + others:
         x, y = scores[i]
         w = len(result.names[i]) * 0.58 * font_px * sx
         h = 1.3 * font_px * sy
-        best = None  # (distance, box, (lx, ly)): pick the free side nearest the dot
-        for ox, oy in _LABEL_DIRS:
-            lx = x + ox * (dot_rx + pad + w / 2)  # clear the dot marker, then pad
-            ly = y + oy * (dot_ry + pad + h / 2)
-            box = (lx - w / 2, ly - h / 2, lx + w / 2, ly + h / 2)
-            if any(_overlaps(box, b) for b in boxes):
-                continue
-            dist = math.hypot(lx - x, ly - y)
-            if best is None or dist < best[0]:
-                best = (dist, box, (float(lx), float(ly)))
+        best = None  # (distance, box, (lx, ly)): the free side nearest the dot
+        for k in _LABEL_RINGS:
+            for ox, oy in _LABEL_DIRS:
+                lx = x + ox * (dot_rx + pad_x + w / 2 + k * (w / 2 + row_x))
+                ly = y + oy * (dot_ry + pad_y + h / 2 + k * row_y)
+                box = (lx - w / 2, ly - h / 2, lx + w / 2, ly + h / 2)
+                probe = (box[0] - pad_x, box[1] - pad_y, box[2] + pad_x, box[3] + pad_y)
+                if any(_overlaps(probe, b) for b in boxes):
+                    continue
+                dist = math.hypot(lx - x, ly - y)
+                if best is None or dist < best[0]:
+                    best = (dist, box, (float(lx), float(ly)))
+            if best is not None:  # nearest ring with room wins; no need to push further
+                break
         if best is not None:
             boxes.append(best[1])
             placements[i] = best[2]

@@ -393,8 +393,8 @@
             "role": "best",
             "color": "#FF3B30",
             "label": "Standpoint",
-            "labelx": 2.026877762862279,
-            "labely": 2.0078625863260893
+            "labelx": 1.5849508479662067,
+            "labely": 1.844160405101086
           },
           {
             "name": "prince",
@@ -403,8 +403,8 @@
             "role": "competitor",
             "color": "#009E89",
             "label": "prince",
-            "labelx": -1.777460495784866,
-            "labely": 1.4299285397613388
+            "labelx": -1.4732081268880126,
+            "labely": 1.2662263585363356
           },
           {
             "name": "PCA (scikit-learn)",
@@ -413,8 +413,8 @@
             "role": "worst",
             "color": "#A52A2A",
             "label": "PCA (scikit-learn)",
-            "labelx": -1.5322719152273834,
-            "labely": 1.108687977574407
+            "labelx": -0.8149959083328737,
+            "labely": 0.9449857963494036
           },
           {
             "name": "factoextra + FactoMineR",
@@ -423,8 +423,8 @@
             "role": "top",
             "color": "#AF52DE",
             "label": "factoextra + FactoMineR",
-            "labelx": -2.026877762862279,
-            "labely": 2.0078625863260893
+            "labelx": -1.1375085734687458,
+            "labely": 1.844160405101086
           },
           {
             "name": "QuadrantMaker",
@@ -433,8 +433,8 @@
             "role": "right",
             "color": "#007AFF",
             "label": "QuadrantMaker",
-            "labelx": 2.026877762862279,
-            "labely": -1.6804582238760828
+            "labelx": 1.4816949384667928,
+            "labely": -1.844160405101086
           },
           {
             "name": "Slides or whiteboard",
@@ -444,7 +444,7 @@
             "color": "#FFA1C1",
             "label": "Slides or whiteboard",
             "labelx": 0.49064256512207644,
-            "labely": -0.503469041710063
+            "labely": -1.021844519792435
           }
         ]
       },
@@ -546,8 +546,8 @@
             "role": "best",
             "color": "#FF3B30",
             "label": "Standpoint",
-            "labelx": 2.026877762862279,
-            "labely": 2.0078625863260893
+            "labelx": 1.5849508479662067,
+            "labely": 1.844160405101086
           },
           {
             "name": "prince",
@@ -556,8 +556,8 @@
             "role": "competitor",
             "color": "#009E89",
             "label": "prince",
-            "labelx": -1.777460495784866,
-            "labely": 1.4299285397613388
+            "labelx": -1.4732081268880126,
+            "labely": 1.2662263585363356
           },
           {
             "name": "PCA (scikit-learn)",
@@ -566,8 +566,8 @@
             "role": "worst",
             "color": "#A52A2A",
             "label": "PCA (scikit-learn)",
-            "labelx": -1.5322719152273834,
-            "labely": 1.108687977574407
+            "labelx": -0.8149959083328737,
+            "labely": 0.9449857963494036
           },
           {
             "name": "factoextra + FactoMineR",
@@ -576,8 +576,8 @@
             "role": "top",
             "color": "#AF52DE",
             "label": "factoextra + FactoMineR",
-            "labelx": -2.026877762862279,
-            "labely": 2.0078625863260893
+            "labelx": -1.1375085734687458,
+            "labely": 1.844160405101086
           },
           {
             "name": "QuadrantMaker",
@@ -586,8 +586,8 @@
             "role": "right",
             "color": "#007AFF",
             "label": "QuadrantMaker",
-            "labelx": 2.026877762862279,
-            "labely": -1.6804582238760828
+            "labelx": 1.4816949384667928,
+            "labely": -1.844160405101086
           },
           {
             "name": "Slides or whiteboard",
@@ -597,7 +597,7 @@
             "color": "#FFA1C1",
             "label": "Slides or whiteboard",
             "labelx": 0.49064256512207644,
-            "labely": -0.503469041710063
+            "labely": -1.021844519792435
           }
         ]
       },

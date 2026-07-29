@@ -393,8 +393,8 @@
             "role": "best",
             "color": "#FF3B30",
             "label": "AWS",
-            "labelx": 2.392897510580658,
-            "labely": 2.5502370249408326
+            "labelx": 2.2037384006608245,
+            "labely": 2.804052720423102
           },
           {
             "name": "Google Cloud",
@@ -404,7 +404,7 @@
             "color": "#6BD5A0",
             "label": "Google Cloud",
             "labelx": 1.3773422825749981,
-            "labely": 2.054339988918743
+            "labely": 1.372794480085638
           },
           {
             "name": "Microsoft Azure",
@@ -413,8 +413,8 @@
             "role": "top",
             "color": "#AF52DE",
             "label": "Microsoft Azure",
-            "labelx": 1.5919316486729205,
-            "labely": 2.5502370249408326
+            "labelx": 2.2037384006608245,
+            "labely": 2.296421329458563
           },
           {
             "name": "Oracle Cloud",
@@ -424,7 +424,7 @@
             "color": "#DEAB4D",
             "label": "Oracle Cloud",
             "labelx": 1.2573976246318768,
-            "labely": -0.546469906201938
+            "labely": -0.5040165459544719
           },
           {
             "name": "IBM Cloud",
@@ -434,7 +434,7 @@
             "color": "#007AFF",
             "label": "IBM Cloud",
             "labelx": 1.7671260155625519,
-            "labely": 0.24689280748921721
+            "labely": 0.5057136458527162
           },
           {
             "name": "Alibaba Cloud",
@@ -443,8 +443,8 @@
             "role": "competitor",
             "color": "#BAD070",
             "label": "Alibaba Cloud",
-            "labelx": 1.084536477237651,
-            "labely": 0.7150021502940997
+            "labelx": 0.5203990354542636,
+            "labely": 0.7574555105415659
           },
           {
             "name": "DigitalOcean",
@@ -454,7 +454,7 @@
             "color": "#A52A2A",
             "label": "DigitalOcean",
             "labelx": -2.09267454863393,
-            "labely": -1.3616519754219816
+            "labely": -1.1028311370584827
           },
           {
             "name": "Cloudflare",
@@ -464,7 +464,7 @@
             "color": "#10C4CB",
             "label": "Cloudflare",
             "labelx": -1.2016180724500234,
-            "labely": 2.5359293187986944
+            "labely": 2.794750157162193
           },
           {
             "name": "Vercel",
@@ -474,7 +474,7 @@
             "color": "#3F9EDA",
             "label": "Vercel",
             "labelx": -2.2037384006608245,
-            "labely": 2.175548957064019
+            "labely": 1.4940034482309141
           },
           {
             "name": "Hetzner",
@@ -484,7 +484,7 @@
             "color": "#E482A1",
             "label": "Hetzner",
             "labelx": -0.8869450921913303,
-            "labely": -2.3388746897060297
+            "labely": -2.296421329458563
           },
           {
             "name": "Fly.io",
@@ -494,7 +494,7 @@
             "color": "#787CD0",
             "label": "Fly.io",
             "labelx": -1.2369398136113179,
-            "labely": 0.9462116863410235
+            "labely": 0.9886650465884896
           },
           {
             "name": "Render",
@@ -504,7 +504,7 @@
             "color": "#AF73BD",
             "label": "Render",
             "labelx": -1.818819120590862,
-            "labely": 0.7442530540188788
+            "labely": 0.7867064142663449
           },
           {
             "name": "Vast.ai",
@@ -514,7 +514,7 @@
             "color": "#DE805F",
             "label": "Vast.ai",
             "labelx": -0.12782826663958624,
-            "labely": -2.0237178929468893
+            "labely": -1.981264532699423
           }
         ]
       },
@@ -630,8 +630,8 @@
             "role": "best",
             "color": "#FF3B30",
             "label": "AWS",
-            "labelx": 2.392897510580658,
-            "labely": 2.5502370249408326
+            "labelx": 2.2037384006608245,
+            "labely": 2.804052720423102
           },
           {
             "name": "Google Cloud",
@@ -641,7 +641,7 @@
             "color": "#6BD5A0",
             "label": "Google Cloud",
             "labelx": 1.3773422825749981,
-            "labely": 2.054339988918743
+            "labely": 1.372794480085638
           },
           {
             "name": "Microsoft Azure",
@@ -650,8 +650,8 @@
             "role": "top",
             "color": "#AF52DE",
             "label": "Microsoft Azure",
-            "labelx": 1.5919316486729205,
-            "labely": 2.5502370249408326
+            "labelx": 2.2037384006608245,
+            "labely": 2.296421329458563
           },
           {
             "name": "Oracle Cloud",
@@ -661,7 +661,7 @@
             "color": "#DEAB4D",
             "label": "Oracle Cloud",
             "labelx": 1.2573976246318768,
-            "labely": -0.546469906201938
+            "labely": -0.5040165459544719
           },
           {
             "name": "IBM Cloud",
@@ -671,7 +671,7 @@
             "color": "#007AFF",
             "label": "IBM Cloud",
             "labelx": 1.7671260155625519,
-            "labely": 0.24689280748921721
+            "labely": 0.5057136458527162
           },
           {
             "name": "Alibaba Cloud",
@@ -680,8 +680,8 @@
             "role": "competitor",
             "color": "#BAD070",
             "label": "Alibaba Cloud",
-            "labelx": 1.084536477237651,
-            "labely": 0.7150021502940997
+            "labelx": 0.5203990354542636,
+            "labely": 0.7574555105415659
           },
           {
             "name": "DigitalOcean",
@@ -691,7 +691,7 @@
             "color": "#A52A2A",
             "label": "DigitalOcean",
             "labelx": -2.09267454863393,
-            "labely": -1.3616519754219816
+            "labely": -1.1028311370584827
           },
           {
             "name": "Cloudflare",
@@ -701,7 +701,7 @@
             "color": "#10C4CB",
             "label": "Cloudflare",
             "labelx": -1.2016180724500234,
-            "labely": 2.5359293187986944
+            "labely": 2.794750157162193
           },
           {
             "name": "Vercel",
@@ -711,7 +711,7 @@
             "color": "#3F9EDA",
             "label": "Vercel",
             "labelx": -2.2037384006608245,
-            "labely": 2.175548957064019
+            "labely": 1.4940034482309141
           },
           {
             "name": "Hetzner",
@@ -721,7 +721,7 @@
             "color": "#E482A1",
             "label": "Hetzner",
             "labelx": -0.8869450921913303,
-            "labely": -2.3388746897060297
+            "labely": -2.296421329458563
           },
           {
             "name": "Fly.io",
@@ -731,7 +731,7 @@
             "color": "#787CD0",
             "label": "Fly.io",
             "labelx": -1.2369398136113179,
-            "labely": 0.9462116863410235
+            "labely": 0.9886650465884896
           },
           {
             "name": "Render",
@@ -741,7 +741,7 @@
             "color": "#AF73BD",
             "label": "Render",
             "labelx": -1.818819120590862,
-            "labely": 0.7442530540188788
+            "labely": 0.7867064142663449
           },
           {
             "name": "Vast.ai",
@@ -751,7 +751,7 @@
             "color": "#DE805F",
             "label": "Vast.ai",
             "labelx": -0.12782826663958624,
-            "labely": -2.0237178929468893
+            "labely": -1.981264532699423
           }
         ]
       },

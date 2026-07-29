@@ -394,7 +394,7 @@
             "color": "#FF3B30",
             "label": "Tesla Model 3",
             "labelx": 3.461224170184402,
-            "labely": 0.5173608194261623
+            "labely": 0.5194018214048897
           },
           {
             "name": "Renault Mégane E-Tech",
@@ -404,7 +404,7 @@
             "color": "#AF52DE",
             "label": "Renault Mégane E-Tech",
             "labelx": 0.9328357930991205,
-            "labely": 0.5173608194261623
+            "labely": 0.5194018214048897
           },
           {
             "name": "Peugeot e-208",
@@ -413,8 +413,8 @@
             "role": "competitor",
             "color": "#F3976D",
             "label": "Peugeot e-208",
-            "labelx": 0.35605455108251793,
-            "labely": -0.26539208639079026
+            "labelx": 1.358932716979548,
+            "labely": -0.18453777450431608
           },
           {
             "name": "Hyundai Ioniq 5",
@@ -424,7 +424,7 @@
             "color": "#59D5FF",
             "label": "Hyundai Ioniq 5",
             "labelx": 2.8515208240588272,
-            "labely": -0.1179581575076572
+            "labely": -0.27762577930187815
           },
           {
             "name": "Kia EV6",
@@ -434,7 +434,7 @@
             "color": "#718ADB",
             "label": "Kia EV6",
             "labelx": 2.8515208240588272,
-            "labely": -0.2755847773231508
+            "labely": -0.11591715552892981
           },
           {
             "name": "Volkswagen ID.3",
@@ -444,7 +444,7 @@
             "color": "#98CD7A",
             "label": "Volkswagen ID.3",
             "labelx": 0.9159858944749972,
-            "labely": -0.312955073430896
+            "labely": -0.31091407145216865
           },
           {
             "name": "BMW i4",
@@ -454,7 +454,7 @@
             "color": "#007AFF",
             "label": "BMW i4",
             "labelx": 3.461224170184402,
-            "labely": -0.35973419961066866
+            "labely": -0.3576931976319413
           },
           {
             "name": "Polestar 2",
@@ -463,7 +463,7 @@
             "role": "competitor",
             "color": "#16B9A3",
             "label": "Polestar 2",
-            "labelx": 1.7884575197811805,
+            "labelx": 3.9940264771153524,
             "labely": -0.19451495155663515
           },
           {
@@ -474,7 +474,7 @@
             "color": "#E886A6",
             "label": "Nissan Leaf",
             "labelx": -0.8729629147415707,
-            "labely": -0.18432226062427584
+            "labely": -0.18228125864554845
           },
           {
             "name": "MG4",
@@ -484,7 +484,7 @@
             "color": "#A26DBA",
             "label": "MG4",
             "labelx": -1.6554254623437126,
-            "labely": 0.4442271687332382
+            "labely": 0.44626817071196556
           },
           {
             "name": "Dacia Spring",
@@ -494,7 +494,7 @@
             "color": "#A52A2A",
             "label": "Dacia Spring",
             "labelx": -3.461224170184402,
-            "labely": -0.41508253113269333
+            "labely": -0.4171235331114207
           },
           {
             "name": "Fiat 500e",
@@ -503,8 +503,8 @@
             "role": "competitor",
             "color": "#B59329",
             "label": "Fiat 500e",
-            "labelx": -0.4942220869557157,
-            "labely": -0.34420539629853764
+            "labelx": -1.9048324601004682,
+            "labely": -0.2653920863907908
           }
         ]
       },
@@ -619,7 +619,7 @@
             "color": "#FF3B30",
             "label": "Tesla Model 3",
             "labelx": 3.461224170184402,
-            "labely": 0.5173608194261623
+            "labely": 0.5194018214048897
           },
           {
             "name": "Renault Mégane E-Tech",
@@ -629,7 +629,7 @@
             "color": "#AF52DE",
             "label": "Renault Mégane E-Tech",
             "labelx": 0.9328357930991205,
-            "labely": 0.5173608194261623
+            "labely": 0.5194018214048897
           },
           {
             "name": "Peugeot e-208",
@@ -638,8 +638,8 @@
             "role": "competitor",
             "color": "#F3976D",
             "label": "Peugeot e-208",
-            "labelx": 0.35605455108251793,
-            "labely": -0.26539208639079026
+            "labelx": 1.358932716979548,
+            "labely": -0.18453777450431608
           },
           {
             "name": "Hyundai Ioniq 5",
@@ -649,7 +649,7 @@
             "color": "#59D5FF",
             "label": "Hyundai Ioniq 5",
             "labelx": 2.8515208240588272,
-            "labely": -0.1179581575076572
+            "labely": -0.27762577930187815
           },
           {
             "name": "Kia EV6",
@@ -659,7 +659,7 @@
             "color": "#718ADB",
             "label": "Kia EV6",
             "labelx": 2.8515208240588272,
-            "labely": -0.2755847773231508
+            "labely": -0.11591715552892981
           },
           {
             "name": "Volkswagen ID.3",
@@ -669,7 +669,7 @@
             "color": "#98CD7A",
             "label": "Volkswagen ID.3",
             "labelx": 0.9159858944749972,
-            "labely": -0.312955073430896
+            "labely": -0.31091407145216865
           },
           {
             "name": "BMW i4",
@@ -679,7 +679,7 @@
             "color": "#007AFF",
             "label": "BMW i4",
             "labelx": 3.461224170184402,
-            "labely": -0.35973419961066866
+            "labely": -0.3576931976319413
           },
           {
             "name": "Polestar 2",
@@ -688,7 +688,7 @@
             "role": "competitor",
             "color": "#16B9A3",
             "label": "Polestar 2",
-            "labelx": 1.7884575197811805,
+            "labelx": 3.9940264771153524,
             "labely": -0.19451495155663515
           },
           {
@@ -699,7 +699,7 @@
             "color": "#E886A6",
             "label": "Nissan Leaf",
             "labelx": -0.8729629147415707,
-            "labely": -0.18432226062427584
+            "labely": -0.18228125864554845
           },
           {
             "name": "MG4",
@@ -709,7 +709,7 @@
             "color": "#A26DBA",
             "label": "MG4",
             "labelx": -1.6554254623437126,
-            "labely": 0.4442271687332382
+            "labely": 0.44626817071196556
           },
           {
             "name": "Dacia Spring",
@@ -719,7 +719,7 @@
             "color": "#A52A2A",
             "label": "Dacia Spring",
             "labelx": -3.461224170184402,
-            "labely": -0.41508253113269333
+            "labely": -0.4171235331114207
           },
           {
             "name": "Fiat 500e",
@@ -728,8 +728,8 @@
             "role": "competitor",
             "color": "#B59329",
             "label": "Fiat 500e",
-            "labelx": -0.4942220869557157,
-            "labely": -0.34420539629853764
+            "labelx": -1.9048324601004682,
+            "labely": -0.2653920863907908
           }
         ]
       },
