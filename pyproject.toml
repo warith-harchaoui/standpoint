@@ -63,7 +63,7 @@ packages = ["standpoint"]
 version = { attr = "standpoint.__version__" }
 
 [tool.setuptools.package-data]
-standpoint = ["locales/*.yaml"]
+standpoint = ["locales/*.yaml", "static/*"]
 
 [tool.ruff]
 # One source of truth for lint + format (Rule 17). 100 cols matches the prose-heavy

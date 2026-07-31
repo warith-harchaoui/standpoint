@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-01
+
+### Added
+
+- **Bilingual GUI with the language driving the whole output.** A 🇫🇷 / 🇬🇧 toggle in
+  the header re-localizes every label, button, and message, and forces the language of
+  the model output too (pole names, figure title, and the written analysis, including
+  its section headings). GUI strings and LLM prompts now live side by side in
+  `standpoint/locales/i18n.yaml` (new `gui:` and `analysis:` blocks per language),
+  served to the page by `GET /api/i18n`.
+- **Dark theme.** A 🌞 / 🌛 toggle switches the page between light and dark; the choice
+  persists in `localStorage`. The "Good Colors" data palette (map dots, role-tinted
+  names) is deliberately left untouched, so a colour still always means "data".
+- **"Laziness" auto-fill.** A button fills every empty cell from the local model's
+  knowledge once the row and column names are set, so a headers-only CSV/XLSX upload
+  becomes a full table in one click (`POST /api/autofill`, `suggest_ratings()`).
+- **App icon set.** Favicon, Apple touch icon, Android/maskable icons, and a PWA
+  manifest, all generated from `assets/logo.png` and served under `/static`.
+- **Sprezzature look and feel.** Roboto typography, neutral palette with bordered
+  cards, a responsive layout (down to phone widths), and a "⭐️ on GitHub" link.
+- `lang` parameter on `positioning()` and `POST /api/position` to force the output
+  language instead of detecting it from the table.
+
+### Changed
+
+- GUI exports are named after the table's subject (e.g. `programming-languages.png`)
+  rather than a generic stem; the plural slug is returned by `POST /api/position`.
+- `POST /api/position` and `POST /api/autofill` now return an actionable `503` when the
+  local Ollama server is unreachable or the model is not installed, instead of an
+  opaque `500`.
+
 ## [0.4.2] - 2026-07-27
 
 ### Changed

@@ -22,17 +22,28 @@ from __future__ import annotations
 import io
 from pathlib import Path
 
+import ollama
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
+from fastapi.responses import (
+    FileResponse,
+    HTMLResponse,
+    PlainTextResponse,
+    RedirectResponse,
+    Response,
+)
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from standpoint import (
     DEFAULT_MODEL,
+    SUPPORTED_LANGS,
     __version__,
     analysis_markdown,
+    i18n,
     parse_table,
     positioning,
+    suggest_ratings,
 )
 from standpoint.webgui import GUI_HTML
 
@@ -41,6 +52,25 @@ _XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 # Keep the OpenAPI version in step with the package (single source of truth).
 app = FastAPI(title="Standpoint GUI", version=__version__)
+
+# Static assets (the app icon set + web manifest) live next to this module so they
+# ship as package data and resolve identically whether run from the repo or an
+# installed wheel. Mounting them lets the page reference stable `/static/...` URLs.
+_STATIC_DIR = Path(__file__).resolve().parent / "static"
+if _STATIC_DIR.is_dir():
+    app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> FileResponse:
+    """Serve the multi-size favicon browsers request from the site root by default."""
+    return FileResponse(_STATIC_DIR / "favicon.ico", media_type="image/x-icon")
+
+
+@app.get("/site.webmanifest", include_in_schema=False)
+def webmanifest() -> FileResponse:
+    """Serve the PWA manifest (name, theme colours, install icons)."""
+    return FileResponse(_STATIC_DIR / "site.webmanifest", media_type="application/manifest+json")
 
 # The grid is seeded from the tracked example so the GUI always mirrors it; this
 # small built-in table is the fallback when the file isn't on disk (installed package).
@@ -74,6 +104,7 @@ class PositionRequest(BaseModel):
     reference: str = "0"
     lower: str = ""
     model: str = DEFAULT_MODEL
+    lang: str = ""  # "" = detect from the table; "en"/"fr"/"es" force the output language
 
 
 class PositionResponse(BaseModel):
@@ -86,6 +117,7 @@ class PositionResponse(BaseModel):
     poles: list[str]
     reference: str
     roles: dict[str, str]
+    slug: str  # filename stem for exports, from the table's plural noun (e.g. "programming-languages")
 
 
 @app.get("/", include_in_schema=False)
@@ -191,6 +223,108 @@ def download_xlsx(req: TableText) -> Response:
     )
 
 
+def _slugify(text: str) -> str:
+    """Turn a display name into a filename stem: lowercase, words joined by hyphens.
+
+    Used to name exports after the table's subject, so the "Programming Language"
+    example downloads as ``programming-languages.png`` rather than a generic stem.
+    """
+    import re
+    import unicodedata
+
+    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    slug = re.sub(r"[^a-z0-9]+", "-", ascii_text.lower()).strip("-")
+    return slug or "standpoint"
+
+
+def _model_error(exc: Exception, model: str) -> HTTPException:
+    """Map an Ollama failure to a clean 503 with an actionable, model-specific hint.
+
+    The two first-run failures (server not running, model not pulled) otherwise
+    surface as an opaque 500/404; here they become a message the UI can show verbatim.
+    """
+    if isinstance(exc, ConnectionError):
+        return HTTPException(
+            status_code=503,
+            detail=(
+                "The local Ollama server is not reachable. Start it with `ollama serve`, "
+                f"then make sure the model is present: `ollama pull {model}`."
+            ),
+        )
+    missing = getattr(exc, "status_code", None) == 404
+    hint = (
+        f"The model '{model}' is not installed. Pull it with `ollama pull {model}`."
+        if missing
+        else f"The local model '{model}' returned an error: {exc}"
+    )
+    return HTTPException(status_code=503, detail=hint)
+
+
+@app.get("/api/i18n")
+def i18n_strings(lang: str = "en") -> dict:
+    """Return the GUI's localized strings for `lang` (falls back to English).
+
+    The single-page app fetches this to render every label, button, and message in
+    the language chosen by the header toggle, so the UI text lives in `i18n.yaml`
+    next to the LLM prompts rather than being hard-coded in the HTML.
+    """
+    strings = i18n(lang).get("gui") or i18n("en")["gui"]
+    return {"lang": lang if lang in SUPPORTED_LANGS else "en", "strings": strings}
+
+
+class AutofillRequest(BaseModel):
+    """Body of ``POST /api/autofill``: the names to score, plus model and language.
+
+    Attributes
+    ----------
+    noun : str
+        The first-column word (what a row is, e.g. "Programming Language").
+    options : list[str]
+        Option (row) names to rate.
+    criteria : list[str]
+        Criterion (column) names to rate each option on.
+    model : str
+        Ollama model that produces the ratings.
+    lang : str
+        Force the prompt language; "" detects it from the names.
+    """
+
+    noun: str = "Option"
+    options: list[str]
+    criteria: list[str]
+    model: str = DEFAULT_MODEL
+    lang: str = ""
+
+
+@app.post("/api/autofill")
+def autofill(req: AutofillRequest) -> dict:
+    """"Flemme" (lazy) auto-fill: score every option on every criterion via the model.
+
+    The user typed only the row and column names (common for a freshly uploaded CSV
+    that carries headers but no values); this asks the local model to fill the whole
+    ratings matrix from its own knowledge, offline.
+
+    Returns
+    -------
+    dict
+        ``{"ratings": {option: {criterion: int}}}`` for the front-end to load into
+        the grid.
+
+    Raises
+    ------
+    HTTPException
+        400 if no option / criterion was named; 503 if the model is unavailable.
+    """
+    lang = req.lang if req.lang in SUPPORTED_LANGS else None
+    try:
+        ratings = suggest_ratings(req.noun, req.options, req.criteria, model=req.model, lang=lang)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (ConnectionError, ollama.ResponseError) as exc:
+        raise _model_error(exc, req.model) from exc
+    return {"ratings": ratings}
+
+
 @app.post("/api/position", response_model=PositionResponse)
 def position(req: PositionRequest) -> PositionResponse:
     """Run the full positioning on an edited table and return everything to draw it.
@@ -218,19 +352,24 @@ def position(req: PositionRequest) -> PositionResponse:
     # `positioning` treats it as a row index rather than an option name.
     ref: int | str = int(req.reference) if req.reference.lstrip("-").isdigit() else req.reference
     lower = [c.strip() for c in req.lower.split(",") if c.strip()]
+    # "" means detect from the table; a toggle value forces the whole deliverable
+    # (poles, title, narrative) into that language.
+    lang = req.lang if req.lang in SUPPORTED_LANGS else None
     try:
         pos = positioning(
             req.table,
             reference=ref,
             lower_is_better=lower,
             model=req.model,
+            lang=lang,
         )
+        # The Markdown narrative is a separate call so a slow model doesn't block the
+        # spec; here we compute it inline since the whole request is already synchronous.
+        markdown = analysis_markdown(pos.result, pos.roles, pos.poles, model=req.model, lang=lang)
     except ValueError as exc:  # bad table / unknown reference -> a clean 400 for the UI
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    # The Markdown narrative is a separate call so a slow model doesn't block the
-    # spec; here we compute it inline since the whole request is already synchronous.
-    markdown = analysis_markdown(pos.result, pos.roles, pos.poles, model=req.model)
+    except (ConnectionError, ollama.ResponseError) as exc:  # model unavailable -> actionable 503
+        raise _model_error(exc, req.model) from exc
     # One payload with everything the page draws from: the Vega-Lite spec for the
     # chart, the Markdown write-up, the YAML dump for download, and the axis names /
     # poles / per-option roles the front-end uses to colour the analysis. Bundling
@@ -243,6 +382,7 @@ def position(req: PositionRequest) -> PositionResponse:
         poles=pos.poles,  # the four pole labels
         reference=pos.result.reference,  # resolved name of the top-right anchor
         roles=pos.role_of,  # option -> role, drives the name tinting
+        slug=_slugify(pos.noun_plural),  # export filename stem from the table's plural noun
     )
 
 

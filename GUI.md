@@ -29,15 +29,24 @@ Run it (`standpoint-gui`) and, entirely on `localhost`:
    ⬆️ higher-is-better and ⬇️ lower-is-better, and pick the reference (top-right)
    option. Or **upload a CSV / XLSX** file (Excel is read server-side via pandas +
    openpyxl) and **download** the edited table as CSV or XLSX.
-2. **Generate**: the grid is serialized to CSV and POSTed to `/api/position`, which
+2. **Auto-fill ("Laziness")**: type only the row and column names, then let the local
+   model score every empty cell from its own knowledge (`POST /api/autofill`). A
+   headers-only upload becomes a full table in one click.
+3. **Generate**: the grid is serialized to CSV and POSTed to `/api/position`, which
    runs the real `positioning()` pipeline.
-3. **See the quadrant**: the returned Vega-Lite spec is rendered live (SVG, scaled
+4. **See the quadrant**: the returned Vega-Lite spec is rendered live (SVG, scaled
    to fit its card), with a **Transparent background** toggle and explicit
-   **PNG / SVG** export buttons.
-4. **Read the analysis**: the Markdown interpretation is rendered below the map and
+   **PNG / SVG** export buttons. Exports are named after the table's subject
+   (e.g. `programming-languages.png`).
+5. **Read the analysis**: the Markdown interpretation is rendered below the map and
    **colour-coded**: each highlighted option is tinted by its role (leader red,
    weakest brown, top-pole purple, right-pole blue) to match the dots on the map.
    Downloadable as Markdown.
+
+Two header toggles round it off: **🇫🇷 / 🇬🇧 language** (re-localizes the whole page,
+including the model output: pole names, title, and the written analysis) and
+**🌞 / 🌛 theme** (light / dark, remembered across visits). GUI strings and LLM prompts
+live together in `standpoint/locales/i18n.yaml`.
 
 **Colour discipline**: the ["Good Colors"](https://harchaoui.org/warith/colors/)
 palette is reserved for **data only**: the dots on the map and the role-tinted names
@@ -73,10 +82,16 @@ flowchart LR
 (Tailwind + vega-embed + marked load from a CDN; the core library never imports the
 web layer.)
 
-- `standpoint/api.py`: FastAPI app: `GET /gui`, `GET /api/example`,
-  `POST /api/position`, `GET /` → `/gui`. Launcher `main_gui()` (`standpoint-gui`).
+- `standpoint/api.py`: FastAPI app. Pages: `GET /gui`, `GET /` → `/gui`. Data:
+  `GET /api/example`, `GET /api/i18n`, `POST /api/upload`, `POST /api/download/xlsx`,
+  `POST /api/autofill`, `POST /api/position`. Static: `/favicon.ico`,
+  `/site.webmanifest`, `/static/*`. Launcher `main_gui()` (`standpoint-gui`).
 - `standpoint/webgui.py`: the whole page as one self-contained HTML string
   (vanilla JS + Tailwind + vega-embed + marked, all via CDN, no framework, no npm).
+- `standpoint/locales/i18n.yaml`: localized LLM prompts **and** GUI strings (`gui:` /
+  `analysis:` blocks) for `en` / `fr` / `es`, the single source of truth for language.
+- `standpoint/static/`: the app icon set + PWA manifest, generated from
+  `assets/logo.png` and shipped as package data.
 - `pyproject.toml`: a `gui` extra (`fastapi`, `uvicorn`) and the `standpoint-gui`
   script. The core library and the two CLIs import none of it.
 

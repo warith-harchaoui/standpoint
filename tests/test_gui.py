@@ -120,3 +120,117 @@ def test_download_xlsx_returns_workbook() -> None:
     assert r.status_code == 200
     assert r.content[:4] == b"PK\x03\x04"  # xlsx is a zip
     assert "attachment" in r.headers.get("content-disposition", "")
+
+
+@pytest.mark.parametrize(
+    ("path", "content_type"),
+    [
+        ("/favicon.ico", "image/x-icon"),
+        ("/site.webmanifest", "application/manifest+json"),
+        ("/static/apple-touch-icon.png", "image/png"),
+        ("/static/android-chrome-192.png", "image/png"),
+        ("/static/logo-header.png", "image/png"),
+    ],
+)
+def test_app_icons_served(path: str, content_type: str) -> None:
+    """The icon set generated from the logo is served for browsers and installers."""
+    r = client.get(path)
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith(content_type)
+
+
+def test_gui_head_links_icons_and_manifest() -> None:
+    """The page advertises the favicon, apple-touch icon, and web manifest."""
+    html = client.get("/gui").text
+    assert 'rel="manifest"' in html
+    assert 'rel="apple-touch-icon"' in html
+    assert "/static/logo-header.png" in html  # the header brand mark
+
+
+def test_position_reports_ollama_down_cleanly(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ollama not running yields an actionable 503, not a raw 500."""
+
+    def boom(*_a: object, **_k: object) -> None:
+        raise ConnectionError("Failed to connect to Ollama.")
+
+    monkeypatch.setattr("standpoint.api.positioning", boom)
+    r = client.post("/api/position", json={"table": "L,A,B\nx,1,2\ny,2,1"})
+    assert r.status_code == 503
+    assert "ollama serve" in r.json()["detail"].lower()
+
+
+def test_position_reports_missing_model_cleanly(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A model that isn't pulled yields a 503 telling the user how to install it."""
+    import ollama
+
+    def boom(*_a: object, **_k: object) -> None:
+        raise ollama.ResponseError("model 'ghost:1b' not found", 404)
+
+    monkeypatch.setattr("standpoint.api.positioning", boom)
+    r = client.post(
+        "/api/position",
+        json={"table": "L,A,B\nx,1,2\ny,2,1", "model": "ghost:1b"},
+    )
+    assert r.status_code == 503
+    assert "ollama pull ghost:1b" in r.json()["detail"]
+
+
+def test_i18n_endpoint_localizes_gui() -> None:
+    """`GET /api/i18n` returns the GUI strings for the requested language."""
+    fr = client.get("/api/i18n", params={"lang": "fr"}).json()
+    assert fr["lang"] == "fr"
+    assert fr["strings"]["generate"] == "Générer le quadrant"
+    assert "Paresse" in fr["strings"]["flemme"]
+    # An unsupported language falls back to English rather than erroring.
+    xx = client.get("/api/i18n", params={"lang": "xx"}).json()
+    assert xx["lang"] == "en"
+    assert xx["strings"]["generate"] == "Generate quadrant"
+
+
+def test_autofill_requires_names() -> None:
+    """`POST /api/autofill` rejects a call with no options / criteria (400, no model)."""
+    r = client.post("/api/autofill", json={"options": [], "criteria": []})
+    assert r.status_code == 400
+    assert "detail" in r.json()
+
+
+def test_autofill_reports_model_down_cleanly(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ollama unreachable during auto-fill yields an actionable 503, not a raw 500."""
+
+    def boom(*_a: object, **_k: object) -> None:
+        raise ConnectionError("Failed to connect to Ollama.")
+
+    monkeypatch.setattr("standpoint.api.suggest_ratings", boom)
+    r = client.post("/api/autofill", json={"options": ["A", "B"], "criteria": ["X"]})
+    assert r.status_code == 503
+    assert "ollama serve" in r.json()["detail"].lower()
+
+
+@pytest.mark.needs_model
+def test_autofill_roundtrip_fills_matrix() -> None:
+    """`POST /api/autofill` returns a full option×criterion matrix of 1..5 integers."""
+    r = client.post(
+        "/api/autofill",
+        json={
+            "noun": "Programming Language",
+            "options": ["Python", "Rust"],
+            "criteria": ["Performance", "Ease of Learning"],
+            "lang": "en",
+        },
+    )
+    assert r.status_code == 200
+    ratings = r.json()["ratings"]
+    assert set(ratings) == {"Python", "Rust"}
+    for row in ratings.values():
+        assert set(row) == {"Performance", "Ease of Learning"}
+        assert all(isinstance(v, int) and 1 <= v <= 5 for v in row.values())
+
+
+@pytest.mark.needs_model
+def test_position_language_and_slug() -> None:
+    """A forced language localizes the whole report; the slug is the plural stem."""
+    table = "Programming Language,Performance,Ease of Learning\nPython,2,5\nRust,5,2\nGo,4,4"
+    data = client.post("/api/position", json={"table": table, "lang": "fr"}).json()
+    assert data["slug"] == "programming-languages"  # plural noun, slugified
+    assert "## Interprétation" in data["markdown"]  # analysis headings follow the language
+    assert "Approches mises en avant" in data["markdown"]

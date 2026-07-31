@@ -20,6 +20,17 @@ GUI_HTML = r"""<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Standpoint turns a comparison table into a 2D positioning map with a written analysis. Everything runs on your machine." />
   <title>Standpoint: table to quadrant</title>
+  <!-- App icon set generated from assets/logo.png; served by api.py under /static. -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#0B0B0C" />
+  <!-- Roboto family, to match the sprezzature look and feel (harchaoui.org). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&family=Roboto+Serif:wght@400;500;600&family=Roboto+Mono&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
@@ -32,9 +43,10 @@ GUI_HTML = r"""<!doctype html>
        so a colour in this app always means "data", never decoration. */
     :root {
       --red:#FF3B30; --blue:#007AFF; --purple:#AF52DE; --brown:#A52A2A;  /* roles */
-      --ink:#1c1c1e; --paper:#F8F8F8; --slate:#94a3b8;                    /* chrome */
+      --ink:#171717; --paper:#FAFAFA; --slate:#a3a3a3;                    /* chrome */
     }
-    body { font-family: Roboto, -apple-system, Helvetica, Arial, sans-serif; background: var(--paper); }
+    body { font-family: Roboto, system-ui, -apple-system, Helvetica, Arial, sans-serif;
+           background: var(--paper); -webkit-font-smoothing: antialiased; }
     /* Grid inputs sized to their content: numeric value cells fill their column
        (see the w-full inputs in renderGrid), while option (row) names and criterion
        (column) names get fixed room so nothing truncates and columns stay aligned. */
@@ -71,47 +83,103 @@ GUI_HTML = r"""<!doctype html>
     .role-worst { color:var(--brown);  font-weight:700; }
     .role-top   { color:var(--purple); font-weight:700; }
     .role-right { color:var(--blue);   font-weight:700; }
+
+    /* --- Dark theme -------------------------------------------------------
+       Driven by a `dark` class on <html> (toggled by the header 🌞/🌛 button and
+       persisted in localStorage). Rather than sprinkle Tailwind `dark:` variants over
+       every element, we remap the handful of neutral chrome utilities the page uses;
+       `.dark .x` (specificity 0,2,0) beats the base `.x`, so order does not matter.
+       The DATA palette (role tints, map dots) is deliberately left untouched. */
+    html.dark { color-scheme: dark; }
+    .dark body { background:#0B0B0C; color:#d4d4d4; }
+    .dark .bg-white { background-color:#171717 !important; }
+    .dark .card { border-color:#262626 !important; }
+    .dark .text-slate-900 { color:#f5f5f5 !important; }
+    .dark .text-slate-800 { color:#e5e5e5 !important; }
+    .dark .text-slate-700 { color:#d4d4d4 !important; }
+    .dark .text-slate-600, .dark .text-slate-500 { color:#a3a3a3 !important; }
+    .dark .text-slate-400 { color:#737373 !important; }
+    .dark .text-slate-300 { color:#404040 !important; }
+    .dark .bg-slate-100 { background-color:#262626 !important; }
+    .dark .bg-slate-200 { background-color:#404040 !important; }
+    .dark .hover\:bg-slate-100:hover { background-color:#262626 !important; }
+    .dark .hover\:bg-slate-200:hover { background-color:#404040 !important; }
+    .dark .hover\:bg-red-100:hover { background-color:#7f1d1d !important; }
+    .dark .border-slate-400 { border-color:#525252 !important; }
+    .dark input, .dark select { background-color:#0B0B0C; color:#e5e5e5; border-color:#404040; }
+    .dark #run { background:#e5e5e5 !important; color:#0B0B0C !important; }
+    .dark .analysis { color:#d4d4d4; }
+    .dark .analysis h1, .dark .analysis h2, .dark .analysis strong { color:#f5f5f5; }
+    .dark .analysis h2 { border-color:#262626; }
+    /* Subtle card border, sprezzature style (neutral-200/70 in light). */
+    .card { border:1px solid rgba(229,229,229,.7); }
+    /* Header toggle buttons: neutral, square, keyboard-focusable chrome. */
+    .toggle-btn { font-size:1.15rem; line-height:1; width:2.5rem; height:2.5rem;
+      display:flex; align-items:center; justify-content:center; border-radius:.6rem;
+      background:#f5f5f5; transition:background-color .15s; }
+    .toggle-btn:hover { background:#e5e5e5; }
+    .dark .toggle-btn { background:#262626; }
+    .dark .toggle-btn:hover { background:#404040; }
+    /* GitHub star link, echoing the sprezzature nav pill. */
+    .gh-link { display:inline-flex; align-items:center; gap:.35rem; font-size:.875rem;
+      font-weight:500; padding:.5rem .85rem; border-radius:.6rem; background:#f5f5f5;
+      color:#404040; white-space:nowrap; transition:background-color .15s; }
+    .gh-link:hover { background:#e5e5e5; }
+    .dark .gh-link { background:#262626; color:#d4d4d4; }
+    .dark .gh-link:hover { background:#404040; }
   </style>
 </head>
 <body class="text-slate-800">
-  <div class="max-w-[1400px] mx-auto px-6 py-10 space-y-10">
+  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-10">
 
-    <header class="space-y-3">
-      <h1 class="text-4xl font-extrabold tracking-tight text-slate-900">Standpoint</h1>
-      <p class="text-lg text-slate-600 font-medium">Know where each option actually stands.</p>
-      <p class="text-sm text-slate-500 max-w-3xl leading-relaxed">
-        Fill in the table below (options as rows, criteria as columns, a number in each cell),
-        pick the option you want anchored in the top-right corner, and generate. Standpoint runs
-        a Principal Component Analysis on your machine and draws a map: the two axes are the
-        combinations of your criteria that separate the options most, and each is named in plain
-        words. You get the map, a short written analysis, and downloadable files. Nothing is
-        uploaded.
-      </p>
+    <header class="flex items-start justify-between gap-4 flex-wrap">
+      <div class="flex items-center gap-4">
+        <!-- The logo is the product metaphor: an old chart where every place has its
+             position. It is chrome, not data, so it carries no palette meaning. -->
+        <img src="/static/logo-header.png" alt="Standpoint logo: an old map with a compass rose"
+             width="56" height="56" class="w-12 h-12 sm:w-14 sm:h-14 shrink-0" />
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Standpoint</h1>
+          <p class="text-base sm:text-lg text-slate-600 font-medium" data-i18n="baseline">Know where each option actually stands.</p>
+        </div>
+      </div>
+      <!-- Language (🇫🇷/🇬🇧) and theme (🌞/🌛) toggles. Both persist in localStorage;
+           the language one re-localizes the whole page, including the LLM output. -->
+      <div class="flex items-center gap-2 ml-auto">
+        <a id="ghLink" class="gh-link" href="https://github.com/warith-harchaoui/standingpoint"
+           target="_blank" rel="noopener" data-i18n="github">⭐️ on GitHub</a>
+        <button id="langToggle" class="toggle-btn" type="button" data-i18n-aria="lang_aria" aria-label="Switch language">🇬🇧</button>
+        <button id="themeToggle" class="toggle-btn" type="button" data-i18n-aria="theme_light_aria" aria-label="Switch theme">🌛</button>
+      </div>
     </header>
 
     <!-- 1 · Your table -->
-    <section class="bg-white rounded-2xl shadow-sm p-7 space-y-6">
+    <section class="card bg-white rounded-2xl shadow-sm p-5 sm:p-7 space-y-6">
       <div class="flex items-center gap-3">
         <span class="accent"></span>
-        <h2 class="text-xl font-semibold">Table</h2>
+        <h2 class="text-xl font-semibold" data-i18n="table_title">Table</h2>
       </div>
 
       <div class="flex items-center gap-2 flex-wrap">
-        <button id="addRow" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100">＋ Option (row)</button>
-        <button id="addCol" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100">＋ Criterion (column)</button>
-        <span class="mx-1 text-slate-300">|</span>
-        <button id="loadExample" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm">Reset to example</button>
-        <span class="mx-1 text-slate-300">|</span>
+        <button id="addRow" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="add_row">＋ Option (row)</button>
+        <button id="addCol" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="add_col">＋ Criterion (column)</button>
+        <span class="mx-1 text-slate-300 hidden sm:inline">|</span>
+        <!-- "Laziness / Paresse": fill every empty cell from the model's knowledge once
+             the row and column names are typed (common for a headers-only upload). -->
+        <button id="flemme" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="flemme" data-i18n-aria="flemme_aria">😴 Laziness (auto-fill)</button>
+        <span class="mx-1 text-slate-300 hidden sm:inline">|</span>
+        <button id="loadExample" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm" data-i18n="reset_example">Reset to example</button>
+        <span class="mx-1 text-slate-300 hidden sm:inline">|</span>
         <label class="px-3 py-2 rounded-lg text-sm cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700">
-          Upload CSV / XLSX
+          <span data-i18n="upload">Upload CSV / XLSX</span>
           <input id="upload" type="file" accept=".csv,.xlsx,.xls,.md,.txt" class="hidden" />
         </label>
-        <button id="dlCsv" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm">Download CSV</button>
-        <button id="dlXlsx" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm">Download XLSX</button>
+        <button id="dlCsv" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm" data-i18n="download_csv">Download CSV</button>
+        <button id="dlXlsx" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm" data-i18n="download_xlsx">Download XLSX</button>
       </div>
       <p class="text-xs text-slate-500 leading-relaxed">
-        Higher is better by default.<br>
-        Toggle ⬇️ / ⬆️ on a column to set whether lower or higher is the better score.
+        <span data-i18n="hint_higher">Higher is better by default.</span><br>
+        <span data-i18n="hint_toggle">Toggle ⬇️ / ⬆️ on a column to set whether lower or higher is the better score.</span>
       </p>
 
       <div class="overflow-x-auto">
@@ -120,58 +188,58 @@ GUI_HTML = r"""<!doctype html>
     </section>
 
     <!-- 2 · Options -->
-    <section class="bg-white rounded-2xl shadow-sm p-7 space-y-6">
+    <section class="card bg-white rounded-2xl shadow-sm p-5 sm:p-7 space-y-6">
       <div class="flex items-center gap-3">
         <span class="accent"></span>
-        <h2 class="text-xl font-semibold">Options</h2>
+        <h2 class="text-xl font-semibold" data-i18n="options_title">Options</h2>
       </div>
 
       <div class="space-y-4 max-w-xl">
         <label class="flex items-center justify-between gap-4 text-sm">
-          <span class="font-medium">Chosen top-right reference</span>
+          <span class="font-medium" data-i18n="reference_label">Chosen top-right reference</span>
           <select id="reference" class="border rounded-lg px-3 py-2 min-w-[13rem]"></select>
         </label>
 
         <label class="flex items-center gap-3 text-sm">
           <input type="checkbox" id="bgTransparent" class="w-4 h-4" />
-          <span class="font-medium">Transparent background</span>
+          <span class="font-medium" data-i18n="transparent_bg">Transparent background</span>
         </label>
       </div>
 
-      <button id="run" class="px-6 py-3 rounded-xl text-white font-semibold shadow-sm"
-              style="background:#1e293b">Generate quadrant</button>
+      <button id="run" class="px-6 py-3 rounded-xl text-white font-semibold shadow-sm hover:opacity-90"
+              style="background:#171717" data-i18n="generate">Generate quadrant</button>
     </section>
 
     <p id="status" role="status" aria-live="polite" class="text-sm text-slate-500 hidden"></p>
     <p id="error" role="alert" aria-live="assertive" class="text-sm font-medium hidden" style="color:#FF3B30"></p>
 
     <!-- 3 · Quadrant -->
-    <section class="bg-white rounded-2xl shadow-sm p-7 space-y-5">
+    <section class="card bg-white rounded-2xl shadow-sm p-5 sm:p-7 space-y-5">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <span class="accent"></span>
-          <h2 class="text-xl font-semibold">Quadrant</h2>
+          <h2 class="text-xl font-semibold" data-i18n="quadrant_title">Quadrant</h2>
         </div>
         <div class="flex gap-2">
           <button id="dlPng" class="text-xs px-3 py-1.5 rounded-lg hidden bg-slate-100 hover:bg-slate-200 text-slate-700">PNG</button>
           <button id="dlSvg" class="text-xs px-3 py-1.5 rounded-lg hidden bg-slate-100 hover:bg-slate-200 text-slate-700">SVG</button>
         </div>
       </div>
-      <div id="chart" class="min-h-[420px] flex items-center justify-center overflow-x-auto text-slate-400">
+      <div id="chart" class="min-h-[420px] flex items-center justify-center overflow-x-auto text-slate-400" data-i18n="chart_placeholder">
         Generate to see the map.
       </div>
     </section>
 
     <!-- Analysis -->
-    <section class="bg-white rounded-2xl shadow-sm p-7 space-y-5">
+    <section class="card bg-white rounded-2xl shadow-sm p-5 sm:p-7 space-y-5">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <span class="accent"></span>
-          <h2 class="text-xl font-semibold">Basic Analysis</h2>
+          <h2 class="text-xl font-semibold" data-i18n="analysis_title">Basic Analysis</h2>
         </div>
-        <button id="dlMd" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 hidden">Download Markdown</button>
+        <button id="dlMd" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 hidden" data-i18n="download_md">Download Markdown</button>
       </div>
-      <div id="comments" class="analysis max-w-none text-slate-400">
+      <div id="comments" class="analysis max-w-none text-slate-400" data-i18n="analysis_placeholder">
         The written interpretation appears here once you generate.
       </div>
     </section>
@@ -184,9 +252,32 @@ let firstCol = "Option";
 let lowerCols = new Set();  // indices (into headers) marked lower-is-better
 let rows = [];         // each: {name: string, values: string[]}
 
+// UI language + theme, the localized string table, and the export filename stem.
+let LANG = localStorage.getItem("sp-lang") || "en";
+let THEME = localStorage.getItem("sp-theme") || "light";
+let T = {};             // gui strings for LANG, fetched from /api/i18n
+let hasResult = false;  // once true, keep the rendered chart/analysis on relayout
+let slug = "standpoint";  // export stem, set from the table's plural after a run
+
 const $ = (id) => document.getElementById(id);
 
-// Parse CSV text into our state (first column = option names, rest numeric).
+// Localized string with {placeholder} interpolation; falls back to the key.
+function t(key, vars) {
+  let s = T[key] != null ? T[key] : key;
+  if (vars) for (const k in vars) s = s.split("{" + k + "}").join(vars[k]);
+  return s;
+}
+
+// Filename stem from a display name: lowercase, words joined by hyphens. Used for
+// the pre-generate CSV/XLSX downloads; post-generate exports use the server slug.
+function clientSlug(text) {
+  const s = (text || "").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return s || "standpoint";
+}
+function fileStem() { return hasResult ? slug : clientSlug(firstCol); }
+
+// Parse CSV text into our state (first column = option names, rest numeric). Cells
+// may legitimately be blank (an upload can carry only row and column names).
 function loadCsv(text) {
   const lines = text.trim().split(/\r?\n/).filter((l) => l.length);
   const head = lines[0].split(",");
@@ -200,28 +291,30 @@ function loadCsv(text) {
   renderGrid();
 }
 
-// Rebuild the editable table and the reference dropdown from state.
+// Rebuild the editable table and the reference dropdown from state. All labels come
+// from the string table so the grid re-localizes when the language toggle flips.
 function renderGrid() {
   const g = $("grid");
   g.innerHTML = "";
   // header row: first-column name, then each criterion with ↓ toggle + delete
   const htr = document.createElement("tr");
-  htr.innerHTML = `<th class="p-1"><input aria-label="Name of the options column"
+  htr.innerHTML = `<th class="p-1"><input aria-label="${t("aria_options_col")}"
       class="cell-name font-semibold border rounded px-2 py-1"
       value="${firstCol}" oninput="firstCol=this.value"/></th>`;
   headers.forEach((h, i) => {
     const th = document.createElement("th");
     th.className = "p-1 align-bottom";
+    const low = lowerCols.has(i);
     th.innerHTML = `
       <div class="flex flex-col items-center gap-1">
-        <input aria-label="Criterion ${i + 1} name" class="cell-head border rounded px-1 py-1 text-center text-xs" value="${h}"
+        <input aria-label="${t("aria_criterion", {n: i + 1})}" class="cell-head border rounded px-1 py-1 text-center text-xs" value="${h}"
                oninput="headers[${i}]=this.value"/>
         <div class="flex gap-1 text-xs">
-          <button aria-label="${lowerCols.has(i) ? 'Lower is better, click to make higher better' : 'Higher is better, click to make lower better'}"
-                  title="${lowerCols.has(i) ? 'lower is better (click to flip)' : 'higher is better (click to flip)'}"
-                  class="px-1 rounded ${lowerCols.has(i) ? 'bg-slate-300' : 'bg-slate-100'} hover:bg-slate-200"
-                  onclick="toggleLower(${i})">${lowerCols.has(i) ? '⬇️' : '⬆️'}</button>
-          <button aria-label="Delete column" title="delete column" class="px-1 rounded bg-slate-100 hover:bg-red-100"
+          <button aria-label="${low ? t("aria_lower") : t("aria_higher")}"
+                  title="${low ? t("title_lower") : t("title_higher")}"
+                  class="px-1 rounded ${low ? 'bg-slate-300' : 'bg-slate-100'} hover:bg-slate-200"
+                  onclick="toggleLower(${i})">${low ? '⬇️' : '⬆️'}</button>
+          <button aria-label="${t("aria_del_col")}" title="${t("title_del_col")}" class="px-1 rounded bg-slate-100 hover:bg-red-100"
                   onclick="delCol(${i})">✕</button>
         </div>
       </div>`;
@@ -231,19 +324,21 @@ function renderGrid() {
   // data rows
   rows.forEach((r, ri) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td class="p-1"><input aria-label="Option ${ri + 1} name"
+    tr.innerHTML = `<td class="p-1"><input aria-label="${t("aria_option", {n: ri + 1})}"
         class="cell-name border rounded px-2 py-1 font-medium" value="${r.name}"
         oninput="rows[${ri}].name=this.value; syncReference()"/></td>`;
     r.values.forEach((v, ci) => {
       const td = document.createElement("td");
       td.className = "p-1";
-      td.innerHTML = `<input aria-label="Rating of ${r.name || ("option " + (ri + 1))} on ${headers[ci] || ("criterion " + (ci + 1))}"
+      const opt = r.name || t("aria_option", {n: ri + 1});
+      const crit = headers[ci] || t("aria_criterion", {n: ci + 1});
+      td.innerHTML = `<input aria-label="${t("aria_rating", {opt: opt, crit: crit})}"
           class="w-full border rounded px-1 py-1 text-center" value="${v}"
           oninput="rows[${ri}].values[${ci}]=this.value"/>`;
       tr.appendChild(td);
     });
     const del = document.createElement("td");
-    del.innerHTML = `<button aria-label="Delete option ${ri + 1}" title="delete row" class="px-1 text-xs rounded bg-slate-100 hover:bg-red-100"
+    del.innerHTML = `<button aria-label="${t("aria_del_row", {n: ri + 1})}" title="${t("title_del_row")}" class="px-1 text-xs rounded bg-slate-100 hover:bg-red-100"
         onclick="delRow(${ri})">✕</button>`;
     tr.appendChild(del);
     g.appendChild(tr);
@@ -259,15 +354,16 @@ function delRow(i) { rows.splice(i, 1); renderGrid(); }
 // Keep the reference dropdown in step with the option names.
 function syncReference() {
   const sel = $("reference"); const cur = sel.value;
-  sel.innerHTML = rows.map((r, i) => `<option value="${i}">${r.name || ("row " + i)}</option>`).join("");
+  sel.innerHTML = rows.map((r, i) => `<option value="${i}">${r.name || t("ref_fallback", {i: i})}</option>`).join("");
   if (cur && cur < rows.length) sel.value = cur;
 }
 
-$("addRow").onclick = () => { rows.push({ name: "New", values: headers.map(() => "3") }); renderGrid(); };
-$("addCol").onclick = () => { headers.push("Criterion"); rows.forEach((r) => r.values.push("3")); renderGrid(); };
+$("addRow").onclick = () => { rows.push({ name: t("new_option"), values: headers.map(() => "3") }); renderGrid(); };
+$("addCol").onclick = () => { headers.push(t("new_criterion")); rows.forEach((r) => r.values.push("3")); renderGrid(); };
 $("loadExample").onclick = () => fetch("/api/example").then((r) => r.text()).then(loadCsv);
 
-// Upload a CSV or XLSX file: the server normalizes it to CSV (XLSX via pandas).
+// Upload a CSV or XLSX file: the server normalizes it to CSV (XLSX via pandas). An
+// upload with only headers and no values is fine; "Laziness" can fill the rest.
 $("upload").onchange = async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -278,10 +374,56 @@ $("upload").onchange = async (e) => {
     if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
     loadCsv(await res.text());
   } catch (err) {
-    $("error").textContent = "Upload failed: " + err.message;
+    $("error").textContent = t("err_upload") + err.message;
     $("error").classList.remove("hidden");
   }
   e.target.value = "";  // allow re-uploading the same file
+};
+
+// --- "Laziness / Paresse": fill the empty cells from the model's knowledge --------
+$("flemme").onclick = async () => {
+  const btn = $("flemme");
+  if (btn.disabled) return;
+  const options = rows.map((r) => r.name).filter((s) => s && s.trim());
+  const criteria = headers.filter((h) => h && h.trim());
+  $("error").classList.add("hidden");
+  if (!options.length || !criteria.length) {
+    $("error").textContent = t("err_flemme") + t("err_generic");
+    $("error").classList.remove("hidden");
+    return;
+  }
+  btn.disabled = true;
+  btn.classList.add("opacity-60", "cursor-not-allowed");
+  $("status").textContent = t("flemme_running");
+  $("status").classList.remove("hidden");
+  try {
+    const res = await fetch("/api/autofill", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ noun: firstCol, options, criteria, lang: LANG }),
+    });
+    if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+    const data = await res.json();
+    const ratings = data.ratings || {};
+    // Fill only blank cells, so anything the user already typed is preserved.
+    rows.forEach((r) => {
+      const rr = ratings[r.name] || {};
+      r.values = headers.map((h, i) => {
+        const cur = (r.values[i] ?? "").toString().trim();
+        if (cur) return r.values[i];
+        return rr[h] != null ? String(rr[h]) : "";
+      });
+    });
+    renderGrid();
+    $("status").classList.add("hidden");
+  } catch (err) {
+    $("status").classList.add("hidden");
+    $("error").textContent = t("err_flemme") + err.message;
+    $("error").classList.remove("hidden");
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("opacity-60", "cursor-not-allowed");
+  }
 };
 
 // Serialize the grid back to CSV, tagging lower-is-better columns with "(↓)".
@@ -292,17 +434,17 @@ function toCsv() {
 }
 
 // Download the current grid: CSV is built client-side; XLSX is built by the server.
-$("dlCsv").onclick = () => download("standpoint.csv", toCsv(), "text/csv");
+$("dlCsv").onclick = () => download(fileStem() + ".csv", toCsv(), "text/csv");
 $("dlXlsx").onclick = async () => {
   const res = await fetch("/api/download/xlsx", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ table: toCsv() }),
   });
-  if (!res.ok) { $("error").textContent = "XLSX export failed."; $("error").classList.remove("hidden"); return; }
+  if (!res.ok) { $("error").textContent = t("err_xlsx"); $("error").classList.remove("hidden"); return; }
   const blob = await res.blob();
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = "standpoint.xlsx"; a.click();
+  a.href = URL.createObjectURL(blob); a.download = fileStem() + ".xlsx"; a.click();
   URL.revokeObjectURL(a.href);
 };
 
@@ -340,14 +482,12 @@ $("run").onclick = async () => {
   // button (and mark it busy for assistive tech) so a second click can't fire a
   // concurrent request. The `finally` below always restores it.
   if (btn.disabled) return;
-  const btnLabel = btn.textContent;
   btn.disabled = true;
   btn.setAttribute("aria-busy", "true");
   btn.classList.add("opacity-60", "cursor-not-allowed");
-  btn.textContent = "Generating…";
+  btn.textContent = t("generating");
   $("error").classList.add("hidden");
-  $("status").textContent =
-    "Running PCA and asking the local model… (this can take ~10–25 s)";
+  $("status").textContent = t("status_running");
   $("status").classList.remove("hidden");
   try {
     const res = await fetch("/api/position", {
@@ -357,10 +497,12 @@ $("run").onclick = async () => {
         table: toCsv(),
         reference: $("reference").value,
         lower: "",                 // lower-is-better is carried by the (↓) markers
+        lang: LANG,                // the toggle drives the language of the whole output
       }),
     });
     if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
     const data = await res.json();
+    slug = data.slug || "standpoint";  // name exports after the table's subject
     // Render the quadrant. Background toggle applies to the preview only.
     const spec = data.vega;
     const transparent = $("bgTransparent").checked;  // checked = transparent, else white
@@ -377,21 +519,22 @@ $("run").onclick = async () => {
     lastMd = data.markdown;
     $("comments").className = "analysis max-w-none";
     $("comments").innerHTML = colorizeRoles(
-      marked.parse(data.markdown || "*(no analysis, enable the model)*"),
+      marked.parse(data.markdown || t("no_analysis")),
       data.roles || {},
     );
     $("dlMd").classList.remove("hidden");
+    hasResult = true;  // keep the chart/analysis on a later language relayout
     $("status").classList.add("hidden");
   } catch (e) {
     $("status").classList.add("hidden");
-    $("error").textContent = "Error: " + e.message;
+    $("error").textContent = t("err_generic") + e.message;
     $("error").classList.remove("hidden");
   } finally {
     // Always restore the button, whether the run succeeded or errored.
     btn.disabled = false;
     btn.removeAttribute("aria-busy");
     btn.classList.remove("opacity-60", "cursor-not-allowed");
-    btn.textContent = btnLabel;
+    btn.textContent = t("generate");
   }
 };
 
@@ -401,25 +544,76 @@ function download(name, text, type) {
   a.href = URL.createObjectURL(new Blob([text], { type }));
   a.download = name; a.click(); URL.revokeObjectURL(a.href);
 }
-$("dlMd").onclick = () => download("standpoint.md", lastMd, "text/markdown");
+$("dlMd").onclick = () => download(slug + ".md", lastMd, "text/markdown");
 
 // Export the rendered quadrant straight from the Vega view (honours the background
 // toggle): rasterized PNG (2x) or vector SVG.
-async function exportImage(fmt, filename) {
+async function exportImage(fmt) {
   if (!chartView) return;
   try {
     const url = await chartView.toImageURL(fmt, fmt === "png" ? 2 : 1);
-    const a = document.createElement("a"); a.href = url; a.download = filename; a.click();
+    const a = document.createElement("a"); a.href = url; a.download = slug + "." + fmt; a.click();
   } catch (err) {
-    $("error").textContent = "Image export failed: " + err.message;
+    $("error").textContent = t("err_image") + err.message;
     $("error").classList.remove("hidden");
   }
 }
-$("dlPng").onclick = () => exportImage("png", "standpoint.png");
-$("dlSvg").onclick = () => exportImage("svg", "standpoint.svg");
+$("dlPng").onclick = () => exportImage("png");
+$("dlSvg").onclick = () => exportImage("svg");
 
-// Start with the shipped example so the page is alive on load.
-fetch("/api/example").then((r) => r.text()).then(loadCsv);
+// --- language + theme toggles -------------------------------------------------
+// Apply the fetched string table to every [data-i18n] / [data-i18n-aria] node, then
+// re-render the grid so its labels follow. The chart and analysis are skipped once a
+// result is on screen, so flipping the language never wipes a rendered map.
+function applyI18n() {
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    if ((el.id === "chart" || el.id === "comments") && hasResult) return;
+    const k = el.getAttribute("data-i18n");
+    if (T[k] != null) el.textContent = T[k];
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+    const k = el.getAttribute("data-i18n-aria");
+    if (T[k] != null) el.setAttribute("aria-label", T[k]);
+  });
+  document.documentElement.lang = LANG;
+  updateToggles();
+  renderGrid();
+}
+
+// The toggle glyphs show the CURRENT language flag and the theme you would switch TO.
+function updateToggles() {
+  $("langToggle").textContent = LANG === "fr" ? "🇫🇷" : "🇬🇧";
+  const dark = document.documentElement.classList.contains("dark");
+  $("themeToggle").textContent = dark ? "🌞" : "🌛";
+  if (T.theme_dark_aria) $("themeToggle").setAttribute("aria-label", dark ? T.theme_dark_aria : T.theme_light_aria);
+}
+
+async function loadI18n() {
+  try {
+    const res = await fetch("/api/i18n?lang=" + encodeURIComponent(LANG));
+    T = (await res.json()).strings || {};
+  } catch (e) { T = {}; }
+  applyI18n();
+}
+
+function setTheme(theme) {
+  THEME = theme;
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  localStorage.setItem("sp-theme", theme);
+  updateToggles();
+}
+
+$("langToggle").onclick = () => {
+  LANG = LANG === "fr" ? "en" : "fr";
+  localStorage.setItem("sp-lang", LANG);
+  loadI18n();
+};
+$("themeToggle").onclick = () => setTheme(THEME === "dark" ? "light" : "dark");
+
+// --- boot ---------------------------------------------------------------------
+setTheme(THEME);  // apply the saved theme before first paint of interactive chrome
+// Localize, then load the shipped example so the page is alive and translated on load.
+loadI18n().then(() => fetch("/api/example").then((r) => r.text()).then(loadCsv));
 </script>
 </body>
 </html>

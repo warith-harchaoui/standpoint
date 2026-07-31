@@ -58,6 +58,89 @@ en:
     specific and genuinely useful, never generic. No acronyms, no bullet lists.
     Write plain prose with no dash punctuation: use commas, colons, semicolons, or
     separate sentences instead of em dashes or en dashes.
+  # "Flemme" (lazy) autofill: the user typed the option names and the criteria; the
+  # model fills every rating from its own knowledge. {noun} is the first-column word.
+  ratings_prompt: |
+    You rate options on criteria for a comparison table, using your own knowledge.
+    The options ({noun}) are: {options}.
+    The criteria are: {criteria}.
+    Rate EVERY option on EVERY criterion with an INTEGER from 1 to 5, where 5 is the
+    best possible and 1 the worst, judging each criterion on its plain positive
+    meaning (for a cost/price/latency criterion, 5 means cheap/fast, 1 means
+    expensive/slow). Base the ratings on what these options are actually known for.
+    Reply as JSON only, an object mapping each exact option name to an object mapping
+    each exact criterion name to its integer, e.g.
+    {{"OptionA": {{"Crit1": 4, "Crit2": 2}}, "OptionB": {{"Crit1": 3, "Crit2": 5}}}}.
+  gui:
+    lang_name: English
+    baseline: Know where each option actually stands.
+    github: ⭐️ on GitHub
+    theme_light_aria: Switch to dark theme
+    theme_dark_aria: Switch to light theme
+    lang_aria: Switch language
+    table_title: Table
+    add_row: ＋ Option (row)
+    add_col: ＋ Criterion (column)
+    reset_example: Reset to example
+    flemme: 😴 Laziness (auto-fill)
+    flemme_aria: Auto-fill the empty cells from the model's knowledge
+    upload: Upload CSV / XLSX
+    download_csv: Download CSV
+    download_xlsx: Download XLSX
+    hint_higher: Higher is better by default.
+    hint_toggle: "Toggle ⬇️ / ⬆️ on a column to set whether lower or higher is the better score."
+    options_title: Options
+    reference_label: Chosen top-right reference
+    transparent_bg: Transparent background
+    generate: Generate quadrant
+    generating: Generating…
+    status_running: "Running PCA and asking the local model… (this can take ~10–25 s)"
+    flemme_running: "Asking the model to fill the table… (this can take a moment)"
+    quadrant_title: Quadrant
+    chart_placeholder: Generate to see the map.
+    analysis_title: Basic Analysis
+    download_md: Download Markdown
+    analysis_placeholder: The written interpretation appears here once you generate.
+    err_upload: "Upload failed: "
+    err_xlsx: XLSX export failed.
+    err_flemme: "Auto-fill failed: "
+    err_generic: "Error: "
+    err_image: "Image export failed: "
+    no_analysis: "*(no analysis, enable the model)*"
+    new_option: New
+    new_criterion: Criterion
+    aria_options_col: Name of the options column
+    aria_criterion: Criterion {n} name
+    aria_higher: Higher is better, click to make lower better
+    aria_lower: Lower is better, click to make higher better
+    title_higher: higher is better (click to flip)
+    title_lower: lower is better (click to flip)
+    aria_del_col: Delete column
+    title_del_col: delete column
+    aria_del_row: Delete option {n}
+    title_del_row: delete row
+    aria_option: Option {n} name
+    aria_rating: Rating of {opt} on {crit}
+    ref_fallback: "row {i}"
+  # Localized labels for the structural parts of the written analysis (the headings
+  # and fixed lines around the LLM narrative), so the whole report follows the
+  # language. Placeholders: {left} {right} {bottom} {top} {pct} {cols}.
+  analysis:
+    interpretation: Interpretation
+    axes: Axes
+    axis_horizontal: "Horizontal ({left} ↔ {right}):"
+    axis_vertical: "Vertical ({bottom} ↔ {top}):"
+    info_share: "{pct} of the information."
+    relevant_columns: "Relevant columns for axis: {cols}."
+    preserved: "In two axes, we preserved **{pct}** of the information."
+    highlighted: Highlighted approaches
+    leader: "Chosen leader reference:"
+    opposite: "Exact reference opposite:"
+    opposite_note: (diametrically opposite the leader on the map)
+    strongest_top: "Strongest toward {top}:"
+    top_note: (challenger furthest up the vertical axis)
+    strongest_right: "Strongest toward {right}:"
+    right_note: (challenger furthest along the horizontal axis)
 
 fr:
   # « Voitures dans le quadrant », jamais « Voitures in the Quadrant ».
@@ -110,6 +193,87 @@ fr:
     jamais générique. Pas d'acronymes, pas de listes à puces. Écrivez une prose sans
     tiret de ponctuation : virgules, deux-points, points-virgules ou phrases séparées
     à la place des cadratins ou demi-cadratins.
+  # « Flemme » : l'utilisateur a saisi les noms des options et des critères ; le
+  # modèle remplit chaque note depuis sa propre connaissance. {noun} = mot d'en-tête.
+  ratings_prompt: |
+    Vous notez des options sur des critères pour un tableau comparatif, à partir de
+    votre propre connaissance.
+    Les options ({noun}) sont : {options}.
+    Les critères sont : {criteria}.
+    Notez CHAQUE option sur CHAQUE critère avec un ENTIER de 1 à 5, où 5 est le
+    meilleur possible et 1 le pire, en jugeant chaque critère sur son sens positif
+    simple (pour un critère de coût/prix/latence, 5 = bon marché/rapide, 1 =
+    cher/lent). Fondez les notes sur ce pour quoi ces options sont réellement connues.
+    Répondez uniquement en JSON, un objet associant chaque nom exact d'option à un
+    objet associant chaque nom exact de critère à son entier, p. ex.
+    {{"OptionA": {{"Crit1": 4, "Crit2": 2}}, "OptionB": {{"Crit1": 3, "Crit2": 5}}}}.
+  gui:
+    lang_name: Français
+    baseline: Sachez où se situe vraiment chaque option.
+    github: ⭐️ sur GitHub
+    theme_light_aria: Passer au thème sombre
+    theme_dark_aria: Passer au thème clair
+    lang_aria: Changer de langue
+    table_title: Tableau
+    add_row: ＋ Option (ligne)
+    add_col: ＋ Critère (colonne)
+    reset_example: Réinitialiser à l'exemple
+    flemme: 😴 Paresse (auto-remplissage)
+    flemme_aria: Remplir les cellules vides depuis la connaissance du modèle
+    upload: Importer CSV / XLSX
+    download_csv: Télécharger CSV
+    download_xlsx: Télécharger XLSX
+    hint_higher: Plus haut est meilleur par défaut.
+    hint_toggle: "Basculez ⬇️ / ⬆️ sur une colonne pour indiquer si le score le plus bas ou le plus haut est le meilleur."
+    options_title: Options
+    reference_label: Référence choisie (coin haut droit)
+    transparent_bg: Fond transparent
+    generate: Générer le quadrant
+    generating: Génération…
+    status_running: "Analyse en composantes principales et interrogation du modèle local… (environ 10 à 25 s)"
+    flemme_running: "Le modèle remplit le tableau… (cela peut prendre un moment)"
+    quadrant_title: Quadrant
+    chart_placeholder: Générez pour voir la carte.
+    analysis_title: Analyse
+    download_md: Télécharger le Markdown
+    analysis_placeholder: L'interprétation écrite apparaît ici après génération.
+    err_upload: "Échec de l'import : "
+    err_xlsx: Échec de l'export XLSX.
+    err_flemme: "Échec du remplissage : "
+    err_generic: "Erreur : "
+    err_image: "Échec de l'export de l'image : "
+    no_analysis: "*(pas d'analyse, activez le modèle)*"
+    new_option: Nouvelle
+    new_criterion: Critère
+    aria_options_col: Nom de la colonne des options
+    aria_criterion: Nom du critère {n}
+    aria_higher: Plus haut est meilleur, cliquez pour inverser
+    aria_lower: Plus bas est meilleur, cliquez pour inverser
+    title_higher: plus haut est meilleur (cliquez pour inverser)
+    title_lower: plus bas est meilleur (cliquez pour inverser)
+    aria_del_col: Supprimer la colonne
+    title_del_col: supprimer la colonne
+    aria_del_row: Supprimer l'option {n}
+    title_del_row: supprimer la ligne
+    aria_option: Nom de l'option {n}
+    aria_rating: Note de {opt} sur {crit}
+    ref_fallback: "ligne {i}"
+  analysis:
+    interpretation: Interprétation
+    axes: Axes
+    axis_horizontal: "Horizontal ({left} ↔ {right}) :"
+    axis_vertical: "Vertical ({bottom} ↔ {top}) :"
+    info_share: "{pct} de l'information."
+    relevant_columns: "Colonnes pertinentes pour l'axe : {cols}."
+    preserved: "Sur deux axes, nous avons préservé **{pct}** de l'information."
+    highlighted: Approches mises en avant
+    leader: "Référence en tête choisie :"
+    opposite: "Opposé exact de la référence :"
+    opposite_note: (diamétralement opposé au leader sur la carte)
+    strongest_top: "Plus fort vers {top} :"
+    top_note: (challenger le plus haut sur l'axe vertical)
+    strongest_right: "Plus fort vers {right} :"
+    right_note: (challenger le plus à droite sur l'axe horizontal)
 
 es:
   # «Coches en el cuadrante», nunca «Coches in the Quadrant».
@@ -160,3 +324,84 @@ es:
     específico y realmente útil, nunca genérico. Sin siglas, sin listas con viñetas.
     Escribe en prosa sin guiones de puntuación: usa comas, dos puntos, puntos y coma
     o frases separadas en lugar de rayas o guiones largos.
+  # «Flemme»: el usuario escribió los nombres; el modelo rellena cada nota con su
+  # propio conocimiento. {noun} es la palabra de la primera columna.
+  ratings_prompt: |
+    Valoras opciones sobre criterios para una tabla comparativa, con tu propio
+    conocimiento.
+    Las opciones ({noun}) son: {options}.
+    Los criterios son: {criteria}.
+    Valora CADA opción en CADA criterio con un ENTERO de 1 a 5, donde 5 es lo mejor
+    posible y 1 lo peor, juzgando cada criterio por su sentido positivo simple (para
+    un criterio de coste/precio/latencia, 5 = barato/rápido, 1 = caro/lento). Basa las
+    notas en aquello por lo que estas opciones son realmente conocidas.
+    Responde solo en JSON, un objeto que asocia cada nombre exacto de opción a un
+    objeto que asocia cada nombre exacto de criterio a su entero, p. ej.
+    {{"OpcionA": {{"Crit1": 4, "Crit2": 2}}, "OpcionB": {{"Crit1": 3, "Crit2": 5}}}}.
+  gui:
+    lang_name: Español
+    baseline: Sepa dónde está realmente cada opción.
+    github: ⭐️ en GitHub
+    theme_light_aria: Cambiar al tema oscuro
+    theme_dark_aria: Cambiar al tema claro
+    lang_aria: Cambiar de idioma
+    table_title: Tabla
+    add_row: ＋ Opción (fila)
+    add_col: ＋ Criterio (columna)
+    reset_example: Restablecer al ejemplo
+    flemme: 😴 Pereza (rellenar)
+    flemme_aria: Rellenar las celdas vacías con el conocimiento del modelo
+    upload: Importar CSV / XLSX
+    download_csv: Descargar CSV
+    download_xlsx: Descargar XLSX
+    hint_higher: Más alto es mejor por defecto.
+    hint_toggle: "Cambia ⬇️ / ⬆️ en una columna para indicar si la nota más baja o más alta es la mejor."
+    options_title: Opciones
+    reference_label: Referencia elegida (arriba a la derecha)
+    transparent_bg: Fondo transparente
+    generate: Generar el cuadrante
+    generating: Generando…
+    status_running: "Ejecutando el ACP e interrogando al modelo local… (puede tardar 10 a 25 s)"
+    flemme_running: "El modelo rellena la tabla… (puede tardar un momento)"
+    quadrant_title: Cuadrante
+    chart_placeholder: Genera para ver el mapa.
+    analysis_title: Análisis
+    download_md: Descargar Markdown
+    analysis_placeholder: La interpretación escrita aparece aquí tras generar.
+    err_upload: "Error al importar: "
+    err_xlsx: Error al exportar XLSX.
+    err_flemme: "Error al rellenar: "
+    err_generic: "Error: "
+    err_image: "Error al exportar la imagen: "
+    no_analysis: "*(sin análisis, activa el modelo)*"
+    new_option: Nueva
+    new_criterion: Criterio
+    aria_options_col: Nombre de la columna de opciones
+    aria_criterion: Nombre del criterio {n}
+    aria_higher: Más alto es mejor, clic para invertir
+    aria_lower: Más bajo es mejor, clic para invertir
+    title_higher: más alto es mejor (clic para invertir)
+    title_lower: más bajo es mejor (clic para invertir)
+    aria_del_col: Eliminar la columna
+    title_del_col: eliminar la columna
+    aria_del_row: Eliminar la opción {n}
+    title_del_row: eliminar la fila
+    aria_option: Nombre de la opción {n}
+    aria_rating: Nota de {opt} en {crit}
+    ref_fallback: "fila {i}"
+  analysis:
+    interpretation: Interpretación
+    axes: Ejes
+    axis_horizontal: "Horizontal ({left} ↔ {right}):"
+    axis_vertical: "Vertical ({bottom} ↔ {top}):"
+    info_share: "{pct} de la información."
+    relevant_columns: "Columnas relevantes para el eje: {cols}."
+    preserved: "En dos ejes, conservamos **{pct}** de la información."
+    highlighted: Propuestas destacadas
+    leader: "Referencia líder elegida:"
+    opposite: "Opuesto exacto de la referencia:"
+    opposite_note: (diametralmente opuesto al líder en el mapa)
+    strongest_top: "Más fuerte hacia {top}:"
+    top_note: (retador más arriba en el eje vertical)
+    strongest_right: "Más fuerte hacia {right}:"
+    right_note: (retador más a la derecha en el eje horizontal)

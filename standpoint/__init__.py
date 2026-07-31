@@ -34,7 +34,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.4.2"
+__version__ = "0.5.0"
 
 import argparse
 import json
@@ -94,6 +94,7 @@ __all__ = [
     "png_on_white",
     "export_all",
     "analysis_markdown",
+    "suggest_ratings",
     "results_yaml",
     "validate_table",
     "resolve_polarity",
@@ -1295,6 +1296,94 @@ def vlm_assess(image: str | bytes, model: str = DEFAULT_MODEL) -> dict:
         return {}
 
 
+def suggest_ratings(
+    noun: str,
+    options: list[str],
+    criteria: list[str],
+    model: str = DEFAULT_MODEL,
+    lang: str | None = None,
+) -> dict[str, dict[str, int]]:
+    """Ask the local model to fill a ratings matrix from the option / criterion names.
+
+    This backs the GUI's "Flemme" (lazy) auto-fill: the user typed only the row
+    (option) and column (criterion) names, and the model scores every option on every
+    criterion on a 1 to 5 scale from its own knowledge. It is offline by design (the
+    model's training knowledge, not a live web search), so nothing leaves the machine.
+
+    Parameters
+    ----------
+    noun : str
+        The first-column word (e.g. "Programming Language"), naming what a row is.
+    options : list[str]
+        The option (row) names to score.
+    criteria : list[str]
+        The criterion (column) names to score each option on.
+    model : str
+        Ollama model to query.
+    lang : str | None
+        Output language for the prompt; detected from the names when `None`.
+
+    Returns
+    -------
+    dict[str, dict[str, int]]
+        ``{option: {criterion: rating}}`` with every rating clamped to 1..5. Missing
+        pairs default to 3 (neutral) so the caller always gets a complete matrix.
+
+    Raises
+    ------
+    ConnectionError
+        The Ollama server is unreachable.
+    ollama.ResponseError
+        The model is not installed or errors.
+    """
+    options = [o for o in (s.strip() for s in options) if o]
+    criteria = [c for c in (s.strip() for s in criteria) if c]
+    if not options or not criteria:
+        raise ValueError("Name at least one option and one criterion before auto-filling.")
+    if lang not in SUPPORTED_LANGS:
+        lang = detect_language(options + criteria + [noun])
+    prompt = i18n(lang)["ratings_prompt"].format(
+        noun=noun or "Option",
+        options=", ".join(options),
+        criteria=", ".join(criteria),
+    )
+    # Constrain the model to the exact shape: every option maps to an object of its
+    # criteria, each an integer. `format` makes ollama return schema-valid JSON.
+    schema = {
+        "type": "object",
+        "properties": {
+            o: {
+                "type": "object",
+                "properties": {c: {"type": "integer"} for c in criteria},
+                "required": criteria,
+            }
+            for o in options
+        },
+        "required": options,
+    }
+    resp = ollama.chat(
+        model=model,
+        format=schema,
+        options={"temperature": 0},
+        messages=[{"role": "user", "content": prompt}],
+    )
+    data = json.loads(resp["message"]["content"])
+    # Clamp to 1..5 and backfill any gap with a neutral 3, so the grid is always full.
+    out: dict[str, dict[str, int]] = {}
+    for o in options:
+        row = data.get(o, {}) if isinstance(data, dict) else {}
+        out[o] = {c: _clamp_rating(row.get(c)) for c in criteria}
+    return out
+
+
+def _clamp_rating(value: object) -> int:
+    """Coerce a model-returned score to an integer in 1..5; neutral 3 on anything odd."""
+    try:
+        return max(1, min(5, int(round(float(value)))))  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return 3
+
+
 def _llm_text(prompt: str, model: str, fallback: str) -> str:
     """Free-text completion from the local model; `fallback` if unreachable."""
     try:
@@ -1381,33 +1470,36 @@ def analysis_markdown(
         ),
     )
 
+    # The structural labels (headings and fixed lines) are localized so the whole
+    # report follows `lang`, matching the localized narrative and pole names above.
+    a = i18n(lang).get("analysis", i18n("en")["analysis"])
+    horiz = a["axis_horizontal"].format(left=left, right=right)
+    vert = a["axis_vertical"].format(bottom=bottom, top=top)
     lines = [
         f"# {result.reference}",
         "",
-        "## Interpretation",
+        f"## {a['interpretation']}",
         "",
         narrative,
         "",
-        "## Axes",
+        f"## {a['axes']}",
         "",
-        f"**Horizontal ({left} ↔ {right}):** {_approx_pct(evr[0])} of the information.",
+        f"**{horiz}** {a['info_share'].format(pct=_approx_pct(evr[0]))}",
         "",
-        f"Relevant columns for axis: {order_line(0)}.",
+        a["relevant_columns"].format(cols=order_line(0)),
         "",
-        f"**Vertical ({bottom} ↔ {top}):** {_approx_pct(evr[1])} of the information.",
+        f"**{vert}** {a['info_share'].format(pct=_approx_pct(evr[1]))}",
         "",
-        f"Relevant columns for axis: {order_line(1)}.",
+        a["relevant_columns"].format(cols=order_line(1)),
         "",
-        f"In two axes, we preserved **{_approx_pct(evr.sum())}** of the information.",
+        a["preserved"].format(pct=_approx_pct(evr.sum())),
         "",
-        "## Highlighted approaches",
+        f"## {a['highlighted']}",
         "",
-        f"- **Chosen leader reference:** {role_rows['best']}",
-        f"- **Exact reference opposite:** {role_rows['worst']} (diametrically opposite the leader on the map)",
-        f"- **Strongest toward {top}:** {role_rows['top']} (challenger furthest up "
-        "the vertical axis)",
-        f"- **Strongest toward {right}:** {role_rows['right']} (challenger furthest "
-        "along the horizontal axis)",
+        f"- **{a['leader']}** {role_rows['best']}",
+        f"- **{a['opposite']}** {role_rows['worst']} {a['opposite_note']}",
+        f"- **{a['strongest_top'].format(top=top)}** {role_rows['top']} {a['top_note']}",
+        f"- **{a['strongest_right'].format(right=right)}** {role_rows['right']} {a['right_note']}",
         "",
     ]
     return "\n".join(lines)
@@ -1595,6 +1687,7 @@ def positioning(
     right: str | None = None,
     lower_is_better: list[str] | None = None,
     model: str = DEFAULT_MODEL,
+    lang: str | None = None,
 ) -> Positioning:
     """Position options from a table in one call.
 
@@ -1602,8 +1695,9 @@ def positioning(
     of a CSV or Markdown table. `lower_is_better` names criteria where a lower value
     is better (also picked up from ``(↓)`` header markers). `top` / `right` force a
     named option into the top-pole / right-pole highlight (see `assign_roles`).
-    Returns a `Positioning` with `.coords`, `.loadings`, `.axes`, `.to_vega()`,
-    `.to_markdown()`, `.to_yaml()`, and `.export(outdir)`.
+    `lang` forces the output language (one of `SUPPORTED_LANGS`); left `None` it is
+    detected from the column names. Returns a `Positioning` with `.coords`,
+    `.loadings`, `.axes`, `.to_vega()`, `.to_markdown()`, `.to_yaml()`, `.export()`.
 
     >>> pos = positioning("examples/programming_languages.csv")
     >>> pos.export("out")
@@ -1615,9 +1709,10 @@ def positioning(
     df, lower = resolve_polarity(df, lower_is_better)  # clean names + lower set
     result = analyze(df, reference=reference, lower_is_better=list(lower))
     roles = assign_roles(result, top=top, right=right)
-    # Detect the language once from the column names; it drives every naming call
-    # (poles, noun, title) so the whole deliverable comes out in the table's tongue.
-    lang = detect_language(result.features)
+    # An explicit `lang` (e.g. the GUI's language toggle) wins; otherwise detect it
+    # once from the column names. It drives every naming call (poles, noun, title) so
+    # the whole deliverable comes out in one tongue.
+    lang = lang if lang in SUPPORTED_LANGS else detect_language(result.features)
     poles = axis_poles(result, model=model, lang=lang)
     singular, plural = noun_forms(str(df.index.name or "Approach"), model=model, lang=lang)
     # Localize the whole title, not just the noun: a French table reads
