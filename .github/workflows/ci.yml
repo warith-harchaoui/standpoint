@@ -12,11 +12,13 @@ concurrency:
   cancel-in-progress: true
 
 # Deliberately light (coding standard, Rule 18: shift expensive validation left).
-# CI is the reproducible final gate — one Python, lint + the deterministic core tests.
-# The heavier checks run locally before pushing (see CONTRIBUTING.md "Running the
-# checks locally"): the full ruff pass over skills/, the GUI + MCP endpoint tests
-# (the [gui]/[mcp] extras), the Playwright end-to-end test, and the DeepEval eval —
-# all of which self-skip here anyway when their extras/models aren't present.
+# CI is the reproducible final gate: one Python, lint + the deterministic tests that
+# need no local model. The `gui` extra is pure-Python (FastAPI + httpx TestClient, no
+# Chromium, no Ollama), so the model-free GUI/API tests (endpoints, i18n integrity,
+# auto-fill validation, the 503 error paths) run here and a failure blocks the merge.
+# The genuinely heavy checks still self-skip here and run locally before pushing (see
+# CONTRIBUTING.md): the Playwright end-to-end test, the MCP tools ([mcp] extra), the
+# DeepEval eval, and every @needs_model test (skipped when no Ollama is reachable).
 jobs:
   ci:
     name: lint + core tests
@@ -27,15 +29,15 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - name: Install package + dev extras
+      - name: Install package + dev and gui extras
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -e ".[dev,gui]"
           # Pin ruff so the lint result is reproducible across ruff releases.
           pip install "ruff==0.15.21"
       - name: Lint (Python only; formatting is enforced locally)
         run: ruff check standpoint tests
-      - name: Core tests
-        # The GUI / MCP / e2e / eval tests skip themselves without their extras and
-        # without a local Ollama, so this is the deterministic core suite.
-        run: pytest -q
+      - name: Tests (model-free; failures block the merge)
+        # `CI` is set by GitHub Actions; the conftest guard skips @needs_model tests
+        # when Ollama is unreachable, keeping this the deterministic, model-free gate.
+        run: pytest -q -m "not needs_model"

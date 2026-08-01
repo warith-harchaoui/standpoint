@@ -161,14 +161,14 @@ GUI_HTML = r"""<!doctype html>
       </div>
 
       <div class="flex items-center gap-2 flex-wrap">
+        <!-- Start from an empty grid; then build it up row by row and column by column. -->
+        <button id="newTable" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="new_table">🆕 New Table</button>
         <button id="addRow" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="add_row">＋ Option (row)</button>
         <button id="addCol" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="add_col">＋ Criterion (column)</button>
         <span class="mx-1 text-slate-300 hidden sm:inline">|</span>
         <!-- "Laziness / Paresse": fill every empty cell from the model's knowledge once
              the row and column names are typed (common for a headers-only upload). -->
         <button id="flemme" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="flemme" data-i18n-aria="flemme_aria">😴 Laziness (auto-fill)</button>
-        <span class="mx-1 text-slate-300 hidden sm:inline">|</span>
-        <button id="loadExample" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm" data-i18n="reset_example">Reset to example</button>
         <span class="mx-1 text-slate-300 hidden sm:inline">|</span>
         <label class="px-3 py-2 rounded-lg text-sm cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700">
           <span data-i18n="upload">Upload CSV / XLSX</span>
@@ -360,7 +360,15 @@ function syncReference() {
 
 $("addRow").onclick = () => { rows.push({ name: t("new_option"), values: headers.map(() => "3") }); renderGrid(); };
 $("addCol").onclick = () => { headers.push(t("new_criterion")); rows.forEach((r) => r.values.push("3")); renderGrid(); };
-$("loadExample").onclick = () => fetch("/api/example").then((r) => r.text()).then(loadCsv);
+// New Table: a blank slate with one empty option and one empty criterion, so the user
+// can build a table from scratch, adding rows and columns as they go.
+$("newTable").onclick = () => {
+  firstCol = "Option";
+  headers = [""];
+  rows = [{ name: "", values: [""] }];
+  hasResult = false;
+  renderGrid();
+};
 
 // Upload a CSV or XLSX file: the server normalizes it to CSV (XLSX via pandas). An
 // upload with only headers and no values is fine; "Laziness" can fill the rest.

@@ -32,8 +32,9 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-# Testing + linting kept light so CI installs fast.
-dev = ["pytest>=7.0", "ruff>=0.5"]
+# Testing + linting kept light so CI installs fast. `httpx` backs Starlette's
+# TestClient, so the model-free GUI/API endpoint tests run in CI (with the gui extra).
+dev = ["pytest>=7.0", "ruff>=0.5", "httpx>=0.27"]
 # `deepeval` powers the optional pole-naming evaluation in tests/test_eval.py. It is
 # a separate, heavier extra: the eval is skipped unless both deepeval and a local
 # Ollama model are available, so it runs on a workstation, not in the default CI job.

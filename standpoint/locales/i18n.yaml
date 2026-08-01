@@ -81,7 +81,7 @@ en:
     table_title: Table
     add_row: ＋ Option (row)
     add_col: ＋ Criterion (column)
-    reset_example: Reset to example
+    new_table: 🆕 New Table
     flemme: 😴 Laziness (auto-fill)
     flemme_aria: Auto-fill the empty cells from the model's knowledge
     upload: Upload CSV / XLSX
@@ -217,7 +217,7 @@ fr:
     table_title: Tableau
     add_row: ＋ Option (ligne)
     add_col: ＋ Critère (colonne)
-    reset_example: Réinitialiser à l'exemple
+    new_table: 🆕 Nouveau tableau
     flemme: 😴 Paresse (auto-remplissage)
     flemme_aria: Remplir les cellules vides depuis la connaissance du modèle
     upload: Importer CSV / XLSX
@@ -348,7 +348,7 @@ es:
     table_title: Tabla
     add_row: ＋ Opción (fila)
     add_col: ＋ Criterio (columna)
-    reset_example: Restablecer al ejemplo
+    new_table: 🆕 Nueva tabla
     flemme: 😴 Pereza (rellenar)
     flemme_aria: Rellenar las celdas vacías con el conocimiento del modelo
     upload: Importar CSV / XLSX

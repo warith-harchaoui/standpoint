@@ -998,6 +998,16 @@ def noun_forms(word: str, model: str = DEFAULT_MODEL, lang: str | None = None) -
 # --------------------------------------------------------------------------- #
 # Vega-Lite
 # --------------------------------------------------------------------------- #
+def _vega_field(name: str) -> str:
+    """Escape a column name for use as a Vega-Lite field accessor.
+
+    Vega treats ``.`` and ``[`` / ``]`` in a field string as nested-property accessors,
+    so a criterion literally named "v1.2" would be read as v1 -> 2. Backslash-escaping
+    those characters makes Vega look up the flat key we actually stored.
+    """
+    return name.replace("\\", "\\\\").replace(".", "\\.").replace("[", "\\[").replace("]", "\\]")
+
+
 def to_vega(
     result: PCAResult,
     roles: list[str] | None = None,
@@ -1005,6 +1015,7 @@ def to_vega(
     colors: list[str] | None = None,
     noun_plural: str = "Approaches",
     title: str | None = None,
+    attributes: pd.DataFrame | None = None,
 ) -> dict:
     """Build a self-contained Vega-Lite v5 spec (inline data) for the map.
 
@@ -1048,7 +1059,7 @@ def to_vega(
         return round(hi + (lo - hi) * t)
 
     label_font = _scaled(11, 17)
-    pole_font = _scaled(13, 22)
+    pole_font = _scaled(12, 17)  # kept modest so long pole words never crowd the edge
     legend_font = _scaled(9, 13)
     dot_size = _scaled(90, 240)
 
@@ -1077,6 +1088,20 @@ def to_vega(
         }
     )
 
+    # The hover tooltip lists the ORIGINAL criterion values (what the user typed),
+    # one line per column, rather than the two abstract PC coordinates: that is what
+    # a reader actually wants to compare. `attributes` is the raw options x criteria
+    # table (index = option names); when absent we fall back to the coordinates.
+    attr_cols = [str(c) for c in attributes.columns] if attributes is not None else []
+
+    def _attr_value(nm: str, col: str) -> float | int | None:
+        """One raw cell for `nm` on `col`, as a JSON-safe number (blanks -> None)."""
+        v = attributes.loc[nm, col] if nm in attributes.index else None
+        if v is None or pd.isna(v):
+            return None
+        f = float(v)
+        return int(f) if f.is_integer() else f
+
     points = [
         {
             "name": nm,
@@ -1087,6 +1112,7 @@ def to_vega(
             "label": nm if i in placements else "",
             "labelx": placements.get(i, (x, y))[0],
             "labely": placements.get(i, (x, y))[1],
+            **{col: _attr_value(nm, col) for col in attr_cols},
         }
         for i, ((x, y), nm, r, c) in enumerate(
             zip(result.scores, names, roles, colors, strict=False)
@@ -1132,14 +1158,17 @@ def to_vega(
         }
 
     edge_x, edge_y = view_x * 0.98, view_y * 0.98  # axes span the full view
+    # Pole words sit INSIDE the view (not at the border), between the dot cloud
+    # (~0.65 of the view) and the edge, so a long label never bites the canvas edge.
+    pole_x, pole_y = view_x * 0.86, view_y * 0.86
     gap_x, gap_y = span_x * 0.04, span_y * 0.04  # keep pole words off the lines
     layers = [
         rule(-edge_x, edge_x, 0, 0),  # horizontal axis
         rule(0, 0, -edge_y, edge_y),  # vertical axis
-        pole_label(edge_x, gap_y, right, "right", "bottom"),
-        pole_label(-edge_x, gap_y, left, "left", "bottom"),
-        pole_label(gap_x, edge_y, top, "left", "top"),
-        pole_label(gap_x, -edge_y, bottom, "left", "bottom"),
+        pole_label(pole_x, gap_y, right, "right", "bottom"),
+        pole_label(-pole_x, gap_y, left, "left", "bottom"),
+        pole_label(gap_x, pole_y, top, "left", "top"),
+        pole_label(gap_x, -pole_y, bottom, "left", "bottom"),
         {  # every dot coloured by position; no legend, each dot is labelled in place
             "data": {"values": points},
             "mark": {
@@ -1161,11 +1190,24 @@ def to_vega(
                     # fallback identity key when crowding dropped a label (see above).
                     "legend": color_legend,
                 },
+                # Name first, then one line per criterion with its value. Field names
+                # are escaped (dots / brackets are Vega accessors) but the shown title
+                # stays the real column name. Falls back to the coordinates when the
+                # caller passed no attribute table.
                 "tooltip": [
-                    {"field": "name", "type": "nominal"},
-                    {"field": "role", "type": "nominal"},
-                    {"field": "axis1", "type": "quantitative", "format": ".2f"},
-                    {"field": "axis2", "type": "quantitative", "format": ".2f"},
+                    {"field": "name", "type": "nominal", "title": noun_plural},
+                    *(
+                        [
+                            {"field": _vega_field(col), "title": col, "type": "quantitative"}
+                            for col in attr_cols
+                        ]
+                        if attr_cols
+                        else [
+                            {"field": "role", "type": "nominal"},
+                            {"field": "axis1", "type": "quantitative", "format": ".2f"},
+                            {"field": "axis2", "type": "quantitative", "format": ".2f"},
+                        ]
+                    ),
                 ],
             },
         },
@@ -1641,6 +1683,7 @@ class Positioning:
             self.colors,
             noun_plural=self.noun_plural,
             title=self.title,
+            attributes=self.df,  # raw values, so the hover tooltip lists every column
         )
 
     def to_markdown(self, model: str = DEFAULT_MODEL) -> str:

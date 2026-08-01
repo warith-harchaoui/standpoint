@@ -27,16 +27,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   manifest, all generated from `assets/logo.png` and served under `/static`.
 - **Sprezzature look and feel.** Roboto typography, neutral palette with bordered
   cards, a responsive layout (down to phone widths), and a "⭐️ on GitHub" link.
+- **"New Table" button** to start from an empty grid and build it up row by row and
+  column by column (replaces "Reset to example"; the example still loads on first
+  visit).
+- **Richer hover tooltip.** Hovering a dot now lists every criterion with the option's
+  value (the original numbers you typed), instead of the two abstract PC coordinates.
+  `to_vega()` gains an `attributes` argument for the raw table.
 - `lang` parameter on `positioning()` and `POST /api/position` to force the output
   language instead of detecting it from the table.
 
 ### Changed
 
+- **Pole labels** are drawn further inside the map (at ~0.86 of the view rather than
+  hard against the edge) and one size smaller, so a long label never bites the canvas
+  edge or overflows the figure.
 - GUI exports are named after the table's subject (e.g. `programming-languages.png`)
   rather than a generic stem; the plural slug is returned by `POST /api/position`.
 - `POST /api/position` and `POST /api/autofill` now return an actionable `503` when the
   local Ollama server is unreachable or the model is not installed, instead of an
   opaque `500`.
+- CI now installs the pure-Python `gui` extra and runs the model-free GUI/API tests
+  (endpoints, i18n integrity, auto-fill validation, the 503 error paths); a failure
+  blocks the merge. The Playwright, MCP, eval, and model-backed tests still self-skip.
 
 ## [0.4.2] - 2026-07-27
 
