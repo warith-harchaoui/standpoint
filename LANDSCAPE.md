@@ -1,6 +1,6 @@
 # Landscape
 
-[🇫🇷](https://github.com/warith-harchaoui/standingpoint/blob/main/PAYSAGE.md) · [🇬🇧](https://github.com/warith-harchaoui/standingpoint/blob/main/LANDSCAPE.md)
+[🇫🇷](https://github.com/warith-harchaoui/standpoint/blob/main/PAYSAGE.md) · [🇬🇧](https://github.com/warith-harchaoui/standpoint/blob/main/LANDSCAPE.md)
 
 Where does Standpoint sit among the usual ways of drawing a positioning / perceptual
 map? The honest way to answer that is to *use Standpoint on itself*, so this page is
@@ -24,7 +24,7 @@ The comparison (higher is better, on a 1–5 scale):
 <!-- FIGURE:START -->
 2D representation of the table above.
 
-![Positioning map](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/landscape.png)
+![Positioning map](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/landscape.png)
 
 The map is a 2-D summary of the eight criteria, so read it as a shape, not a scoreboard. `Standpoint` is at the top-right corner. The axes read **Horizontal (Clarity ↔ Versatility)** and **Vertical (Ease ↔ Completeness)**.
 <!-- FIGURE:END -->
@@ -66,7 +66,7 @@ python3 -m standpoint assets/landscape.csv --outdir assets --stem landscape
 The input table lives at [`assets/landscape.csv`](assets/landscape.csv); the run also
 writes the Markdown interpretation and the YAML of coordinates next to the figure.
 
-See the [README](https://github.com/warith-harchaoui/standingpoint/blob/main/README.md)
+See the [README](https://github.com/warith-harchaoui/standpoint/blob/main/README.md)
 for what Standpoint does and how to install it, and
-[EXAMPLES.md](https://github.com/warith-harchaoui/standingpoint/blob/main/EXAMPLES.md)
+[EXAMPLES.md](https://github.com/warith-harchaoui/standpoint/blob/main/EXAMPLES.md)
 for more worked examples.

@@ -5,7 +5,7 @@
 > editing a table to a quadrant image and written comments, all in the browser, all
 > on your machine. The rest of this page explains why it exists and how it is built.
 
-![Standpoint GUI: edit a table, generate the quadrant and analysis](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/gui-preview.png)
+![Standpoint GUI: edit a table, generate the quadrant and analysis](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/gui-preview.png)
 
 ## The opportunity
 

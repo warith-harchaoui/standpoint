@@ -135,4 +135,4 @@ and `references/input-and-output.md` for the table rules and the exact files wri
   is Ollama pulling its model the first time.
 
 The exhaustive list of what should (and should not) invoke this tool lives in
-[TRIGGERS.md](https://github.com/warith-harchaoui/standingpoint/blob/main/TRIGGERS.md).
+[TRIGGERS.md](https://github.com/warith-harchaoui/standpoint/blob/main/TRIGGERS.md).

@@ -1,7 +1,7 @@
 # Examples
 
 Every example uses a table from
-[`examples/`](https://github.com/warith-harchaoui/standingpoint/tree/main/examples).
+[`examples/`](https://github.com/warith-harchaoui/standpoint/tree/main/examples).
 Each run writes seven files: the transparent figure `<name>.png` / `<name>.svg`, a
 white-background `<name>.white.png` / `<name>.white.svg` (for dark surfaces where the
 dark labels would vanish on transparency), the `<name>.vl.json` spec, the `<name>.md`
@@ -48,20 +48,20 @@ standpoint examples/voitures_electriques.csv --model qwen2.5vl:7b --check --outd
 
 Leader: Python. The axis names come from the loadings.
 
-![Programming languages positioning map](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/examples/programming_languages.png)
+![Programming languages positioning map](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/programming_languages.png)
 
 ### Cloud providers (English)
 
 Leader: AWS.
 
-![Cloud providers positioning map](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/examples/cloud_providers.png)
+![Cloud providers positioning map](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/cloud_providers.png)
 
 ### Voitures électriques (French)
 
 The column names are French, so the axis names and the written analysis come out in
 French. Leader: Tesla Model 3.
 
-![Carte de positionnement des voitures électriques](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/examples/voitures_electriques.png)
+![Carte de positionnement des voitures électriques](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/voitures_electriques.png)
 
 ## The output files
 

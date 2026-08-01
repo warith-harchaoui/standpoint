@@ -146,7 +146,7 @@ GUI_HTML = r"""<!doctype html>
       <!-- Language (🇫🇷/🇬🇧) and theme (🌞/🌛) toggles. Both persist in localStorage;
            the language one re-localizes the whole page, including the LLM output. -->
       <div class="flex items-center gap-2 ml-auto">
-        <a id="ghLink" class="gh-link" href="https://github.com/warith-harchaoui/standingpoint"
+        <a id="ghLink" class="gh-link" href="https://github.com/warith-harchaoui/standpoint"
            target="_blank" rel="noopener" data-i18n="github">⭐️ on GitHub</a>
         <button id="langToggle" class="toggle-btn" type="button" data-i18n-aria="lang_aria" aria-label="Switch language">🇬🇧</button>
         <button id="themeToggle" class="toggle-btn" type="button" data-i18n-aria="theme_light_aria" aria-label="Switch theme">🌛</button>

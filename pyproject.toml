@@ -48,7 +48,7 @@ gui = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9", "openpyxl>=
 mcp = ["standpoint[gui]", "fastapi-mcp>=0.3,<1"]
 
 [project.urls]
-Homepage = "https://github.com/warith-harchaoui/standingpoint"
+Homepage = "https://github.com/warith-harchaoui/standpoint"
 Author = "https://www.linkedin.com/in/warith-harchaoui"
 
 [project.scripts]

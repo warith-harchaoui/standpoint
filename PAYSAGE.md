@@ -1,6 +1,6 @@
 # Paysage
 
-[🇫🇷](https://github.com/warith-harchaoui/standingpoint/blob/main/PAYSAGE.md) · [🇬🇧](https://github.com/warith-harchaoui/standingpoint/blob/main/LANDSCAPE.md)
+[🇫🇷](https://github.com/warith-harchaoui/standpoint/blob/main/PAYSAGE.md) · [🇬🇧](https://github.com/warith-harchaoui/standpoint/blob/main/LANDSCAPE.md)
 
 Où se situe Standpoint parmi les manières habituelles de dessiner une carte de
 positionnement (carte perceptuelle) ? La façon honnête d'y répondre est d'*utiliser
@@ -25,7 +25,7 @@ La comparaison (le plus haut, le meilleur, sur une échelle de 1 à 5) :
 <!-- FIGURE:START -->
 Représentation 2D du tableau ci-dessus.
 
-![Carte de positionnement](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/paysage.png)
+![Carte de positionnement](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/paysage.png)
 
 La carte est un résumé en 2D des 8 critères : à lire comme une forme, pas comme un classement. « Standpoint » se situe dans le coin en haut à droite. Les axes se lisent **Horizontal (Précision ↔ Facilité d'utilisation)** et **Vertical (Simplicité ↔ Complétude)**.
 <!-- FIGURE:END -->
@@ -75,5 +75,5 @@ python3 -m standpoint assets/paysage.csv --outdir assets --stem paysage
 Le tableau d'entrée est dans [`assets/paysage.csv`](assets/paysage.csv) ; l'exécution
 écrit aussi l'interprétation Markdown et le YAML des coordonnées à côté de la figure.
 
-Voir le [LISEZMOI](https://github.com/warith-harchaoui/standingpoint/blob/main/LISEZMOI.md)
+Voir le [LISEZMOI](https://github.com/warith-harchaoui/standpoint/blob/main/LISEZMOI.md)
 pour ce que fait Standpoint et comment l'installer.

@@ -1,14 +1,14 @@
 # Standpoint
 
-[🇫🇷](https://github.com/warith-harchaoui/standingpoint/blob/main/LISEZMOI.md) · [🇬🇧](https://github.com/warith-harchaoui/standingpoint/blob/main/README.md)
+[🇫🇷](https://github.com/warith-harchaoui/standpoint/blob/main/LISEZMOI.md) · [🇬🇧](https://github.com/warith-harchaoui/standpoint/blob/main/README.md)
 
-[![CI](https://github.com/warith-harchaoui/standingpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standingpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standingpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20Vega--Lite-brightgreen.svg)](#tout-en-local)
+[![CI](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20Vega--Lite-brightgreen.svg)](#tout-en-local)
 
 `Standpoint` fait partie d'une collection de bibliothèques appelée `AI Helpers`, développée pour bâtir des applications d'intelligence artificielle.
 
 [🌍 AI Helpers](https://harchaoui.org/warith/ai-helpers)
 
-[![Logo Standpoint](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/logo.png)](https://harchaoui.org/warith/ai-helpers)
+[![Logo Standpoint](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/logo.png)](https://harchaoui.org/warith/ai-helpers)
 
 Sachez où se situe vraiment chaque option.
 
@@ -38,9 +38,9 @@ modèle la première fois, puis fonctionne hors ligne.
 
 [💻 Documentation](https://harchaoui.org/warith/ai-helpers/docs/standingpoint-doc/)
 
-[🗺️ Paysage](https://github.com/warith-harchaoui/standingpoint/blob/main/PAYSAGE.md)
+[🗺️ Paysage](https://github.com/warith-harchaoui/standpoint/blob/main/PAYSAGE.md)
 
-[📋 Exemples](https://github.com/warith-harchaoui/standingpoint/blob/main/EXAMPLES.md)
+[📋 Exemples](https://github.com/warith-harchaoui/standpoint/blob/main/EXAMPLES.md)
 
 
 Entrée : un tableau d'options et de leurs notes.
@@ -55,7 +55,7 @@ Entrée : un tableau d'options et de leurs notes.
 
 Sortie : une carte de positionnement,
 
-![Carte de positionnement des langages de programmation](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/examples/programming_languages.png)
+![Carte de positionnement des langages de programmation](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/programming_languages.png)
 
 plus une analyse Markdown (le sens des axes, où la référence l'emporte, quelles
 options se distinguent, avec les loadings et un classement) et un fichier YAML avec,
@@ -94,9 +94,9 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
 - **MCP** : `standpoint-mcp` publie l'API comme outils MCP sur `/mcp` (extra `[mcp]`).
 
 Elle s'installe aussi comme **skill Claude / OpenCode** ; voir
-[skills/standpoint/SKILL.md](https://github.com/warith-harchaoui/standingpoint/blob/main/skills/standpoint/SKILL.md)
+[skills/standpoint/SKILL.md](https://github.com/warith-harchaoui/standpoint/blob/main/skills/standpoint/SKILL.md)
 et le catalogue exhaustif
-[TRIGGERS.md](https://github.com/warith-harchaoui/standingpoint/blob/main/TRIGGERS.md).
+[TRIGGERS.md](https://github.com/warith-harchaoui/standpoint/blob/main/TRIGGERS.md).
 
 ## Installation
 
@@ -141,17 +141,17 @@ pip install "standpoint[mcp]"      # + le serveur MCP (au-dessus de l'API)
 ### Depuis les sources
 
 ```bash
-git clone https://github.com/warith-harchaoui/standingpoint.git
-cd standingpoint
+git clone https://github.com/warith-harchaoui/standpoint.git
+cd standpoint
 pip install -e .          # ou : pip install -r requirements.txt
 ```
 
 Ou une version précise directement depuis GitHub (le nom d'import est `standpoint`,
-voir les [Releases](https://github.com/warith-harchaoui/standingpoint/releases) pour
+voir les [Releases](https://github.com/warith-harchaoui/standpoint/releases) pour
 le dernier tag) :
 
 ```bash
-pip install "git+https://github.com/warith-harchaoui/standingpoint.git@v0.4.2"
+pip install "git+https://github.com/warith-harchaoui/standpoint.git@v0.4.2"
 ```
 
 ### Vérifier l'installation
@@ -218,7 +218,7 @@ Choisissez un autre modèle local pour les noms d'axes et l'analyse :
 standpoint mon_tableau.csv --model qwen3:8b
 ```
 
-Plus d'exemples dans [EXAMPLES.md](https://github.com/warith-harchaoui/standingpoint/blob/main/EXAMPLES.md).
+Plus d'exemples dans [EXAMPLES.md](https://github.com/warith-harchaoui/standpoint/blob/main/EXAMPLES.md).
 
 ## En service : GUI, API, MCP, Docker
 
@@ -227,7 +227,7 @@ pip install "standpoint[gui]"
 standpoint-gui                     # appli web → http://localhost:8000/gui
 ```
 
-![La GUI Standpoint : éditez un tableau, générez le quadrant et l'analyse](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/assets/gui-preview.png)
+![La GUI Standpoint : éditez un tableau, générez le quadrant et l'analyse](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/gui-preview.png)
 
 Le back-end de la GUI est une application FastAPI : `POST /api/position` renvoie le
 spec Vega-Lite, l'analyse Markdown et le YAML. Servez-la avec l'endpoint MCP monté,
@@ -288,7 +288,7 @@ La figure se limite à une croix pointillée pour les axes, les mots-pôles aux
 extrémités, des étiquettes seulement là où elles rentrent, et une légende pour le
 reste.
 
-![Voitures électriques, une entrée française donne un titre et des axes en français](https://raw.githubusercontent.com/warith-harchaoui/standingpoint/main/examples/voitures_electriques.png)
+![Voitures électriques, une entrée française donne un titre et des axes en français](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/voitures_electriques.png)
 
 ## Notes
 
@@ -326,8 +326,8 @@ python3 -m ruff check standpoint tests
 python3 -m ruff format --check standpoint tests
 ```
 
-Le standard de code de ce dépôt est [CODING.md](https://github.com/warith-harchaoui/standingpoint/blob/main/CODING.md) ;
-la politique de contribution et de versionnage est dans [CONTRIBUTING.md](https://github.com/warith-harchaoui/standingpoint/blob/main/CONTRIBUTING.md).
+Le standard de code de ce dépôt est [CODING.md](https://github.com/warith-harchaoui/standpoint/blob/main/CODING.md) ;
+la politique de contribution et de versionnage est dans [CONTRIBUTING.md](https://github.com/warith-harchaoui/standpoint/blob/main/CONTRIBUTING.md).
 
 ## Crédits
 
@@ -345,4 +345,4 @@ idée plus récente. Les couleurs viennent de la palette
 ## Licence
 
 BSD 3-Clause, la même licence que scikit-learn. Voir
-[`LICENSE`](https://github.com/warith-harchaoui/standingpoint/blob/main/LICENSE).
+[`LICENSE`](https://github.com/warith-harchaoui/standpoint/blob/main/LICENSE).
