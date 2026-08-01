@@ -169,7 +169,9 @@ GUI_HTML = r"""<!doctype html>
         <!-- "Laziness / Paresse": fill every empty cell from the model's knowledge once
              the row and column names are typed (common for a headers-only upload). -->
         <button id="flemme" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="flemme" data-i18n-aria="flemme_aria">😴 Laziness (auto-fill)</button>
-        <span class="mx-1 text-slate-300 hidden sm:inline">|</span>
+      </div>
+      <!-- File actions (import / export) on their own line, separate from grid-editing. -->
+      <div class="flex items-center gap-2 flex-wrap">
         <label class="px-3 py-2 rounded-lg text-sm cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700">
           <span data-i18n="upload">Upload CSV / XLSX</span>
           <input id="upload" type="file" accept=".csv,.xlsx,.xls,.md,.txt" class="hidden" />

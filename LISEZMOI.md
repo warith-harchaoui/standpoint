@@ -113,7 +113,22 @@ téléchargez le modèle par défaut une fois :
 - 🐧 **Ubuntu/Debian** : `curl -fsSL https://ollama.com/install.sh | sh`, puis `ollama pull qwen2.5vl:7b`
 - 🪟 **Windows** : installez depuis [ollama.com/download](https://ollama.com/download), puis `ollama pull qwen2.5vl:7b`
 
-Nous recommandons un environnement Python. Si vous ne savez pas comment faire : [🥸 Conseils techniques](https://harchaoui.org/warith/4ml/#install).
+**Utilisez un environnement virtuel.** Installer dans le Python système est la
+première cause de commande introuvable après installation ou de conflit de version
+avec un autre projet :
+
+- 🍎 **macOS** / 🐧 **Ubuntu/Debian** :
+  ```bash
+  python3 -m venv .venv && source .venv/bin/activate
+  python -m pip install --upgrade pip   # un pip trop ancien est la première cause d'échec
+  ```
+- 🪟 **Windows** (PowerShell) :
+  ```powershell
+  python -m venv .venv; .venv\Scripts\Activate.ps1
+  python -m pip install --upgrade pip
+  ```
+
+Nouveau avec les environnements Python : [🥸 Conseils techniques](https://harchaoui.org/warith/4ml/#install).
 
 ### Depuis PyPI (recommandé)
 
@@ -131,11 +146,51 @@ cd standingpoint
 pip install -e .          # ou : pip install -r requirements.txt
 ```
 
-Ou directement depuis GitHub (le nom d'import est `standpoint`) :
+Ou une version précise directement depuis GitHub (le nom d'import est `standpoint`,
+voir les [Releases](https://github.com/warith-harchaoui/standingpoint/releases) pour
+le dernier tag) :
 
 ```bash
-pip install "git+https://github.com/warith-harchaoui/standingpoint.git@v0.4.0"
+pip install "git+https://github.com/warith-harchaoui/standingpoint.git@v0.4.2"
 ```
+
+### Vérifier l'installation
+
+```bash
+python -c "import standpoint; print(standpoint.__version__)"   # affiche la version
+standpoint --help                                               # confirme que la CLI est accessible
+```
+
+### Dépannage
+
+- 🍎🐧 **`command not found: standpoint`** : l'environnement virtuel n'est pas activé,
+  relancez `source .venv/bin/activate` ; ou l'installation a échoué silencieusement,
+  relancez `pip install standpoint` et lisez les dernières lignes de sa sortie.
+- 🪟 **`standpoint n'est pas reconnu...`** : même cause sous Windows, relancez
+  `.venv\Scripts\Activate.ps1`, puis vérifiez avec `Get-Command standpoint`.
+- 🍎🐧🪟 **`ModuleNotFoundError: No module named 'standpoint'`** : vous exécutez un
+  autre Python que celui où l'installation a eu lieu ; comparez `which python3` /
+  `which pip` (macOS/Ubuntu) ou `Get-Command python`, `Get-Command pip` (Windows),
+  puis réinstallez avec `python -m pip install standpoint` pour forcer la
+  correspondance.
+- 🍎🐧 **GUI : « The local Ollama server is not reachable »** : démarrez-le avec
+  `ollama serve` (certaines installations le lancent déjà en service), puis vérifiez
+  avec `curl http://localhost:11434`.
+- 🪟 **GUI : « The local Ollama server is not reachable »** : lancez l'application
+  Ollama depuis le menu Démarrer, puis vérifiez avec
+  `Invoke-WebRequest http://localhost:11434`.
+- 🍎🐧🪟 **GUI : « The model '...' is not installed »** : `ollama pull qwen2.5vl:7b`
+  (ou le modèle passé via `--model`).
+- 🍎🐧 **`Address already in use` sur `standpoint-gui`** : le port 8000 est déjà pris,
+  trouvez le processus avec `lsof -i :8000`, ou lancez
+  `uvicorn standpoint.api:app --port 8001` sur un port libre.
+- 🪟 **`Address already in use` sur `standpoint-gui`** : trouvez le processus avec
+  `netstat -ano | findstr :8000`, ou lancez `uvicorn standpoint.api:app --port 8001`
+  sur un port libre.
+- 🍎🐧🪟 **Python ancien (< 3.10)** : vérifiez avec `python3 --version` (ou
+  `python --version` sous Windows) ; Standpoint requiert 3.10 ou plus. Installez un
+  Python plus récent avec les commandes prérequises ci-dessus plutôt que de contourner
+  la vérification de version.
 
 ## Utilisation
 
