@@ -75,6 +75,7 @@ en:
     lang_name: English
     baseline: Know where each option actually stands.
     github: ⭐️ on GitHub
+    footer_note: "Local-first: your table never leaves this machine."
     theme_light_aria: Switch to dark theme
     theme_dark_aria: Switch to light theme
     lang_aria: Switch language
@@ -211,6 +212,7 @@ fr:
     lang_name: Français
     baseline: Sachez où se situe vraiment chaque option.
     github: ⭐️ sur GitHub
+    footer_note: "Tout est local : votre tableau ne quitte jamais cette machine."
     theme_light_aria: Passer au thème sombre
     theme_dark_aria: Passer au thème clair
     lang_aria: Changer de langue
@@ -342,6 +344,7 @@ es:
     lang_name: Español
     baseline: Sepa dónde está realmente cada opción.
     github: ⭐️ en GitHub
+    footer_note: "Todo es local: tu tabla nunca sale de esta máquina."
     theme_light_aria: Cambiar al tema oscuro
     theme_dark_aria: Cambiar al tema claro
     lang_aria: Cambiar de idioma

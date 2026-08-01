@@ -47,6 +47,10 @@ GUI_HTML = r"""<!doctype html>
     }
     body { font-family: Roboto, system-ui, -apple-system, Helvetica, Arial, sans-serif;
            background: var(--paper); -webkit-font-smoothing: antialiased; }
+    /* Sprezzature look and feel (harchaoui.org/warith/sprezzature): a serif display
+       headline over sans body copy, and a small monospace "eyebrow" tag above it. */
+    .headline { font-family: "Roboto Serif", Georgia, serif; }
+    .eyebrow { font-family: "Roboto Mono", ui-monospace, SFMono-Regular, monospace; }
     /* Grid inputs sized to their content: numeric value cells fill their column
        (see the w-full inputs in renderGrid), while option (row) names and criterion
        (column) names get fixed room so nothing truncates and columns stay aligned. */
@@ -92,7 +96,10 @@ GUI_HTML = r"""<!doctype html>
        The DATA palette (role tints, map dots) is deliberately left untouched. */
     html.dark { color-scheme: dark; }
     .dark body { background:#0B0B0C; color:#d4d4d4; }
-    .dark .bg-white { background-color:#171717 !important; }
+    /* Cards sit at (almost) the same lightness as the page in dark mode, exactly like
+       sprezzature's figure cards: the border alone carries the separation, no lighter
+       "floating panel" fill. Light mode already works this way (white on --paper). */
+    .dark .bg-white { background-color:#0a0a0a !important; }
     .dark .card { border-color:#262626 !important; }
     .dark .text-slate-900 { color:#f5f5f5 !important; }
     .dark .text-slate-800 { color:#e5e5e5 !important; }
@@ -111,50 +118,79 @@ GUI_HTML = r"""<!doctype html>
     .dark .analysis { color:#d4d4d4; }
     .dark .analysis h1, .dark .analysis h2, .dark .analysis strong { color:#f5f5f5; }
     .dark .analysis h2 { border-color:#262626; }
-    /* Subtle card border, sprezzature style (neutral-200/70 in light). */
+    /* Subtle card border, sprezzature style (neutral-200/70 in light); no shadow, the
+       border alone separates a card from the page (dark variant set above). */
     .card { border:1px solid rgba(229,229,229,.7); }
-    /* Header toggle buttons: neutral, square, keyboard-focusable chrome. */
-    .toggle-btn { font-size:1.15rem; line-height:1; width:2.5rem; height:2.5rem;
-      display:flex; align-items:center; justify-content:center; border-radius:.6rem;
-      background:#f5f5f5; transition:background-color .15s; }
-    .toggle-btn:hover { background:#e5e5e5; }
-    .dark .toggle-btn { background:#262626; }
-    .dark .toggle-btn:hover { background:#404040; }
-    /* GitHub star link, echoing the sprezzature nav pill. */
+    /* Header toggle buttons: transparent pills, sprezzature nav style (their lang/theme
+       buttons carry no background until hovered, unlike a permanently-filled chip). */
+    .toggle-btn { font-size:1.15rem; line-height:1; width:2.25rem; height:2.25rem;
+      display:flex; align-items:center; justify-content:center; border-radius:9999px;
+      background:transparent; transition:background-color .15s; }
+    .toggle-btn:hover { background:#f5f5f5; }
+    .dark .toggle-btn:hover { background:#262626; }
+    /* GitHub star link, echoing the sprezzature nav pill: transparent, hover fill. */
     .gh-link { display:inline-flex; align-items:center; gap:.35rem; font-size:.875rem;
-      font-weight:500; padding:.5rem .85rem; border-radius:.6rem; background:#f5f5f5;
+      font-weight:500; padding:.4rem .75rem; border-radius:9999px; background:transparent;
       color:#404040; white-space:nowrap; transition:background-color .15s; }
-    .gh-link:hover { background:#e5e5e5; }
-    .dark .gh-link { background:#262626; color:#d4d4d4; }
-    .dark .gh-link:hover { background:#404040; }
+    .gh-link:hover { background:#f5f5f5; }
+    .dark .gh-link { color:#d4d4d4; }
+    .dark .gh-link:hover { background:#262626; }
+    /* Sticky, translucent, blurred nav bar: full-width band with an inner max-width
+       container, exactly the sprezzature header treatment. */
+    .site-header { position:sticky; top:0; z-index:40; -webkit-backdrop-filter:blur(8px);
+      backdrop-filter:blur(8px); background:rgba(250,250,250,.8);
+      border-bottom:1px solid rgba(229,229,229,.7); }
+    .dark .site-header { background:rgba(11,11,12,.8); border-bottom-color:#262626; }
+    .site-footer { border-top:1px solid rgba(229,229,229,.7); }
+    .dark .site-footer { border-top-color:#262626; }
+    /* Secondary (outlined) buttons: one visual language for every non-primary action,
+       thin border, neutral hover. Never the data-blue accent (chrome stays neutral so a
+       colour in this app always means "data"; see the palette comment above). */
+    .btn { display:inline-flex; align-items:center; gap:.35rem; border-radius:.5rem;
+      border:1px solid #d4d4d4; background:#ffffff; color:#404040; font-weight:500;
+      padding:.5rem .85rem; font-size:.875rem; white-space:nowrap;
+      transition:border-color .15s, background-color .15s; }
+    .btn:hover { border-color:#a3a3a3; background:#fafafa; }
+    .dark .btn { border-color:#404040; background:transparent; color:#d4d4d4; }
+    .dark .btn:hover { border-color:#737373; background:#171717; }
+    .btn-sm { padding:.3rem .65rem; font-size:.75rem; }
   </style>
 </head>
 <body class="text-slate-800">
-  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-10">
-
-    <header class="flex items-start justify-between gap-4 flex-wrap">
-      <div class="flex items-center gap-4">
+  <!-- Sticky, translucent nav bar (sprezzature style): full-width band, thin, with the
+       brand mark on the left and the language / theme toggles on the right. The page
+       title and tagline live in the hero below, not here, so the bar stays slim. -->
+  <header class="site-header">
+    <nav class="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4" aria-label="Primary">
+      <div class="flex items-center gap-2">
         <!-- The logo is the product metaphor: an old chart where every place has its
              position. It is chrome, not data, so it carries no palette meaning. -->
         <img src="/static/logo-header.png" alt="Standpoint logo: an old map with a compass rose"
-             width="56" height="56" class="w-12 h-12 sm:w-14 sm:h-14 shrink-0" />
-        <div>
-          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Standpoint</h1>
-          <p class="text-base sm:text-lg text-slate-600 font-medium" data-i18n="baseline">Know where each option actually stands.</p>
-        </div>
+             width="28" height="28" class="w-7 h-7 rounded shrink-0" />
+        <span class="font-semibold tracking-tight text-slate-900">Standpoint</span>
       </div>
       <!-- Language (🇫🇷/🇬🇧) and theme (🌞/🌛) toggles. Both persist in localStorage;
            the language one re-localizes the whole page, including the LLM output. -->
-      <div class="flex items-center gap-2 ml-auto">
+      <div class="flex items-center gap-1">
         <a id="ghLink" class="gh-link" href="https://github.com/warith-harchaoui/standpoint"
            target="_blank" rel="noopener" data-i18n="github">⭐️ on GitHub</a>
         <button id="langToggle" class="toggle-btn" type="button" data-i18n-aria="lang_aria" aria-label="Switch language">🇬🇧</button>
         <button id="themeToggle" class="toggle-btn" type="button" data-i18n-aria="theme_light_aria" aria-label="Switch theme">🌛</button>
       </div>
-    </header>
+    </nav>
+  </header>
+
+  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-10">
+
+    <!-- Hero: a small monospace "eyebrow" tag over a serif display headline, sprezzature
+         style (their eyebrow carries the page/skill slug; ours carries the product's). -->
+    <div>
+      <p class="eyebrow text-sm text-slate-500">standpoint</p>
+      <h1 class="headline mt-1 text-3xl sm:text-4xl font-bold tracking-tight text-slate-900" data-i18n="baseline">Know where each option actually stands.</h1>
+    </div>
 
     <!-- 1 · Your table -->
-    <section class="card bg-white rounded-2xl shadow-sm p-5 sm:p-7 space-y-6">
+    <section class="card bg-white rounded-xl p-5 sm:p-7 space-y-6">
       <div class="flex items-center gap-3">
         <span class="accent"></span>
         <h2 class="text-xl font-semibold" data-i18n="table_title">Table</h2>
@@ -162,22 +198,22 @@ GUI_HTML = r"""<!doctype html>
 
       <div class="flex items-center gap-2 flex-wrap">
         <!-- Start from an empty grid; then build it up row by row and column by column. -->
-        <button id="newTable" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="new_table">🆕 New Table</button>
-        <button id="addRow" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="add_row">＋ Option (row)</button>
-        <button id="addCol" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="add_col">＋ Criterion (column)</button>
+        <button id="newTable" class="btn" data-i18n="new_table">🆕 New Table</button>
+        <button id="addRow" class="btn" data-i18n="add_row">＋ Option (row)</button>
+        <button id="addCol" class="btn" data-i18n="add_col">＋ Criterion (column)</button>
         <span class="mx-1 text-slate-300 hidden sm:inline">|</span>
         <!-- "Laziness / Paresse": fill every empty cell from the model's knowledge once
              the row and column names are typed (common for a headers-only upload). -->
-        <button id="flemme" class="px-3 py-2 rounded-lg text-sm font-semibold border-2 border-slate-400 text-slate-800 bg-white hover:bg-slate-100" data-i18n="flemme" data-i18n-aria="flemme_aria">😴 Laziness (auto-fill)</button>
+        <button id="flemme" class="btn" data-i18n="flemme" data-i18n-aria="flemme_aria">😴 Laziness (auto-fill)</button>
       </div>
       <!-- File actions (import / export) on their own line, separate from grid-editing. -->
       <div class="flex items-center gap-2 flex-wrap">
-        <label class="px-3 py-2 rounded-lg text-sm cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700">
+        <label class="btn cursor-pointer">
           <span data-i18n="upload">Upload CSV / XLSX</span>
           <input id="upload" type="file" accept=".csv,.xlsx,.xls,.md,.txt" class="hidden" />
         </label>
-        <button id="dlCsv" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm" data-i18n="download_csv">Download CSV</button>
-        <button id="dlXlsx" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm" data-i18n="download_xlsx">Download XLSX</button>
+        <button id="dlCsv" class="btn" data-i18n="download_csv">Download CSV</button>
+        <button id="dlXlsx" class="btn" data-i18n="download_xlsx">Download XLSX</button>
       </div>
       <p class="text-xs text-slate-500 leading-relaxed">
         <span data-i18n="hint_higher">Higher is better by default.</span><br>
@@ -190,7 +226,7 @@ GUI_HTML = r"""<!doctype html>
     </section>
 
     <!-- 2 · Options -->
-    <section class="card bg-white rounded-2xl shadow-sm p-5 sm:p-7 space-y-6">
+    <section class="card bg-white rounded-xl p-5 sm:p-7 space-y-6">
       <div class="flex items-center gap-3">
         <span class="accent"></span>
         <h2 class="text-xl font-semibold" data-i18n="options_title">Options</h2>
@@ -216,15 +252,15 @@ GUI_HTML = r"""<!doctype html>
     <p id="error" role="alert" aria-live="assertive" class="text-sm font-medium hidden" style="color:#FF3B30"></p>
 
     <!-- 3 · Quadrant -->
-    <section class="card bg-white rounded-2xl shadow-sm p-5 sm:p-7 space-y-5">
+    <section class="card bg-white rounded-xl p-5 sm:p-7 space-y-5">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <span class="accent"></span>
           <h2 class="text-xl font-semibold" data-i18n="quadrant_title">Quadrant</h2>
         </div>
         <div class="flex gap-2">
-          <button id="dlPng" class="text-xs px-3 py-1.5 rounded-lg hidden bg-slate-100 hover:bg-slate-200 text-slate-700">PNG</button>
-          <button id="dlSvg" class="text-xs px-3 py-1.5 rounded-lg hidden bg-slate-100 hover:bg-slate-200 text-slate-700">SVG</button>
+          <button id="dlPng" class="btn btn-sm hidden">PNG</button>
+          <button id="dlSvg" class="btn btn-sm hidden">SVG</button>
         </div>
       </div>
       <div id="chart" class="min-h-[420px] flex items-center justify-center overflow-x-auto text-slate-400" data-i18n="chart_placeholder">
@@ -233,19 +269,27 @@ GUI_HTML = r"""<!doctype html>
     </section>
 
     <!-- Analysis -->
-    <section class="card bg-white rounded-2xl shadow-sm p-5 sm:p-7 space-y-5">
+    <section class="card bg-white rounded-xl p-5 sm:p-7 space-y-5">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <span class="accent"></span>
           <h2 class="text-xl font-semibold" data-i18n="analysis_title">Basic Analysis</h2>
         </div>
-        <button id="dlMd" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 hidden" data-i18n="download_md">Download Markdown</button>
+        <button id="dlMd" class="btn btn-sm hidden" data-i18n="download_md">Download Markdown</button>
       </div>
       <div id="comments" class="analysis max-w-none text-slate-400" data-i18n="analysis_placeholder">
         The written interpretation appears here once you generate.
       </div>
     </section>
   </div>
+
+  <!-- Minimal footer, sprezzature style: a full-width band with a border-top divider
+       and one muted line, echoing the local-first pitch from the hero. -->
+  <footer class="site-footer mt-4">
+    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 text-sm text-slate-500" data-i18n="footer_note">
+      Local-first: your table never leaves this machine.
+    </div>
+  </footer>
 
 <script>
 // --- tiny state: header cells, lower-is-better flags, and data rows -----------

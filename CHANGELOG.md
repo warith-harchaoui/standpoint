@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **GUI look and feel**, matched to the [sprezzature](https://harchaoui.org/warith/sprezzature/figures.html)
+  design system: a sticky, translucent, blurred nav bar (logo + wordmark, GitHub star
+  and language/theme pills); a monospace "eyebrow" tag over a serif display headline;
+  bordered cards with no shadow (in dark mode the card fill sits at page-black, the
+  border alone separates it); one unified outlined-button style for every secondary
+  action; and a minimal footer with a border-top divider. The data palette (map dots,
+  role-tinted names) and the "chrome stays neutral" rule are unchanged; hover states use
+  neutral grays, never the brand blue, which stays reserved for the map's right pole.
+
 ## [0.5.0] - 2026-08-01
 
 ### Added
