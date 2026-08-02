@@ -1,7 +1,10 @@
-Cartes de positionnement,Nommage Automatique des Axes,Sortie Multilingue,Exécution Locale,Une Seule Commande,Livrable Triple,Reproductibilité,Axes Lisibles,Simplicité d'Installation
-Standpoint,5,5,5,5,5,5,4,4
-prince,1,1,5,2,1,5,5,3
-PCA (scikit-learn),1,1,5,2,1,5,4,3
-factoextra + FactoMineR,1,1,5,2,2,5,5,2
-QuadrantMaker,1,2,2,4,1,1,2,5
-Diapositives ou tableau blanc,1,3,5,2,1,1,2,4
+Cartes de positionnement,Nommage Automatique des Axes,Une Seule Commande,Exécution Locale,Coordonnées Reproductibles,Analyse Rédigée,Sans Code,Sortie Multilingue,Fondé sur l'ACP
+Standpoint,5,5,5,5,5,4,5,5
+prince,1,2,5,5,1,1,1,5
+PCA (scikit-learn),1,1,5,5,1,1,1,5
+factoextra + FactoMineR,1,2,5,5,2,1,1,5
+Tableau,1,3,3,3,1,4,2,1
+Power BI,1,3,3,3,2,4,2,1
+Gartner Magic Quadrant,2,1,3,2,5,5,2,1
+Excel/PowerPoint 2x2,1,1,5,1,1,4,3,1
+Modèle Canva/Figma,1,1,2,1,1,5,3,1
