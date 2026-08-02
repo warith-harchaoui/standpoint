@@ -123,6 +123,12 @@ en:
     aria_option: Option {n} name
     aria_rating: Rating of {opt} on {crit}
     ref_fallback: "row {i}"
+    poles_title: Axis poles
+    poles_hint: "Rename the four poles; the map updates live."
+    aria_pole_top: Top pole name
+    aria_pole_left: Left pole name
+    aria_pole_right: Right pole name
+    aria_pole_bottom: Bottom pole name
   # Localized labels for the structural parts of the written analysis (the headings
   # and fixed lines around the LLM narrative), so the whole report follows the
   # language. Placeholders: {left} {right} {bottom} {top} {pct} {cols}.
@@ -260,6 +266,12 @@ fr:
     aria_option: Nom de l'option {n}
     aria_rating: Note de {opt} sur {crit}
     ref_fallback: "ligne {i}"
+    poles_title: Pôles des axes
+    poles_hint: "Renommez les quatre pôles ; la carte se met à jour en direct."
+    aria_pole_top: Nom du pôle haut
+    aria_pole_left: Nom du pôle gauche
+    aria_pole_right: Nom du pôle droit
+    aria_pole_bottom: Nom du pôle bas
   analysis:
     interpretation: Interprétation
     axes: Axes
@@ -392,6 +404,12 @@ es:
     aria_option: Nombre de la opción {n}
     aria_rating: Nota de {opt} en {crit}
     ref_fallback: "fila {i}"
+    poles_title: Polos de los ejes
+    poles_hint: "Renombra los cuatro polos; el mapa se actualiza al instante."
+    aria_pole_top: Nombre del polo superior
+    aria_pole_left: Nombre del polo izquierdo
+    aria_pole_right: Nombre del polo derecho
+    aria_pole_bottom: Nombre del polo inferior
   analysis:
     interpretation: Interpretación
     axes: Ejes

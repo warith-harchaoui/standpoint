@@ -34,7 +34,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 import argparse
 import json
@@ -1046,7 +1046,7 @@ def to_vega(
     span_y = float(np.abs(result.scores[:, 1]).max()) or 1.0
     # Wide margin: the dots occupy the central ~65%, leaving the outer band clear
     # for the pole phrases at the axis ends.
-    view_x, view_y = span_x * 1.55, span_y * 1.55
+    view_x, view_y = span_x * 1.7, span_y * 1.7
 
     # Sizes adapt to the option count: bigger when few, smaller when many.
     def _scaled(lo: int, hi: int, few: int = 8, many: int = 40) -> int:
@@ -1059,11 +1059,18 @@ def to_vega(
         return round(hi + (lo - hi) * t)
 
     label_font = _scaled(11, 17)
-    pole_font = _scaled(12, 17)  # kept modest so long pole words never crowd the edge
+    pole_font = _scaled(18, 26)  # large: the poles anchor how the whole map reads
     legend_font = _scaled(9, 13)
     dot_size = _scaled(90, 240)
 
-    placements = label_placements(result, view_x, view_y, font_px=label_font)
+    # Match the de-clutter geometry to the ACTUAL rendered canvas (below), not the
+    # old 900x760 default: with the real height the pixel->data conversion is right,
+    # so labels sit close to their dots instead of being pushed too far vertically.
+    fig_w = 1000
+    fig_h = max(720, 24 * n + 140)
+    placements = label_placements(
+        result, view_x, view_y, width_px=fig_w, height_px=fig_h, font_px=label_font
+    )
 
     # Colour scale follows the map: rows top -> bottom, left -> right within each row,
     # so if the legend is shown it reads in the same order the eye scans the plot.
@@ -1158,9 +1165,10 @@ def to_vega(
         }
 
     edge_x, edge_y = view_x * 0.98, view_y * 0.98  # axes span the full view
-    # Pole words sit INSIDE the view (not at the border), between the dot cloud
-    # (~0.65 of the view) and the edge, so a long label never bites the canvas edge.
-    pole_x, pole_y = view_x * 0.86, view_y * 0.86
+    # Pole words sit well OUTSIDE the dot cloud (dots reach ~0.59 of the view), out
+    # near the axis ends, so they read as the map's headline rather than crowding
+    # the points.
+    pole_x, pole_y = view_x * 0.95, view_y * 0.95
     gap_x, gap_y = span_x * 0.04, span_y * 0.04  # keep pole words off the lines
     layers = [
         rule(-edge_x, edge_x, 0, 0),  # horizontal axis
@@ -1231,8 +1239,9 @@ def to_vega(
 
     # Height floor keeps a comfortable landscape aspect; the per-approach term only
     # matters on a crowded map, where the fallback legend (one row per approach) then
-    # fits beside the plot without being clipped.
-    height = max(720, 24 * n + 140)
+    # fits beside the plot without being clipped. (Computed above as fig_h so the
+    # de-clutter geometry and the canvas agree.)
+    height = fig_h
     if title is None:  # direct callers get the English default; localized via i18n
         title = f"{noun_plural} in the Quadrant"
     return {

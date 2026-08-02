@@ -263,6 +263,33 @@ GUI_HTML = r"""<!doctype html>
           <button id="dlSvg" class="btn btn-sm hidden">SVG</button>
         </div>
       </div>
+
+      <!-- Editable axis poles: filled with the model's names after a run, so the user
+           can rename any of the four and see the map re-label live (client-side; the
+           model is not called again). Laid out like a compass to mirror the map: top
+           over left ✚ right over bottom. Hidden until the first quadrant exists. -->
+      <div id="poleEditor" class="hidden space-y-3">
+        <div class="flex items-baseline gap-2 flex-wrap">
+          <span class="text-sm font-semibold text-slate-700" data-i18n="poles_title">Axis poles</span>
+          <span class="text-xs text-slate-500" data-i18n="poles_hint">Rename the four poles; the map updates live.</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 w-full max-w-md items-center">
+          <span></span>
+          <input id="poleTop" type="text" data-i18n-aria="aria_pole_top" aria-label="Top pole name"
+                 class="border rounded-lg px-2 py-1 text-sm text-center w-full" />
+          <span></span>
+          <input id="poleLeft" type="text" data-i18n-aria="aria_pole_left" aria-label="Left pole name"
+                 class="border rounded-lg px-2 py-1 text-sm text-center w-full" />
+          <span class="text-center text-slate-400 text-sm select-none" aria-hidden="true">✚</span>
+          <input id="poleRight" type="text" data-i18n-aria="aria_pole_right" aria-label="Right pole name"
+                 class="border rounded-lg px-2 py-1 text-sm text-center w-full" />
+          <span></span>
+          <input id="poleBottom" type="text" data-i18n-aria="aria_pole_bottom" aria-label="Bottom pole name"
+                 class="border rounded-lg px-2 py-1 text-sm text-center w-full" />
+          <span></span>
+        </div>
+      </div>
+
       <div id="chart" class="min-h-[420px] flex items-center justify-center overflow-x-auto text-slate-400" data-i18n="chart_placeholder">
         Generate to see the map.
       </div>
@@ -413,6 +440,8 @@ $("newTable").onclick = () => {
   headers = [""];
   rows = [{ name: "", values: [""] }];
   hasResult = false;
+  baseSpec = null; basePoles = null;  // drop the old map's poles; editor hides until the next run
+  $("poleEditor").classList.add("hidden");
   renderGrid();
 };
 
@@ -528,6 +557,56 @@ function colorizeRoles(html, roles) {
   return tmp.innerHTML;
 }
 
+// --- editable axis poles ------------------------------------------------------
+// After a run we keep the server's Vega spec (baseSpec) and the model's four pole
+// names (basePoles = [left, right, bottom, top]) pristine. Every draw rebuilds the
+// spec from them, applying whatever the user typed into the pole inputs, so renaming
+// a pole re-labels the map instantly with no extra model call, and the PNG / SVG
+// exports (rendered from the same view) pick up the new names for free.
+let baseSpec = null, basePoles = null;
+
+// Fill the four pole inputs with the model's names and reveal the compass editor.
+function renderPoleEditors() {
+  if (!basePoles || basePoles.length !== 4) return;
+  const [left, right, bottom, top] = basePoles;
+  $("poleLeft").value = left; $("poleRight").value = right;
+  $("poleBottom").value = bottom; $("poleTop").value = top;
+  $("poleEditor").classList.remove("hidden");
+}
+
+// Rebuild the Vega spec from the pristine server spec: swap each pole label for the
+// user's text (keyed by the ORIGINAL name, so duplicate labels never confuse it) and
+// set the preview background from the toggle. Pure client-side; the model is not re-run.
+function buildSpec() {
+  const spec = JSON.parse(JSON.stringify(baseSpec));
+  if (basePoles && basePoles.length === 4) {
+    const wanted = [$("poleLeft").value, $("poleRight").value, $("poleBottom").value, $("poleTop").value];
+    const rename = {};
+    basePoles.forEach((p, i) => { rename[p] = (wanted[i] || "").trim() || p; });  // blank -> keep original
+    // The four pole words are the only single-datum text layers carrying a `t` field.
+    (spec.layer || []).forEach((L) => {
+      const v = L && L.data && L.data.values;
+      if (Array.isArray(v) && v.length === 1 && v[0] && "t" in v[0] && v[0].t in rename) {
+        v[0].t = rename[v[0].t];
+      }
+    });
+  }
+  spec.background = $("bgTransparent").checked ? null : "white";  // checked = transparent
+  return spec;
+}
+
+// Draw (or redraw) the quadrant from the current spec + pole inputs + background.
+async function drawChart() {
+  if (!baseSpec) return;
+  const spec = buildSpec();
+  $("chart").classList.toggle("checker", $("bgTransparent").checked);
+  $("chart").textContent = "";
+  // No vega-embed "⋯" menu: the explicit PNG / SVG buttons replace it. SVG renderer
+  // so the map stays crisp when CSS scales it to fit the card.
+  const embed = await vegaEmbed("#chart", spec, { actions: false, renderer: "svg" });
+  chartView = embed.view;  // used by the explicit PNG / SVG export buttons
+}
+
 // --- generate: POST the table, render the spec + markdown --------------------
 let lastMd = "", chartView = null;
 $("run").onclick = async () => {
@@ -557,16 +636,13 @@ $("run").onclick = async () => {
     if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
     const data = await res.json();
     slug = data.slug || "standpoint";  // name exports after the table's subject
-    // Render the quadrant. Background toggle applies to the preview only.
-    const spec = data.vega;
-    const transparent = $("bgTransparent").checked;  // checked = transparent, else white
-    spec.background = transparent ? null : "white";
-    $("chart").classList.toggle("checker", transparent);
-    $("chart").textContent = "";
-    // No vega-embed "⋯" menu: the explicit PNG / SVG buttons replace it. SVG
-    // renderer so the map stays crisp when CSS scales it to fit the card.
-    const embed = await vegaEmbed("#chart", spec, { actions: false, renderer: "svg" });
-    chartView = embed.view;  // used by the explicit PNG / SVG export buttons
+    // Keep the server spec and the model's pole names pristine; the compass editor
+    // (renderPoleEditors) fills its inputs and every draw rebuilds from them, so the
+    // user can rename a pole and see the map relabel live without another model call.
+    baseSpec = data.vega;
+    basePoles = (data.poles || []).slice();
+    renderPoleEditors();
+    await drawChart();  // honours the background toggle and any pole edits
     $("dlPng").classList.remove("hidden"); $("dlSvg").classList.remove("hidden");
     // Render the analysis, then tint each option name by its role so the prose
     // echoes the dots on the map (leader red, weakest brown, top purple, right blue).
@@ -614,6 +690,13 @@ async function exportImage(fmt) {
 }
 $("dlPng").onclick = () => exportImage("png");
 $("dlSvg").onclick = () => exportImage("svg");
+
+// Renaming any pole (debounced so fast typing doesn't thrash the renderer) or flipping
+// the background redraws the map live from the pristine base spec.
+function debounce(fn, ms) { let h; return (...a) => { clearTimeout(h); h = setTimeout(() => fn(...a), ms); }; }
+const redrawSoon = debounce(() => { if (baseSpec) drawChart(); }, 200);
+["poleTop", "poleLeft", "poleRight", "poleBottom"].forEach((id) => $(id).addEventListener("input", redrawSoon));
+$("bgTransparent").addEventListener("change", () => { if (baseSpec) drawChart(); });
 
 // --- language + theme toggles -------------------------------------------------
 // Apply the fetched string table to every [data-i18n] / [data-i18n-aria] node, then

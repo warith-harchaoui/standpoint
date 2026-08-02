@@ -142,7 +142,7 @@ Or install a specific released version straight from GitHub (the import name is
 for the latest tag):
 
 ```bash
-pip install "git+https://github.com/warith-harchaoui/standpoint.git@v0.4.2"
+pip install standpoint
 ```
 
 ### Verify the install

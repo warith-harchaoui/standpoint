@@ -151,7 +151,7 @@ voir les [Releases](https://github.com/warith-harchaoui/standpoint/releases) pou
 le dernier tag) :
 
 ```bash
-pip install "git+https://github.com/warith-harchaoui/standpoint.git@v0.4.2"
+pip install standpoint
 ```
 
 ### Vérifier l'installation

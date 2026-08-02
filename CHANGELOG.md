@@ -7,8 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-02
+
+### Added
+
+- **Editable axis poles in the GUI.** After a run, a compass-laid-out editor
+  (top over left ✚ right over bottom) is filled with the model's four pole
+  names; renaming any of them re-labels the map **live**, entirely client-side —
+  no second model call — and the PNG / SVG exports pick up the new names for
+  free. The server keeps the pristine spec and pole names, so a blank field
+  falls back to the original label and duplicate labels never confuse the swap.
+  Localized in English, French and Spanish (`poles_title`, `poles_hint`, and the
+  four `aria_pole_*` labels).
+- `tests/test_readme_install_pin.py` guards against a stale `git+…@vX` self-pin
+  ever returning to any Markdown file.
+
 ### Changed
 
+- **Positioning-figure geometry.** The four pole words now sit well outside the
+  dot cloud (out near the axis ends) at a larger font, so they read as the map's
+  headline instead of crowding the points, and the label de-clutter now uses the
+  **actual** rendered canvas size instead of the old fixed default — so option
+  labels sit next to their dots rather than being pushed too far vertically.
 - **GUI look and feel**, matched to the [sprezzature](https://harchaoui.org/warith/sprezzature/figures.html)
   design system: a sticky, translucent, blurred nav bar (logo + wordmark, GitHub star
   and language/theme pills); a monospace "eyebrow" tag over a serif display headline;
@@ -17,6 +37,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   action; and a minimal footer with a border-top divider. The data palette (map dots,
   role-tinted names) and the "chrome stays neutral" rule are unchanged; hover states use
   neutral grays, never the brand blue, which stays reserved for the map's right pole.
+
+### Fixed
+
+- README / LISEZMOI install commands no longer self-pin to a git tag (`@v0.4.2`);
+  they use `pip install standpoint`, which always resolves to the latest
+  published release.
 
 ## [0.5.0] - 2026-08-01
 
