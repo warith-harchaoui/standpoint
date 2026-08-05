@@ -241,7 +241,10 @@ def validate_table(df: pd.DataFrame) -> None:
     """Raise a clear ``ValueError`` if the table can't be positioned.
 
     Needs at least 2 options (rows) and 2 numeric criteria (columns) with some
-    variation, and no fully-empty column; otherwise PCA is undefined or degenerate.
+    variation, no fully-empty column, and no duplicate: two options with identical
+    ratings would land on the same point, and two identical criteria would count
+    the same evidence twice and skew the axes. Otherwise PCA is undefined,
+    degenerate, or misleading.
     """
     if df.shape[0] < 2:
         raise ValueError(f"need at least 2 options (rows); got {df.shape[0]}.")
@@ -253,6 +256,21 @@ def validate_table(df: pd.DataFrame) -> None:
     constant = [c for c in df.columns if df[c].nunique(dropna=True) <= 1]
     if len(constant) == df.shape[1]:
         raise ValueError("every criterion is constant; nothing to position.")
+    # Identical option rows coincide on the map; identical criterion columns are
+    # redundant and pull the axes toward whatever they measure. Reject both so every
+    # row and every column carries its own information.
+    dup_rows = df.index[df.duplicated(keep=False)].unique().tolist()
+    if dup_rows:
+        raise ValueError(
+            "options with identical ratings (they would sit on the same point): "
+            f"{dup_rows}. Give each option at least one rating the others do not share."
+        )
+    dup_cols = df.columns[df.T.duplicated(keep=False)].unique().tolist()
+    if dup_cols:
+        raise ValueError(
+            "criteria with identical columns (they measure the same thing here): "
+            f"{dup_cols}. Drop one, or vary its ratings so it adds information."
+        )
 
 
 def _resolve_reference(df: pd.DataFrame, reference: int | str) -> int:
@@ -582,6 +600,8 @@ def label_placements(
     width_px: int = 900,
     height_px: int = 760,
     font_px: float = 11.0,
+    keepin_x: float | None = None,
+    keepin_y: float | None = None,
 ) -> dict[int, tuple[float, float]]:
     """Greedy de-clutter: choose which approaches to label and *where* to put each
     label. For every dot (corner extremes first, then outermost), try eight sides
@@ -591,6 +611,11 @@ def label_placements(
 
     `view_x` / `view_y` are the half-extents of each axis's domain (they can differ),
     so the pixel-to-data conversion is correct even when the map is not square.
+
+    `keepin_x` / `keepin_y`, when given, bound how far a label centre may stray from
+    the origin, so labels stay inside the point cloud's band and never wander out
+    into the outer margin where the pole words live. A candidate beyond the bound is
+    skipped like any other blocked side.
     """
     scores = result.scores
     sx = 2 * view_x / width_px  # data units per pixel, x
@@ -626,6 +651,12 @@ def label_placements(
                 lx = x + ox * (dot_rx + pad_x + w / 2 + k * (w / 2 + row_x))
                 ly = y + oy * (dot_ry + pad_y + h / 2 + k * row_y)
                 box = (lx - w / 2, ly - h / 2, lx + w / 2, ly + h / 2)
+                # Keep labels out of the outer margin reserved for the pole words:
+                # a label whose box edge crosses the bound is treated as blocked.
+                if keepin_x is not None and (box[0] < -keepin_x or box[2] > keepin_x):
+                    continue
+                if keepin_y is not None and (box[1] < -keepin_y or box[3] > keepin_y):
+                    continue
                 probe = (box[0] - pad_x, box[1] - pad_y, box[2] + pad_x, box[3] + pad_y)
                 if any(_overlaps(probe, b) for b in boxes):
                     continue
@@ -1075,9 +1106,10 @@ def to_vega(
     # PC2) is not squashed flat against the cross. Each axis gets its own domain.
     span_x = float(np.abs(result.scores[:, 0]).max()) or 1.0
     span_y = float(np.abs(result.scores[:, 1]).max()) or 1.0
-    # Wide margin: the dots occupy the central ~65%, leaving the outer band clear
-    # for the pole phrases at the axis ends.
-    view_x, view_y = span_x * 1.7, span_y * 1.7
+    # Wide margin: the dots (the square hull reaches +/- span) occupy the central
+    # ~half of the view, leaving a broad outer band on every side for the pole words,
+    # so they read clearly outside the cloud rather than crowding the points.
+    view_x, view_y = span_x * 2.0, span_y * 2.0
 
     # Sizes adapt to the option count: bigger when few, smaller when many.
     def _scaled(lo: int, hi: int, few: int = 8, many: int = 40) -> int:
@@ -1097,10 +1129,21 @@ def to_vega(
     # Match the de-clutter geometry to the ACTUAL rendered canvas (below), not the
     # old 900x760 default: with the real height the pixel->data conversion is right,
     # so labels sit close to their dots instead of being pushed too far vertically.
-    fig_w = 1000
-    fig_h = max(720, 24 * n + 140)
+    fig_w = 1200
+    fig_h = max(900, 26 * n + 160)
+    # Labels may spill a little past the dot hull (+/- span) but must stay well inside
+    # the outer margin the pole words own; this bound keeps them from wandering out
+    # to the axis ends and colliding with a pole.
+    keepin_x, keepin_y = span_x * 1.35, span_y * 1.35
     placements = label_placements(
-        result, view_x, view_y, width_px=fig_w, height_px=fig_h, font_px=label_font
+        result,
+        view_x,
+        view_y,
+        width_px=fig_w,
+        height_px=fig_h,
+        font_px=label_font,
+        keepin_x=keepin_x,
+        keepin_y=keepin_y,
     )
 
     # Colour scale follows the map: rows top -> bottom, left -> right within each row,
@@ -1196,18 +1239,18 @@ def to_vega(
         }
 
     edge_x, edge_y = view_x * 0.98, view_y * 0.98  # axes span the full view
-    # Pole words sit well OUTSIDE the dot cloud (dots reach ~0.59 of the view), out
-    # near the axis ends, so they read as the map's headline rather than crowding
-    # the points.
-    pole_x, pole_y = view_x * 0.95, view_y * 0.95
-    gap_x, gap_y = span_x * 0.04, span_y * 0.04  # keep pole words off the lines
+    # Pole words sit far out in the margin, near the axis ends and well beyond the dot
+    # hull (dots reach half the view), so they read as the map's headline rather than
+    # crowding the points. Each hugs its own edge (left/right along the horizontal,
+    # top/bottom centred on the vertical) and points outward.
+    pole_x, pole_y = view_x * 0.92, view_y * 0.92
     layers = [
         rule(-edge_x, edge_x, 0, 0),  # horizontal axis
         rule(0, 0, -edge_y, edge_y),  # vertical axis
-        pole_label(pole_x, gap_y, right, "right", "bottom"),
-        pole_label(-pole_x, gap_y, left, "left", "bottom"),
-        pole_label(gap_x, pole_y, top, "left", "top"),
-        pole_label(gap_x, -pole_y, bottom, "left", "bottom"),
+        pole_label(pole_x, 0.0, right, "right", "middle"),
+        pole_label(-pole_x, 0.0, left, "left", "middle"),
+        pole_label(0.0, pole_y, top, "center", "bottom"),
+        pole_label(0.0, -pole_y, bottom, "center", "top"),
         {  # every dot coloured by position; no legend, each dot is labelled in place
             "data": {"values": points},
             "mark": {
@@ -1281,7 +1324,7 @@ def to_vega(
         # Transparent background: Vega-Lite otherwise bakes an opaque white rectangle
         # into the PNG/SVG. Null lets the map drop cleanly onto any page or slide.
         "background": None,
-        "width": 1000,
+        "width": fig_w,
         "height": height,
         "autosize": {"type": "pad", "resize": True},  # grow to fit a fallback legend
         "config": {
