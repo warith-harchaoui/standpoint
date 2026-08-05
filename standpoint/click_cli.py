@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import click
 
-from standpoint import DEFAULT_MODEL, run
+from standpoint import run
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
@@ -35,7 +35,9 @@ from standpoint import DEFAULT_MODEL, run
 )
 @click.option("--lower", default="", help="Comma-separated criteria where lower is better.")
 @click.option(
-    "--model", default=DEFAULT_MODEL, show_default=True, help="Ollama model for axis naming."
+    "--model",
+    default=None,
+    help="Override the local model tag (default: the one resolved in llm.engine.yaml).",
 )
 @click.option("--check", is_flag=True, help="Vision-model sanity-check of the figure.")
 def main_click(
@@ -46,7 +48,7 @@ def main_click(
     top: str | None,
     right: str | None,
     lower: str,
-    model: str,
+    model: str | None,
     check: bool,
 ) -> None:
     """Turn a comparison TABLE (CSV or Markdown) into a positioning map."""

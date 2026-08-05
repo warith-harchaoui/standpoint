@@ -148,10 +148,10 @@ def test_gui_head_links_icons_and_manifest() -> None:
 
 
 def test_position_reports_ollama_down_cleanly(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Ollama not running yields an actionable 503, not a raw 500."""
+    """The local backend not running yields an actionable 503, not a raw 500."""
 
     def boom(*_a: object, **_k: object) -> None:
-        raise ConnectionError("Failed to connect to Ollama.")
+        raise ConnectionError("Failed to connect to the local backend.")
 
     monkeypatch.setattr("standpoint.api.positioning", boom)
     r = client.post("/api/position", json={"table": "L,A,B\nx,1,2\ny,2,1"})
@@ -160,11 +160,14 @@ def test_position_reports_ollama_down_cleanly(monkeypatch: pytest.MonkeyPatch) -
 
 
 def test_position_reports_missing_model_cleanly(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A model that isn't pulled yields a 503 telling the user how to install it."""
-    import ollama
+    """A model that isn't installed yields a 503 that names the offending tag.
+
+    best-engine-ai-helper surfaces backend/model failures as ``RuntimeError``; the API
+    maps it to an actionable 503 that echoes the forced model tag.
+    """
 
     def boom(*_a: object, **_k: object) -> None:
-        raise ollama.ResponseError("model 'ghost:1b' not found", 404)
+        raise RuntimeError("model 'ghost:1b' not found")
 
     monkeypatch.setattr("standpoint.api.positioning", boom)
     r = client.post(
@@ -172,7 +175,7 @@ def test_position_reports_missing_model_cleanly(monkeypatch: pytest.MonkeyPatch)
         json={"table": "L,A,B\nx,1,2\ny,2,1", "model": "ghost:1b"},
     )
     assert r.status_code == 503
-    assert "ollama pull ghost:1b" in r.json()["detail"]
+    assert "ghost:1b" in r.json()["detail"]
 
 
 def test_i18n_endpoint_localizes_gui() -> None:
@@ -195,10 +198,10 @@ def test_autofill_requires_names() -> None:
 
 
 def test_autofill_reports_model_down_cleanly(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Ollama unreachable during auto-fill yields an actionable 503, not a raw 500."""
+    """The local backend unreachable during auto-fill yields an actionable 503, not a 500."""
 
     def boom(*_a: object, **_k: object) -> None:
-        raise ConnectionError("Failed to connect to Ollama.")
+        raise ConnectionError("Failed to connect to the local backend.")
 
     monkeypatch.setattr("standpoint.api.suggest_ratings", boom)
     r = client.post("/api/autofill", json={"options": ["A", "B"], "criteria": ["X"]})

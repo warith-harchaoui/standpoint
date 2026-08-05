@@ -30,9 +30,13 @@ coloration et le rendu de la figure avec [`vl-convert`](https://github.com/vega/
 Votre tableau n'est jamais envoyé nulle part ; pas de télémétrie, pas de compte, rien à
 créer.
 
-Seuls le nommage des axes et l'analyse rédigée sollicitent un modèle
-[Ollama](https://ollama.com) tournant sur `localhost`. Ollama récupère les poids du
-modèle la première fois, puis fonctionne hors ligne.
+Seuls le nommage des axes et l'analyse rédigée sollicitent un vision-LLM local tournant
+sur `localhost`. Standpoint ne fige aucun modèle : il embarque un brief versionné
+(`standpoint/llm.brief.yaml`) décrivant la tâche, et
+[best-engine-ai-helper](https://pypi.org/project/best-engine-ai-helper/) résout le
+meilleur modèle local pour *votre* machine à la première utilisation, en gardant le choix
+dans un `standpoint/llm.engine.yaml` ignoré par git. Les poids sont téléchargés une fois,
+puis tout fonctionne hors ligne.
 
 ## Documentation
 

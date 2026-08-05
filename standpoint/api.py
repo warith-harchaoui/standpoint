@@ -22,7 +22,6 @@ from __future__ import annotations
 import io
 from pathlib import Path
 
-import ollama
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import (
@@ -36,7 +35,6 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from standpoint import (
-    DEFAULT_MODEL,
     SUPPORTED_LANGS,
     __version__,
     analysis_markdown,
@@ -72,6 +70,7 @@ def webmanifest() -> FileResponse:
     """Serve the PWA manifest (name, theme colours, install icons)."""
     return FileResponse(_STATIC_DIR / "site.webmanifest", media_type="application/manifest+json")
 
+
 # The grid is seeded from the tracked example so the GUI always mirrors it; this
 # small built-in table is the fallback when the file isn't on disk (installed package).
 _EXAMPLE_CSV = Path(__file__).resolve().parents[1] / "examples" / "programming_languages.csv"
@@ -97,13 +96,13 @@ class PositionRequest(BaseModel):
     lower : str
         Comma-separated criteria where lower is better (e.g. ``"Price,Weight"``).
     model : str
-        Ollama model used to name the axes and write the analysis.
+        Force a specific local model tag; ``""`` uses the one resolved in the engine.
     """
 
     table: str
     reference: str = "0"
     lower: str = ""
-    model: str = DEFAULT_MODEL
+    model: str = ""  # "" = the model resolved in llm.engine.yaml; a tag forces an override
     lang: str = ""  # "" = detect from the table; "en"/"fr"/"es" force the output language
 
 
@@ -238,26 +237,23 @@ def _slugify(text: str) -> str:
 
 
 def _model_error(exc: Exception, model: str) -> HTTPException:
-    """Map an Ollama failure to a clean 503 with an actionable, model-specific hint.
+    """Map a local-model failure to a clean 503 with an actionable hint.
 
-    The two first-run failures (server not running, model not pulled) otherwise
-    surface as an opaque 500/404; here they become a message the UI can show verbatim.
+    The library talks to the local backend through best-engine-ai-helper, which
+    raises ``RuntimeError`` when the server is unreachable or the model errors; a
+    first run otherwise surfaces as an opaque 500. Here it becomes a message the UI
+    can show verbatim, naming the offending model tag when one was forced.
     """
-    if isinstance(exc, ConnectionError):
-        return HTTPException(
-            status_code=503,
-            detail=(
-                "The local Ollama server is not reachable. Start it with `ollama serve`, "
-                f"then make sure the model is present: `ollama pull {model}`."
-            ),
-        )
-    missing = getattr(exc, "status_code", None) == 404
-    hint = (
-        f"The model '{model}' is not installed. Pull it with `ollama pull {model}`."
-        if missing
-        else f"The local model '{model}' returned an error: {exc}"
+    tag = f" '{model}'" if model else ""
+    return HTTPException(
+        status_code=503,
+        detail=(
+            f"The local model{tag} is unavailable ({exc}). Start your local LLM "
+            "backend (e.g. `ollama serve`) and make sure the model resolved in "
+            "standpoint/llm.engine.yaml is installed; regenerate the engine with "
+            "`best-engine-ai-helper resolve` if the machine changed."
+        ),
     )
-    return HTTPException(status_code=503, detail=hint)
 
 
 @app.get("/api/i18n")
@@ -284,7 +280,7 @@ class AutofillRequest(BaseModel):
     criteria : list[str]
         Criterion (column) names to rate each option on.
     model : str
-        Ollama model that produces the ratings.
+        Force a specific local model tag; ``""`` uses the one resolved in the engine.
     lang : str
         Force the prompt language; "" detects it from the names.
     """
@@ -292,13 +288,13 @@ class AutofillRequest(BaseModel):
     noun: str = "Option"
     options: list[str]
     criteria: list[str]
-    model: str = DEFAULT_MODEL
+    model: str = ""
     lang: str = ""
 
 
 @app.post("/api/autofill")
 def autofill(req: AutofillRequest) -> dict:
-    """"Flemme" (lazy) auto-fill: score every option on every criterion via the model.
+    """ "Flemme" (lazy) auto-fill: score every option on every criterion via the model.
 
     The user typed only the row and column names (common for a freshly uploaded CSV
     that carries headers but no values); this asks the local model to fill the whole
@@ -317,10 +313,12 @@ def autofill(req: AutofillRequest) -> dict:
     """
     lang = req.lang if req.lang in SUPPORTED_LANGS else None
     try:
-        ratings = suggest_ratings(req.noun, req.options, req.criteria, model=req.model, lang=lang)
+        ratings = suggest_ratings(
+            req.noun, req.options, req.criteria, model=req.model or None, lang=lang
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except (ConnectionError, ollama.ResponseError) as exc:
+    except (ConnectionError, RuntimeError) as exc:
         raise _model_error(exc, req.model) from exc
     return {"ratings": ratings}
 
@@ -360,15 +358,17 @@ def position(req: PositionRequest) -> PositionResponse:
             req.table,
             reference=ref,
             lower_is_better=lower,
-            model=req.model,
+            model=req.model or None,
             lang=lang,
         )
         # The Markdown narrative is a separate call so a slow model doesn't block the
         # spec; here we compute it inline since the whole request is already synchronous.
-        markdown = analysis_markdown(pos.result, pos.roles, pos.poles, model=req.model, lang=lang)
+        markdown = analysis_markdown(
+            pos.result, pos.roles, pos.poles, model=req.model or None, lang=lang
+        )
     except ValueError as exc:  # bad table / unknown reference -> a clean 400 for the UI
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except (ConnectionError, ollama.ResponseError) as exc:  # model unavailable -> actionable 503
+    except (ConnectionError, RuntimeError) as exc:  # model unavailable -> actionable 503
         raise _model_error(exc, req.model) from exc
     # One payload with everything the page draws from: the Vega-Lite spec for the
     # chart, the Markdown write-up, the YAML dump for download, and the axis names /

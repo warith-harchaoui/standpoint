@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Model selection now follows the AI-Helpers brief → engine contract.** The
+  hard-coded `DEFAULT_MODEL` / `AI_HELPERS_LLM_MODEL` env override and the
+  `standpoint-select-model` picker are gone. Standpoint ships a committed
+  `standpoint/llm.brief.yaml` describing its one-model, three-in-one job
+  (structured JSON axis poles, bilingual FR/EN prose, chart-image reading);
+  [best-engine-ai-helper](https://pypi.org/project/best-engine-ai-helper/)
+  resolves the best local vision-LLM for the machine on first use and caches the
+  pick to a gitignored `standpoint/llm.engine.yaml`. Every LLM/VLM call now routes
+  through `best_engine_ai_helper.llm.chat(engine=…, kind="vlm")`, which serves
+  Ollama or vLLM per the resolved engine.
+- `best-engine-ai-helper` is now a hard dependency; the direct `ollama` dependency
+  and the optional `[engine]` extra were removed.
+
 ## [0.6.0] - 2026-08-02
 
 ### Added

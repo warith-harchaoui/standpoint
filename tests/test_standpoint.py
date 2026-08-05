@@ -2,8 +2,9 @@
 
 Standpoint always names the axes and writes the analysis with the local model, so the
 model is a hard prerequisite of the suite, not an optional extra: `tests/conftest.py`
-guarantees `standpoint.DEFAULT_MODEL` is present (pulling it once if needed) before
-any test runs. Tests that exercise the model (axis naming in the table's own
+guarantees the model resolved through the brief -> engine contract (`standpoint.engine()`)
+is present (pulling it once if needed) before any test runs. Tests that exercise the
+model (axis naming in the table's own
 language and the vision assessment of the rendered figure) therefore always call the
 real local LLM.
 """
