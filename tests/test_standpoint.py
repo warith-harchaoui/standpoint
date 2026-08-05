@@ -284,6 +284,25 @@ def test_validate_table_rejects_degenerate_input():
         p4m.validate_table(pd.DataFrame({"x": [1.0, 2.0], "y": [np.nan, np.nan]}))
 
 
+def test_validate_table_rejects_duplicate_rows_and_columns():
+    # Two options with identical ratings would coincide on the map.
+    dup_rows = pd.DataFrame(
+        {"x": [1.0, 2.0, 1.0], "y": [3.0, 4.0, 3.0]}, index=["a", "b", "a_twin"]
+    )
+    with pytest.raises(ValueError, match="identical ratings"):
+        p4m.validate_table(dup_rows)
+    # Two criteria with identical columns count the same evidence twice.
+    dup_cols = pd.DataFrame(
+        {"x": [1.0, 2.0, 3.0], "x_twin": [1.0, 2.0, 3.0], "y": [3.0, 1.0, 2.0]},
+        index=["a", "b", "c"],
+    )
+    with pytest.raises(ValueError, match="identical columns"):
+        p4m.validate_table(dup_cols)
+    # A distinct table passes cleanly.
+    ok = pd.DataFrame({"x": [1.0, 2.0, 3.0], "y": [3.0, 1.0, 2.0]}, index=["a", "b", "c"])
+    p4m.validate_table(ok)
+
+
 def test_resolve_reference_errors(df):
     with pytest.raises(ValueError):
         p4m.analyze(df, reference="Nope Not Here")
