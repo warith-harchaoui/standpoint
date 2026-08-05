@@ -17,15 +17,30 @@ import standpoint as sp
 
 # Placeholders each block is allowed to interpolate (a superset; not every key uses all).
 _GUI_PLACEHOLDERS = {"n", "i", "opt", "crit"}
-_ANALYSIS_ARGS = {"left": "L", "right": "R", "bottom": "B", "top": "T", "pct": "~50%", "cols": "a · b"}
+_ANALYSIS_ARGS = {
+    "left": "L",
+    "right": "R",
+    "bottom": "B",
+    "top": "T",
+    "pct": "~50%",
+    "cols": "a · b",
+}
 # Substrings every localized LLM prompt must keep, so the pipeline can fill them in.
 _PROMPT_REQUIRED = {
     "title_template": ["{plural}"],
     "noun_prompt": ["{word}"],
     "axis_prompt": ["{glossary}", "{left}", "{right}", "{bottom}", "{top}"],
     "narrative_prompt": [
-        "{left}", "{right}", "{bottom}", "{top}", "{reference}",
-        "{best}", "{worst}", "{champ_top}", "{champ_right}", "{leaderboard}",
+        "{left}",
+        "{right}",
+        "{bottom}",
+        "{top}",
+        "{reference}",
+        "{best}",
+        "{worst}",
+        "{champ_top}",
+        "{champ_right}",
+        "{leaderboard}",
     ],
     "ratings_prompt": ["{noun}", "{options}", "{criteria}"],
 }
@@ -58,7 +73,9 @@ def test_gui_placeholders_are_known_and_consistent() -> None:
         sets = {lang: _placeholders(str(sp.i18n(lang)["gui"][key])) for lang in sp.SUPPORTED_LANGS}
         for lang, found in sets.items():
             assert found <= _GUI_PLACEHOLDERS, f"{lang}.gui.{key} has unknown placeholder {found}"
-        assert len(set(map(frozenset, sets.values()))) == 1, f"gui.{key} placeholders differ by language"
+        assert len(set(map(frozenset, sets.values()))) == 1, (
+            f"gui.{key} placeholders differ by language"
+        )
 
 
 def test_analysis_templates_format_without_error() -> None:
@@ -82,7 +99,9 @@ def test_ratings_prompt_formats_without_error() -> None:
     """`ratings_prompt` fills with its three arguments without a stray-placeholder error."""
     for lang in sp.SUPPORTED_LANGS:
         # A stray `{field}` would raise KeyError; the escaped `{{ }}` JSON example is fine.
-        out = sp.i18n(lang)["ratings_prompt"].format(noun="Language", options="A, B", criteria="X, Y")
+        out = sp.i18n(lang)["ratings_prompt"].format(
+            noun="Language", options="A, B", criteria="X, Y"
+        )
         assert "Language" in out and "A, B" in out and "X, Y" in out
 
 

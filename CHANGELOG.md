@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-08-05
+
 ### Changed
 
 - **Model selection now follows the AI-Helpers brief → engine contract.** The
@@ -21,6 +23,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Ollama or vLLM per the resolved engine.
 - `best-engine-ai-helper` is now a hard dependency; the direct `ollama` dependency
   and the optional `[engine]` extra were removed.
+- **Label placement keeps clear of the pole margin.** `label_placements` gained
+  `keepin_x`/`keepin_y` bounds so a candidate label position is rejected once it
+  would stray into the outer band reserved for the pole words, instead of only
+  avoiding other labels. The figure's view, margins and canvas were widened
+  (`view_x`/`view_y` now `2.0x` the span, canvas `1200x900`+) and pole words are
+  centred on their edge and point outward, so labels and pole phrases no longer
+  collide in tight clusters.
+- Refreshed a handful of example dataset values in `voitures_electriques.csv`.
+
+### Added
+
+- **Input validation rejects redundant rows/columns.** `validate_table` now
+  raises a clear `ValueError` when two options have identical ratings (they
+  would land on the same point) or two criteria are identical columns (they
+  would double-count the same evidence and skew the axes), alongside the
+  existing empty/constant-column checks.
 
 ## [0.6.0] - 2026-08-02
 
