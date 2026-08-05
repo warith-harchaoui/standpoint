@@ -28,8 +28,11 @@ the figure with [`vl-convert`](https://github.com/vega/vl-convert). Your table i
 uploaded, and there is no telemetry, no account, and nothing to sign up for.
 
 The one thing that reaches out is the axis naming and the written analysis, which ask a
-[Ollama](https://ollama.com) model running on `localhost`. Ollama fetches the model
-weights the first time, then works offline.
+local vision-LLM running on `localhost`. Standpoint does not hard-code a model: it ships
+a committed brief (`standpoint/llm.brief.yaml`) describing the job, and
+[best-engine-ai-helper](https://pypi.org/project/best-engine-ai-helper/) resolves the
+best local model for *your* machine on first use, caching the pick to a gitignored
+`standpoint/llm.engine.yaml`. The weights are fetched once, then everything works offline.
 
 ## Documentation
 
@@ -98,12 +101,13 @@ and the exhaustive
 - 🐧 **Ubuntu/Debian**: `sudo apt update && sudo apt install -y python3 python3-pip git`
 - 🪟 **Windows** (PowerShell): `winget install Python.Python.3.12 Git.Git`
 
-For axis names and the written analysis, install [Ollama](https://ollama.com) and pull
-the default model once:
+For axis names and the written analysis, install [Ollama](https://ollama.com) and start
+it. You do **not** pick a model: on first use best-engine-ai-helper resolves the best
+local vision-LLM for your machine from `standpoint/llm.brief.yaml` and pulls it once.
 
-- 🍎 **macOS**: `brew install ollama`, then `ollama serve &` and `ollama pull qwen2.5vl:7b`
-- 🐧 **Ubuntu/Debian**: `curl -fsSL https://ollama.com/install.sh | sh`, then `ollama pull qwen2.5vl:7b`
-- 🪟 **Windows**: install from [ollama.com/download](https://ollama.com/download), then `ollama pull qwen2.5vl:7b`
+- 🍎 **macOS**: `brew install ollama`, then `ollama serve &`
+- 🐧 **Ubuntu/Debian**: `curl -fsSL https://ollama.com/install.sh | sh`, then `ollama serve &`
+- 🪟 **Windows**: install from [ollama.com/download](https://ollama.com/download), then launch it
 
 **Use a virtual environment.** Installing into the system Python is the #1 cause of
 "it installed but the command isn't found" or a version conflict with another project:
@@ -168,8 +172,9 @@ standpoint --help                                               # confirms the C
   with `curl http://localhost:11434`.
 - 🪟 **GUI: "The local Ollama server is not reachable"**: launch the Ollama app from
   the Start menu, then confirm with `Invoke-WebRequest http://localhost:11434`.
-- 🍎🐧🪟 **GUI: "The model '...' is not installed"**: `ollama pull qwen2.5vl:7b` (or
-  whichever `--model` you passed).
+- 🍎🐧🪟 **GUI: "The model '...' is not installed"**: `ollama pull <tag>` for the tag in
+  the error (the one resolved in `standpoint/llm.engine.yaml`, or whichever `--model` you
+  passed); delete that engine file to re-resolve after a hardware change.
 - 🍎🐧 **`Address already in use` on `standpoint-gui`**: port 8000 is taken, find the
   process with `lsof -i :8000`, or just run
   `uvicorn standpoint.api:app --port 8001` on a free port instead.

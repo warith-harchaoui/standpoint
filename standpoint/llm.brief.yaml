@@ -1,0 +1,20 @@
+# Standpoint's committed LLM/VLM usage brief (best-engine-ai-helper).
+#
+# This is the INPUT to the brief -> engine contract: a hardware-independent
+# description of what Standpoint asks of a local model. On first use
+# best-engine-ai-helper resolves it against THIS machine and writes the concrete
+# pick to the gitignored `llm.engine.yaml`; runtime reads only that engine file.
+# There is no hard-coded model tag anywhere in the package.
+mode: local
+kind: vlm
+headroom: 0.5
+min_tps: 15
+structured_output: true
+task: >
+  One local vision-LLM drives Standpoint's whole language layer: it names the two
+  PCA axis poles from the loadings as schema-constrained JSON, writes a short
+  positioning analysis in the language of the table's columns (French or English),
+  and visually sanity-checks the rendered PNG positioning map (leader dot top-right,
+  readable point labels, legible italic axis-pole labels). One model for all three:
+  mandatory structured JSON output, solid bilingual FR/EN prose, and chart-image
+  reading. Outputs are short, so low latency matters more than raw size.

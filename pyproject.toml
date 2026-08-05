@@ -18,7 +18,7 @@ dependencies = [
     "vl-convert-python>=1.0",
     "PyYAML>=6.0",
     "langdetect>=1.0.9",
-    "ollama>=0.3",
+    "best-engine-ai-helper>=1.0",
     "click>=8.1",
 ]
 classifiers = [
@@ -64,7 +64,7 @@ packages = ["standpoint"]
 version = { attr = "standpoint.__version__" }
 
 [tool.setuptools.package-data]
-standpoint = ["locales/*.yaml", "static/*"]
+standpoint = ["llm.brief.yaml", "locales/*.yaml", "static/*"]
 
 [tool.ruff]
 # One source of truth for lint + format (Rule 17). 100 cols matches the prose-heavy

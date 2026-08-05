@@ -4,10 +4,13 @@
 # data/      = private / working input tables
 # out/       = generated deliverables (the tracked showcase lives in examples/)
 # .deepeval/ = deepeval telemetry / cache
+# llm.engine.yaml = machine-specific engine descriptor resolved from the committed
+#                   llm.brief.yaml by best-engine-ai-helper; never committed.
 .private/
 data/
 out/
 .deepeval/
+standpoint/llm.engine.yaml
 
 # --- Python bytecode & caches ---
 __pycache__/

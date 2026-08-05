@@ -44,11 +44,12 @@ import os
 import re
 from dataclasses import dataclass
 
+import best_engine_ai_helper as beh
 import numpy as np
-import ollama
 import pandas as pd
 import vl_convert as vlc
 import yaml
+from best_engine_ai_helper import llm
 from langdetect import DetectorFactory
 from langdetect import detect as _langdetect
 from sklearn.decomposition import PCA
@@ -74,11 +75,36 @@ PALETTE = {
 }
 FONT = "Roboto, -apple-system, Helvetica, Arial, sans-serif"
 
-# One qwen vision-LLM for everything: axis pole names, the written analysis, and
-# the visual assessment of the rendered figure (see `vlm_assess`). This is the
-# single source of truth for the model; override it once via the shared
-# AI_HELPERS_LLM_MODEL env var. No other model is used.
-DEFAULT_MODEL = os.environ.get("AI_HELPERS_LLM_MODEL", "qwen2.5vl:7b")
+# One local vision-LLM drives everything language-shaped: axis pole names, the
+# written analysis, and the visual self-check of the rendered figure (`vlm_assess`).
+# Standpoint deliberately runs that single vision model for the text tasks too, so
+# every call goes through best-engine-ai-helper with kind="vlm".
+#
+# The model tag is NOT hard-coded here. It lives in the brief -> engine contract:
+#   * llm.brief.yaml  is the INPUT (committed): a hardware-independent description
+#     of the three-in-one job (structured JSON poles, bilingual prose, chart
+#     reading) that best-engine-ai-helper ranks the local catalogue against.
+#   * llm.engine.yaml is the OUTPUT (gitignored): the concrete backend + model the
+#     resolver picked for THIS machine. `engine()` loads it, resolving from the
+#     brief on first use and writing it. Runtime reads the model only from there.
+_PKG_DIR = os.path.dirname(os.path.abspath(__file__))
+_ENGINE: dict | None = None
+
+
+def engine() -> dict:
+    """Return the resolved LLM/VLM engine descriptor for Standpoint.
+
+    Thin cache over :func:`best_engine_ai_helper.ensure`: loads
+    ``standpoint/llm.engine.yaml`` (backend + per-kind model for this machine), or
+    resolves it from the committed ``standpoint/llm.brief.yaml`` on first use and
+    writes it. Raises loudly if the brief is missing. Nothing is computed at import
+    time; the first LLM call triggers resolution.
+    """
+    global _ENGINE
+    if _ENGINE is None:
+        _ENGINE = beh.ensure(_PKG_DIR)
+    return _ENGINE
+
 
 __all__ = [
     "positioning",
@@ -101,6 +127,7 @@ __all__ = [
     "detect_language",
     "i18n",
     "vlm_assess",
+    "engine",
     "run",
     "main",
 ]
@@ -871,7 +898,7 @@ def _poles_to_names(poles: list[str]) -> list[str]:
     return [f"{left} ↔ {right}", f"{bottom} ↔ {top}"]
 
 
-def axis_poles(result: PCAResult, model: str = DEFAULT_MODEL, lang: str | None = None) -> list[str]:
+def axis_poles(result: PCAResult, model: str | None = None, lang: str | None = None) -> list[str]:
     """Four distinct pole labels [left, right, bottom, top] for the two axes.
 
     Each PCA axis is a weighted mix of the criteria. The local LLM names each pole
@@ -938,22 +965,25 @@ def axis_poles(result: PCAResult, model: str = DEFAULT_MODEL, lang: str | None =
             "properties": {k: {"type": "string"} for k in ("left", "right", "bottom", "top")},
             "required": ["left", "right", "bottom", "top"],
         }
-        resp = ollama.chat(
+        # The schema-constrained call returns a parsed dict directly; the vision
+        # model doubles as the text model here (kind="vlm"), per the brief.
+        data = llm.chat(
+            prompt,
+            engine=engine(),
+            kind="vlm",
+            json_schema=schema,
+            temperature=0,
             model=model,
-            format=schema,
-            options={"temperature": 0},
-            messages=[{"role": "user", "content": prompt}],
         )
-        data = json.loads(resp["message"]["content"])
         raw = [str(data.get(k, "")) for k in ("left", "right", "bottom", "top")]
         # Clean, de-duplicate, and reject antonym/shared-word pairs.
         return finalize_poles(raw, fallback_poles)
-    except Exception:  # ollama missing / model absent / bad JSON
+    except Exception:  # backend unreachable / model absent / bad JSON
         logger.error("axis naming: LLM unavailable; the local model is required")
         raise
 
 
-def noun_forms(word: str, model: str = DEFAULT_MODEL, lang: str | None = None) -> tuple[str, str]:
+def noun_forms(word: str, model: str | None = None, lang: str | None = None) -> tuple[str, str]:
     """Singular and plural of `word` (the first-column name), in its own language.
 
     Used for the figure title and legend heading, so a table of "Language" reads
@@ -974,13 +1004,14 @@ def noun_forms(word: str, model: str = DEFAULT_MODEL, lang: str | None = None) -
             "properties": {"singular": {"type": "string"}, "plural": {"type": "string"}},
             "required": ["singular", "plural"],
         }
-        resp = ollama.chat(
+        data = llm.chat(
+            i18n(lang)["noun_prompt"].format(word=word),
+            engine=engine(),
+            kind="vlm",
+            json_schema=schema,
+            temperature=0,
             model=model,
-            format=schema,
-            options={"temperature": 0},
-            messages=[{"role": "user", "content": i18n(lang)["noun_prompt"].format(word=word)}],
         )
-        data = json.loads(resp["message"]["content"])
         s = (str(data.get("singular") or "").strip() or naive[0]).capitalize()
         p = (str(data.get("plural") or "").strip() or naive[1]).capitalize()
         # Guard against the model swapping in a synonym (e.g. Voiture -> Véhicules):
@@ -1308,7 +1339,7 @@ def png_on_white(spec: dict) -> bytes:
     return vlc.vegalite_to_png(vl_spec={**spec, "background": "white"}, scale=2.0)
 
 
-def vlm_assess(image: str | bytes, model: str = DEFAULT_MODEL) -> dict:
+def vlm_assess(image: str | bytes, model: str | None = None) -> dict:
     """Ask the qwen vision-LLM to sanity-check a rendered positioning map.
 
     `image` is a PNG path or raw PNG bytes (bytes let the caller assess a
@@ -1336,13 +1367,22 @@ def vlm_assess(image: str | bytes, model: str = DEFAULT_MODEL) -> dict:
         "pole labels at the edges present and legible? Reply as JSON."
     )
     try:
-        resp = ollama.chat(
+        # `llm.chat` wants raw image bytes; read the file when handed a path.
+        if isinstance(image, bytes):
+            png_bytes = image
+        else:
+            with open(image, "rb") as fh:
+                png_bytes = fh.read()
+        verdict = llm.chat(
+            prompt,
+            engine=engine(),
+            kind="vlm",
+            images=[png_bytes],
+            json_schema=schema,
+            temperature=0,
             model=model,
-            format=schema,
-            options={"temperature": 0},
-            messages=[{"role": "user", "content": prompt, "images": [image]}],
         )
-        return json.loads(resp["message"]["content"])
+        return verdict if isinstance(verdict, dict) else {}
     except Exception:
         return {}
 
@@ -1351,7 +1391,7 @@ def suggest_ratings(
     noun: str,
     options: list[str],
     criteria: list[str],
-    model: str = DEFAULT_MODEL,
+    model: str | None = None,
     lang: str | None = None,
 ) -> dict[str, dict[str, int]]:
     """Ask the local model to fill a ratings matrix from the option / criterion names.
@@ -1369,8 +1409,8 @@ def suggest_ratings(
         The option (row) names to score.
     criteria : list[str]
         The criterion (column) names to score each option on.
-    model : str
-        Ollama model to query.
+    model : str | None
+        Force a specific model tag; ``None`` uses the one resolved in the engine.
     lang : str | None
         Output language for the prompt; detected from the names when `None`.
 
@@ -1382,10 +1422,8 @@ def suggest_ratings(
 
     Raises
     ------
-    ConnectionError
-        The Ollama server is unreachable.
-    ollama.ResponseError
-        The model is not installed or errors.
+    RuntimeError
+        The local model backend is unreachable, or the model errors.
     """
     options = [o for o in (s.strip() for s in options) if o]
     criteria = [c for c in (s.strip() for s in criteria) if c]
@@ -1399,7 +1437,7 @@ def suggest_ratings(
         criteria=", ".join(criteria),
     )
     # Constrain the model to the exact shape: every option maps to an object of its
-    # criteria, each an integer. `format` makes ollama return schema-valid JSON.
+    # criteria, each an integer. `json_schema` makes the backend return schema-valid JSON.
     schema = {
         "type": "object",
         "properties": {
@@ -1412,13 +1450,14 @@ def suggest_ratings(
         },
         "required": options,
     }
-    resp = ollama.chat(
+    data = llm.chat(
+        prompt,
+        engine=engine(),
+        kind="vlm",
+        json_schema=schema,
+        temperature=0,
         model=model,
-        format=schema,
-        options={"temperature": 0},
-        messages=[{"role": "user", "content": prompt}],
     )
-    data = json.loads(resp["message"]["content"])
     # Clamp to 1..5 and backfill any gap with a neutral 3, so the grid is always full.
     out: dict[str, dict[str, int]] = {}
     for o in options:
@@ -1435,15 +1474,11 @@ def _clamp_rating(value: object) -> int:
         return 3
 
 
-def _llm_text(prompt: str, model: str, fallback: str) -> str:
+def _llm_text(prompt: str, model: str | None, fallback: str) -> str:
     """Free-text completion from the local model; `fallback` if unreachable."""
     try:
-        resp = ollama.chat(
-            model=model,
-            options={"temperature": 0.3},
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return resp["message"]["content"].strip() or fallback
+        text = llm.chat(prompt, engine=engine(), kind="vlm", temperature=0.3, model=model)
+        return (text.strip() if isinstance(text, str) else "") or fallback
     except Exception:
         return fallback
 
@@ -1461,7 +1496,7 @@ def analysis_markdown(
     result: PCAResult,
     roles: list[str],
     poles: list[str],
-    model: str = DEFAULT_MODEL,
+    model: str | None = None,
     lang: str | None = None,
 ) -> str:
     """A thoughtful, precise interpretation of the map as Markdown.
@@ -1623,7 +1658,7 @@ def export_all(
     axis_names: list[str],
     colors: list[str],
     stem: str,
-    model: str = DEFAULT_MODEL,
+    model: str | None = None,
     noun_plural: str = "Approaches",
     title: str | None = None,
 ) -> list[str]:
@@ -1695,7 +1730,7 @@ class Positioning:
             attributes=self.df,  # raw values, so the hover tooltip lists every column
         )
 
-    def to_markdown(self, model: str = DEFAULT_MODEL) -> str:
+    def to_markdown(self, model: str | None = None) -> str:
         """The written interpretation as Markdown."""
         return analysis_markdown(self.result, self.roles, self.poles, model)
 
@@ -1713,7 +1748,7 @@ class Positioning:
         self,
         outdir: str = ".",
         stem: str | None = None,
-        model: str = DEFAULT_MODEL,
+        model: str | None = None,
     ) -> list[str]:
         """Write the full three-fold deliverable into `outdir`; returns the paths."""
         os.makedirs(outdir, exist_ok=True)
@@ -1738,7 +1773,7 @@ def positioning(
     top: str | None = None,
     right: str | None = None,
     lower_is_better: list[str] | None = None,
-    model: str = DEFAULT_MODEL,
+    model: str | None = None,
     lang: str | None = None,
 ) -> Positioning:
     """Position options from a table in one call.
@@ -1796,7 +1831,7 @@ def run(
     top: str | None = None,
     right: str | None = None,
     lower: str = "",
-    model: str = DEFAULT_MODEL,
+    model: str | None = None,
     check: bool = False,
 ) -> list[str]:
     """Shared CLI core: build the positioning, print a summary, write the files.
@@ -1897,8 +1932,8 @@ def main(argv: list[str] | None = None) -> None:
     )
     ap.add_argument(
         "--model",
-        default=DEFAULT_MODEL,
-        help=f"Ollama model for axis naming (default {DEFAULT_MODEL})",
+        default=None,
+        help="override the local model tag (default: the one resolved in llm.engine.yaml)",
     )
     ap.add_argument(
         "--check",
