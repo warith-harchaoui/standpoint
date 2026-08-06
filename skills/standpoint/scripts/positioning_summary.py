@@ -3,10 +3,10 @@
 
 A thin, deterministic wrapper the skill can call instead of re-writing the glue. It
 reads a table (a path argument, or ``-`` for stdin), runs ``standpoint.positioning()``,
-and writes the deliverable to disk. The figure is an **SVG** (rendered from the
-Vega-Lite spec), plus the same figure as PNG, each on a transparent and a white
-background, alongside the Vega-Lite spec, the Markdown analysis, and the YAML. It then
-prints the analysis and the list of files it wrote.
+and writes the deliverable to disk. The figure is a hand-authored, interactive
+**SVG** (no Vega), plus the same figure as PNG, each on a transparent and a white
+background, alongside the Markdown analysis and the YAML. It then prints the
+analysis and the list of files it wrote.
 
 Axis naming and the narrative come from a local Ollama model (``--model``, default
 ``qwen2.5vl:7b``). Requires the ``standpoint`` package.
@@ -71,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
         pos = sp.positioning(
             _read_table(a.table), reference=ref, lower_is_better=lower, model=a.model
         )
-        # Write the deliverable: <name>.{svg,png,white.svg,white.png,vl.json,md,yaml}.
+        # Write the deliverable: <name>.{svg,png,white.svg,white.png,md,yaml}.
         files = pos.export(a.outdir, model=a.model)
     except (ValueError, OSError) as exc:  # bad table / unknown reference / missing file
         print(f"error: {exc}", file=sys.stderr)

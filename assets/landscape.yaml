@@ -1,136 +1,181 @@
 meta:
   reference: Standpoint
-  rotation_deg: -0.525
+  rotation_deg: -26.836
   explained_variance_ratio:
-  - 0.4787
-  - 0.4139
-  cumulative_variance: 0.8926
-  n_approaches: 6
+  - 0.4394
+  - 0.3921
+  cumulative_variance: 0.8315
+  n_approaches: 9
   attributes:
   - Automated Axis Naming
-  - Multilingual Output
-  - Local Execution
   - One Command
-  - Threefold Deliverable
-  - Reproducibility
-  - Readable Axes
-  - Ease of Setup
+  - Local Execution
+  - Reproducible Coordinates
+  - Written Analysis
+  - No-Code Workflow
+  - Multilingual Output
+  - PCA-Based
   lower_is_better: []
 axes:
   axis_1:
-    name: Clarity ↔ Versatility
-    pole_left: Clarity
-    pole_right: Versatility
+    name: Accessible ↔ Efficient
+    pole_left: Accessible
+    pole_right: Efficient
     loadings:
-      Automated Axis Naming: 0.3476
-      Multilingual Output: 0.4409
-      Local Execution: -0.2327
-      One Command: 0.4632
-      Threefold Deliverable: 0.2931
-      Reproducibility: -0.2262
-      Readable Axes: -0.3058
-      Ease of Setup: 0.4307
+      Automated Axis Naming: 0.342
+      One Command: 0.3313
+      Local Execution: 0.4095
+      Reproducible Coordinates: 0.4813
+      Written Analysis: 0.2027
+      No-Code Workflow: -0.3052
+      Multilingual Output: 0.0798
+      PCA-Based: 0.483
   axis_2:
-    name: Ease ↔ Completeness
-    pole_bottom: Ease
-    pole_top: Completeness
+    name: Consistent ↔ Expressive
+    pole_bottom: Consistent
+    pole_top: Expressive
     loadings:
-      Automated Axis Naming: 0.4019
-      Multilingual Output: 0.2072
-      Local Execution: 0.3707
-      One Command: 0.1426
-      Threefold Deliverable: 0.442
-      Reproducibility: 0.4607
-      Readable Axes: 0.4007
-      Ease of Setup: -0.264
+      Automated Axis Naming: 0.4383
+      One Command: 0.3174
+      Local Execution: -0.1788
+      Reproducible Coordinates: -0.1669
+      Written Analysis: 0.4073
+      No-Code Workflow: 0.445
+      Multilingual Output: 0.5001
+      PCA-Based: -0.1825
 approaches:
 - name: Standpoint
   coordinates:
-    axis_1: 2.0269
-    axis_2: 1.8442
+    axis_1: 2.1121
+    axis_2: 1.9308
   role: best
   color: '#FF3B30'
   attributes:
     Automated Axis Naming: 5.0
-    Multilingual Output: 5.0
-    Local Execution: 5.0
     One Command: 5.0
-    Threefold Deliverable: 5.0
-    Reproducibility: 5.0
-    Readable Axes: 4.0
-    Ease of Setup: 4.0
+    Local Execution: 5.0
+    Reproducible Coordinates: 5.0
+    Written Analysis: 5.0
+    No-Code Workflow: 4.0
+    Multilingual Output: 5.0
+    PCA-Based: 5.0
 - name: prince
   coordinates:
-    axis_1: -1.7775
-    axis_2: 1.2662
+    axis_1: 1.985
+    axis_2: -1.6841
   role: competitor
-  color: '#009E89'
+  color: '#B47819'
   attributes:
     Automated Axis Naming: 1.0
-    Multilingual Output: 1.0
-    Local Execution: 5.0
     One Command: 2.0
-    Threefold Deliverable: 1.0
-    Reproducibility: 5.0
-    Readable Axes: 5.0
-    Ease of Setup: 3.0
+    Local Execution: 5.0
+    Reproducible Coordinates: 5.0
+    Written Analysis: 1.0
+    No-Code Workflow: 1.0
+    Multilingual Output: 1.0
+    PCA-Based: 5.0
 - name: PCA (scikit-learn)
   coordinates:
-    axis_1: -1.5323
-    axis_2: 0.945
-  role: worst
-  color: '#A52A2A'
+    axis_1: 1.7274
+    axis_2: -1.9308
+  role: competitor
+  color: '#F591B1'
   attributes:
     Automated Axis Naming: 1.0
-    Multilingual Output: 1.0
+    One Command: 1.0
     Local Execution: 5.0
-    One Command: 2.0
-    Threefold Deliverable: 1.0
-    Reproducibility: 5.0
-    Readable Axes: 4.0
-    Ease of Setup: 3.0
+    Reproducible Coordinates: 5.0
+    Written Analysis: 1.0
+    No-Code Workflow: 1.0
+    Multilingual Output: 1.0
+    PCA-Based: 5.0
 - name: factoextra + FactoMineR
   coordinates:
-    axis_1: -2.0269
-    axis_2: 1.8442
-  role: top
-  color: '#AF52DE'
-  attributes:
-    Automated Axis Naming: 1.0
-    Multilingual Output: 1.0
-    Local Execution: 5.0
-    One Command: 2.0
-    Threefold Deliverable: 2.0
-    Reproducibility: 5.0
-    Readable Axes: 5.0
-    Ease of Setup: 2.0
-- name: QuadrantMaker
-  coordinates:
-    axis_1: 2.0269
-    axis_2: -1.8442
+    axis_1: 2.1121
+    axis_2: -1.4287
   role: right
   color: '#007AFF'
   attributes:
     Automated Axis Naming: 1.0
-    Multilingual Output: 2.0
-    Local Execution: 2.0
-    One Command: 4.0
-    Threefold Deliverable: 1.0
-    Reproducibility: 1.0
-    Readable Axes: 2.0
-    Ease of Setup: 5.0
-- name: Slides or whiteboard
+    One Command: 2.0
+    Local Execution: 5.0
+    Reproducible Coordinates: 5.0
+    Written Analysis: 2.0
+    No-Code Workflow: 1.0
+    Multilingual Output: 1.0
+    PCA-Based: 5.0
+- name: Tableau
   coordinates:
-    axis_1: 0.4906
-    axis_2: -0.6672
+    axis_1: -0.5292
+    axis_2: 0.6768
   role: competitor
-  color: '#FFA1C1'
+  color: '#15B7D6'
   attributes:
     Automated Axis Naming: 1.0
-    Multilingual Output: 3.0
+    One Command: 3.0
+    Local Execution: 3.0
+    Reproducible Coordinates: 3.0
+    Written Analysis: 1.0
+    No-Code Workflow: 4.0
+    Multilingual Output: 2.0
+    PCA-Based: 1.0
+- name: Power BI
+  coordinates:
+    axis_1: -0.4021
+    axis_2: 0.9322
+  role: competitor
+  color: '#62A962'
+  attributes:
+    Automated Axis Naming: 1.0
+    One Command: 3.0
+    Local Execution: 3.0
+    Reproducible Coordinates: 3.0
+    Written Analysis: 2.0
+    No-Code Workflow: 4.0
+    Multilingual Output: 2.0
+    PCA-Based: 1.0
+- name: Gartner Magic Quadrant
+  coordinates:
+    axis_1: -0.7473
+    axis_2: 1.9308
+  role: top
+  color: '#AF52DE'
+  attributes:
+    Automated Axis Naming: 2.0
+    One Command: 1.0
+    Local Execution: 3.0
+    Reproducible Coordinates: 2.0
+    Written Analysis: 5.0
+    No-Code Workflow: 5.0
+    Multilingual Output: 2.0
+    PCA-Based: 1.0
+- name: Excel/PowerPoint 2x2
+  coordinates:
+    axis_1: -0.8595
+    axis_2: 0.4856
+  role: competitor
+  color: '#C0B7FF'
+  attributes:
+    Automated Axis Naming: 1.0
+    One Command: 1.0
     Local Execution: 5.0
-    One Command: 2.0
-    Threefold Deliverable: 1.0
-    Reproducibility: 1.0
-    Readable Axes: 2.0
-    Ease of Setup: 4.0
+    Reproducible Coordinates: 1.0
+    Written Analysis: 1.0
+    No-Code Workflow: 4.0
+    Multilingual Output: 3.0
+    PCA-Based: 1.0
+- name: Canva/Figma template
+  coordinates:
+    axis_1: -2.1121
+    axis_2: 1.2251
+  role: worst
+  color: '#A52A2A'
+  attributes:
+    Automated Axis Naming: 1.0
+    One Command: 1.0
+    Local Execution: 2.0
+    Reproducible Coordinates: 1.0
+    Written Analysis: 1.0
+    No-Code Workflow: 5.0
+    Multilingual Output: 3.0
+    PCA-Based: 1.0

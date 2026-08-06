@@ -10,7 +10,7 @@ When the local backend is unreachable the guard behaves differently by environme
 a developer machine it fails loudly, because a missing model is a prerequisite to
 install, not a reason to skip. In CI (where no local model server runs) it skips the
 model-backed tests instead, so CI stays the light, deterministic gate the workflow
-documents. The many model-free tests (parsing, geometry, roles, colours, i18n, Vega
+documents. The many model-free tests (parsing, geometry, roles, colours, i18n, SVG
 structure) always run, in CI and locally.
 """
 

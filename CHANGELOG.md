@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **No more Vega, anywhere.** `to_vega()` is replaced by `to_svg()`: the positioning
+  map is now built as a hand-authored, self-contained, interactive SVG (native
+  `<title>` tooltips, pure-CSS `:hover`/`:focus`, no JavaScript, no external
+  chart-rendering runtime), rasterised to PNG via `resvg` instead of `vl_convert`.
+  `vl-convert-python` is dropped as a dependency in favour of `resvg-py`.
+  `export_all()` / `Positioning.export()` no longer write a `<name>.vl.json` spec
+  file (six files instead of seven). The GUI (`standpoint/webgui.py`) no longer
+  loads `vega` / `vega-lite` / `vega-embed` from a CDN: the server sends back the
+  SVG directly, the page drops it straight into the DOM, pole renames edit the
+  SVG's own `data-pole` text nodes in place (no spec to rebuild, no re-render), and
+  PNG/SVG export rasterises the live SVG client-side through an offscreen canvas.
+  `POST /api/position`'s `vega` response field is renamed `svg`.
+
 ## [0.7.0] - 2026-08-05
 
 ### Changed

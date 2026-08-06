@@ -65,10 +65,11 @@ French. Leader: Tesla Model 3.
 
 ## The output files
 
-- `.png` and `.svg`: the figure on a **transparent** background, so it drops onto any page.
+- `.png` and `.svg`: the figure on a **transparent** background, so it drops onto any
+  page. The SVG is hand-authored and interactive (hover tooltips, no Vega) — edit or
+  embed it anywhere.
 - `.white.png` and `.white.svg`: the same figure on a **white** background, for dark
   surfaces (e.g. GitHub dark mode) where the near-black labels would otherwise vanish.
-- `.vl.json`: the Vega-Lite spec. Edit it or embed it anywhere Vega runs.
 - `.md`: a short written analysis. What the axes mean, where the leader wins, which
   groups stand out, plus the loadings and a ranking.
 - `.yaml`: metadata (variance, rotation), each axis's loadings, and every option's

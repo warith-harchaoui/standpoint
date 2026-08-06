@@ -2,7 +2,7 @@
 
 [🇫🇷](https://github.com/warith-harchaoui/standpoint/blob/main/LISEZMOI.md) · [🇬🇧](https://github.com/warith-harchaoui/standpoint/blob/main/README.md)
 
-[![CI](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20Vega--Lite-brightgreen.svg)](#tout-en-local)
+[![CI](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20SVG-brightgreen.svg)](#tout-en-local)
 
 `Standpoint` fait partie d'une collection de bibliothèques appelée `AI Helpers`, développée pour bâtir des applications d'intelligence artificielle.
 
@@ -26,9 +26,10 @@ tout le résultat.
 ## Tout en local
 
 Tout tourne sur votre machine : la lecture du tableau, l'ACP, l'orientation, la
-coloration et le rendu de la figure avec [`vl-convert`](https://github.com/vega/vl-convert).
-Votre tableau n'est jamais envoyé nulle part ; pas de télémétrie, pas de compte, rien à
-créer.
+coloration et le rendu de la figure en SVG écrit à la main, converti en PNG par
+[`resvg`](https://github.com/RazrFalcon/resvg) — aucun Vega, aucun moteur de rendu
+de graphiques externe. Votre tableau n'est jamais envoyé nulle part ; pas de
+télémétrie, pas de compte, rien à créer.
 
 Seuls le nommage des axes et l'analyse rédigée sollicitent un vision-LLM local tournant
 sur `localhost`. Standpoint ne fige aucun modèle : il embarque un brief versionné
@@ -67,8 +68,9 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
 
 ## Fonctionnalités
 
-- **Une commande, un livrable en trois volets** : une figure (PNG + SVG + JSON
-  Vega-Lite), une interprétation Markdown et un YAML de coordonnées + coefficients.
+- **Une commande, un livrable en trois volets** : une figure interactive écrite à
+  la main (PNG + SVG, sans Vega), une interprétation Markdown et un YAML de
+  coordonnées + coefficients.
 - **Axes lisibles** : l'ACP garde les axes sous forme de sommes pondérées de vos
   colonnes ; un modèle local nomme les quatre pôles par des qualités positives,
   avec un garde-fou contre les acronymes, les négatifs et les paires d'antonymes.
@@ -211,7 +213,7 @@ En bibliothèque :
 import standpoint as sp
 
 pos = sp.positioning("examples/programming_languages.csv")
-pos.export("out")                 # écrit out/python.{png,svg,white.png,white.svg,vl.json,md,yaml}
+pos.export("out")                 # écrit out/python.{png,svg,white.png,white.svg,md,yaml}
 print(pos.axes)
 # {'x': 'Concurrency ↔ Ecosystem', 'y': 'Safety ↔ Learning'}
 ```
@@ -234,7 +236,7 @@ standpoint-gui                     # appli web → http://localhost:8000/gui
 ![La GUI Standpoint : éditez un tableau, générez le quadrant et l'analyse](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/gui-preview.png)
 
 Le back-end de la GUI est une application FastAPI : `POST /api/position` renvoie le
-spec Vega-Lite, l'analyse Markdown et le YAML. Servez-la avec l'endpoint MCP monté,
+SVG, l'analyse Markdown et le YAML. Servez-la avec l'endpoint MCP monté,
 pour qu'un agent puisse appeler `position` comme un outil :
 
 ```bash
@@ -338,9 +340,9 @@ la politique de contribution et de versionnage est dans [CONTRIBUTING.md](https:
 Les cartes perceptuelles ACP sont classiques (`factoextra` et `FactoMineR` en R,
 `prince` et `pca` en Python) ; utiliser un modèle pour lire les composantes est une
 idée plus récente. Les couleurs viennent de la palette
-["Good Colors"](https://harchaoui.org/warith/colors/). Les figures sont rendues par
-[`vl-convert`](https://github.com/vega/vl-convert) au-dessus de
-[Vega-Lite](https://vega.github.io/vega-lite/).
+["Good Colors"](https://harchaoui.org/warith/colors/). Les figures sont écrites à
+la main en SVG et converties en PNG par
+[`resvg`](https://github.com/RazrFalcon/resvg).
 
 ## Auteur
 

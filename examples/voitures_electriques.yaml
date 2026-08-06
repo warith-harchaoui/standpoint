@@ -1,10 +1,10 @@
 meta:
   reference: Tesla Model 3
-  rotation_deg: 13.698
+  rotation_deg: 11.209
   explained_variance_ratio:
-  - 0.7671
-  - 0.1322
-  cumulative_variance: 0.8993
+  - 0.7482
+  - 0.1263
+  cumulative_variance: 0.8745
   n_approaches: 12
   attributes:
   - Autonomie
@@ -17,34 +17,34 @@ meta:
   lower_is_better: []
 axes:
   axis_1:
-    name: Économique ↔ Technologique
+    name: Économique ↔ Puissant
     pole_left: Économique
-    pole_right: Technologique
+    pole_right: Puissant
     loadings:
-      Autonomie: 0.3777
-      Performances: 0.3917
-      Recharge rapide: 0.3929
-      Rapport qualité-prix: -0.4603
-      Technologie embarquée: 0.3629
-      Sécurité: 0.4527
-      Réseau de recharge: 0.0321
+      Autonomie: 0.3765
+      Performances: 0.4093
+      Recharge rapide: 0.3947
+      Rapport qualité-prix: -0.4411
+      Technologie embarquée: 0.3812
+      Sécurité: 0.4392
+      Réseau de recharge: 0.0472
   axis_2:
-    name: Sécurité ↔ Rapide
-    pole_bottom: Sécurité
-    pole_top: Rapide
+    name: Sûr ↔ Connecté
+    pole_bottom: Sûr
+    pole_top: Connecté
     loadings:
-      Autonomie: 0.1887
-      Performances: 0.1109
-      Recharge rapide: -0.0023
-      Rapport qualité-prix: 0.3212
-      Technologie embarquée: 0.2496
-      Sécurité: -0.1863
-      Réseau de recharge: 0.8671
+      Autonomie: 0.1663
+      Performances: 0.0252
+      Recharge rapide: 0.0372
+      Rapport qualité-prix: 0.278
+      Technologie embarquée: 0.1603
+      Sécurité: -0.1579
+      Réseau de recharge: 0.9178
 approaches:
 - name: Tesla Model 3
   coordinates:
-    axis_1: 3.4612
-    axis_2: 0.4385
+    axis_1: 3.2189
+    axis_2: 0.4276
   role: best
   color: '#FF3B30'
   attributes:
@@ -57,10 +57,10 @@ approaches:
     Réseau de recharge: 5.0
 - name: Renault Mégane E-Tech
   coordinates:
-    axis_1: 0.9328
-    axis_2: 0.4385
-  role: top
-  color: '#AF52DE'
+    axis_1: 0.86
+    axis_2: 0.3185
+  role: competitor
+  color: '#A5C0FF'
   attributes:
     Autonomie: 4.0
     Performances: 4.0
@@ -71,10 +71,10 @@ approaches:
     Réseau de recharge: 3.0
 - name: Peugeot e-208
   coordinates:
-    axis_1: -0.4942
-    axis_2: -0.2654
+    axis_1: -0.451
+    axis_2: -0.0861
   role: competitor
-  color: '#F3976D'
+  color: '#EA8E64'
   attributes:
     Autonomie: 3.0
     Performances: 3.0
@@ -85,27 +85,27 @@ approaches:
     Réseau de recharge: 3.0
 - name: Hyundai Ioniq 5
   coordinates:
-    axis_1: 2.8515
-    axis_2: -0.1968
+    axis_1: 3.1395
+    axis_2: 0.0623
   role: competitor
-  color: '#59D5FF'
+  color: '#4ECBF7'
   attributes:
     Autonomie: 4.0
     Performances: 4.0
     Recharge rapide: 5.0
     Rapport qualité-prix: 3.0
-    Technologie embarquée: 4.0
+    Technologie embarquée: 5.0
     Sécurité: 5.0
     Réseau de recharge: 3.0
 - name: Kia EV6
   coordinates:
-    axis_1: 2.8515
-    axis_2: -0.1968
+    axis_1: 3.1314
+    axis_2: -0.0969
   role: competitor
-  color: '#718ADB'
+  color: '#009E89'
   attributes:
     Autonomie: 4.0
-    Performances: 4.0
+    Performances: 5.0
     Recharge rapide: 5.0
     Rapport qualité-prix: 3.0
     Technologie embarquée: 4.0
@@ -113,10 +113,10 @@ approaches:
     Réseau de recharge: 3.0
 - name: Volkswagen ID.3
   coordinates:
-    axis_1: 0.916
-    axis_2: -0.3918
+    axis_1: 0.832
+    axis_2: -0.1532
   role: competitor
-  color: '#98CD7A'
+  color: '#D1AE49'
   attributes:
     Autonomie: 4.0
     Performances: 3.0
@@ -127,8 +127,8 @@ approaches:
     Réseau de recharge: 3.0
 - name: BMW i4
   coordinates:
-    axis_1: 3.4612
-    axis_2: -0.4385
+    axis_1: 3.2189
+    axis_2: -0.4276
   role: right
   color: '#007AFF'
   attributes:
@@ -141,10 +141,10 @@ approaches:
     Réseau de recharge: 3.0
 - name: Polestar 2
   coordinates:
-    axis_1: 2.4728
-    axis_2: -0.1945
+    axis_1: 2.3168
+    axis_2: -0.1594
   role: competitor
-  color: '#16B9A3'
+  color: '#75A857'
   attributes:
     Autonomie: 4.0
     Performances: 4.0
@@ -155,10 +155,10 @@ approaches:
     Réseau de recharge: 3.0
 - name: Nissan Leaf
   coordinates:
-    axis_1: -0.873
-    axis_2: -0.2631
+    axis_1: -0.8314
+    axis_2: -0.1219
   role: competitor
-  color: '#E886A6'
+  color: '#DF7D9D'
   attributes:
     Autonomie: 3.0
     Performances: 3.0
@@ -169,10 +169,10 @@ approaches:
     Réseau de recharge: 3.0
 - name: MG4
   coordinates:
-    axis_1: -1.6554
-    axis_2: 0.3654
-  role: competitor
-  color: '#A26DBA'
+    axis_1: -1.5274
+    axis_2: 0.4276
+  role: top
+  color: '#AF52DE'
   attributes:
     Autonomie: 3.0
     Performances: 3.0
@@ -183,8 +183,8 @@ approaches:
     Réseau de recharge: 3.0
 - name: Dacia Spring
   coordinates:
-    axis_1: -3.4612
-    axis_2: -0.3363
+    axis_1: -3.2189
+    axis_2: -0.0129
   role: worst
   color: '#A52A2A'
   attributes:
@@ -197,15 +197,15 @@ approaches:
     Réseau de recharge: 3.0
 - name: Fiat 500e
   coordinates:
-    axis_1: -0.4942
-    axis_2: -0.2654
+    axis_1: -1.3536
+    axis_2: 0.0167
   role: competitor
-  color: '#B59329'
+  color: '#AB76C3'
   attributes:
-    Autonomie: 3.0
+    Autonomie: 2.0
     Performances: 3.0
     Recharge rapide: 3.0
-    Rapport qualité-prix: 4.0
+    Rapport qualité-prix: 5.0
     Technologie embarquée: 3.0
     Sécurité: 4.0
     Réseau de recharge: 3.0

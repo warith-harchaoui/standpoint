@@ -15,10 +15,13 @@ CI; a GUI would open the same engine to people who just want to *type a table an
 a map*. The whole value proposition (derived, labelled, written positioning in one
 step) is exactly the kind of thing a small local web app makes approachable.
 
-Crucially, the figure is a **Vega-Lite spec**, so the browser can render it live with
-`vega-embed`: no server-side image round-trip for display, full interactivity
-(tooltips, pan, PNG/SVG export from the built-in menu) for free. That makes the GUI
-unusually cheap to build on top of the existing library.
+Crucially, the figure is a **self-contained, interactive SVG** straight from the
+library (`to_svg`, no Vega, no chart-rendering runtime): the browser drops it
+straight into the page with `innerHTML`, no server-side image round-trip for
+display, and gets hover tooltips for free (a native `<title>` per dot). Renaming a
+pole edits that exact `<text data-pole="…">` node's `textContent` directly — no
+spec to rebuild, no re-render. That makes the GUI unusually cheap to build on top
+of the existing library.
 
 ## What it does
 
@@ -34,10 +37,11 @@ Run it (`standpoint-gui`) and, entirely on `localhost`:
    headers-only upload becomes a full table in one click.
 3. **Generate**: the grid is serialized to CSV and POSTed to `/api/position`, which
    runs the real `positioning()` pipeline.
-4. **See the quadrant**: the returned Vega-Lite spec is rendered live (SVG, scaled
+4. **See the quadrant**: the returned SVG is dropped straight into the page (scaled
    to fit its card), with a **Transparent background** toggle and explicit
-   **PNG / SVG** export buttons. Exports are named after the table's subject
-   (e.g. `programming-languages.png`).
+   **PNG / SVG** export buttons (PNG rasterises the live SVG client-side through an
+   offscreen canvas — no server round trip). Exports are named after the table's
+   subject (e.g. `programming-languages.png`).
 5. **Read the analysis**: the Markdown interpretation is rendered below the map and
    **colour-coded**: each highlighted option is tinted by its role (leader red,
    weakest brown, top-pole purple, right-pole blue) to match the dots on the map.
@@ -68,8 +72,8 @@ the **FastAPI** server on top of the unchanged core library.
 ```mermaid
 flowchart LR
     grid["🖥️ Editable grid"] ==>|"POST /api/position · CSV"| pos["positioning(csv, …)"]
-    pos --> lib["core library, unchanged<br/>to_vega · to_markdown · to_yaml"]
-    lib -->|"vega spec · JSON"| embed["🖥️ vega-embed<br/>live quadrant"]
+    pos --> lib["core library, unchanged<br/>to_svg · to_markdown · to_yaml"]
+    lib -->|"SVG string"| embed["🖥️ innerHTML<br/>live quadrant"]
     lib -->|"markdown · JSON"| md["🖥️ marked<br/>written analysis"]
 
     %% "Good Colors" palette: https://harchaoui.org/warith/colors/
@@ -79,15 +83,16 @@ flowchart LR
     class pos,lib server;
 ```
 
-(Tailwind + vega-embed + marked load from a CDN; the core library never imports the
-web layer.)
+(Tailwind + marked load from a CDN; no chart-rendering runtime at all; the core
+library never imports the web layer.)
 
 - `standpoint/api.py`: FastAPI app. Pages: `GET /gui`, `GET /` → `/gui`. Data:
   `GET /api/example`, `GET /api/i18n`, `POST /api/upload`, `POST /api/download/xlsx`,
   `POST /api/autofill`, `POST /api/position`. Static: `/favicon.ico`,
   `/site.webmanifest`, `/static/*`. Launcher `main_gui()` (`standpoint-gui`).
 - `standpoint/webgui.py`: the whole page as one self-contained HTML string
-  (vanilla JS + Tailwind + vega-embed + marked, all via CDN, no framework, no npm).
+  (vanilla JS + Tailwind + marked, all via CDN, no chart-rendering runtime, no
+  framework, no npm).
 - `standpoint/locales/i18n.yaml`: localized LLM prompts **and** GUI strings (`gui:` /
   `analysis:` blocks) for `en` / `fr` / `es`, the single source of truth for language.
 - `standpoint/static/`: the app icon set + PWA manifest, generated from
@@ -133,7 +138,7 @@ machine (the LLM, when enabled, is the same local Ollama the CLI uses).
 ## Design note
 
 The GUI is cheap and natural on top of the existing engine: most of the work is done
-by `positioning()` and Vega-Lite, so the browser layer is two files plus one optional
-extra. It widens the audience (marketers, analysts, PMs) without touching the core's
-dependency path, which is exactly why it ships behind the `gui` extra rather than in
-the base install.
+by `positioning()` and `to_svg`, so the browser layer is two files plus one optional
+extra — no chart-rendering runtime to load or version. It widens the audience
+(marketers, analysts, PMs) without touching the core's dependency path, which is
+exactly why it ships behind the `gui` extra rather than in the base install.

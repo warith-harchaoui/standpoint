@@ -21,14 +21,14 @@ description: >-
   picture of it; the user asks for a PCA / perceptual map of a scorecard or ratings
   table; the user names a command (`standpoint`, `standpoint-click`, `standpoint-gui`,
   `standpoint-mcp`) or a library symbol (`positioning`, `analyze`, `axis_poles`,
-  `assign_roles`, `to_vega`, `export_all`, `parse_table`); the user points at a CSV /
+  `assign_roles`, `to_svg`, `export_all`, `parse_table`); the user points at a CSV /
   Markdown table whose first column is option names and the rest numeric criteria and
   wants it turned into a figure + written analysis; the user wants to run the standpoint
   GUI, HTTP API, or MCP server.
 
   SKIP when: the user wants an ordinary chart of one or two variables (bar / line /
   scatter / pie of a series or a time axis) — that is plain plotting, not a positioning
-  map (reach for a figures / Vega skill instead); PCA purely for dimensionality
+  map (reach for a figures skill instead); PCA purely for dimensionality
   reduction inside an ML pipeline (use scikit-learn directly — standpoint is for the
   *labelled competitive map*, not feature engineering); a single-criterion ranking that
   is really just a sort; or building / cleaning / gathering the table itself rather than
@@ -39,9 +39,10 @@ description: >-
 # standpoint — comparison table → positioning map
 
 `standpoint` reads one table (options in rows, criteria in columns, numbers in the
-cells) and writes a three-fold deliverable: a labelled 2D map (PNG + SVG + Vega-Lite
-JSON), a short written analysis (Markdown), and a YAML with every coordinate and
-coefficient. One command does it, entirely on the machine. The maths is ordinary
+cells) and writes a three-fold deliverable: a labelled 2D map (hand-authored,
+interactive SVG + PNG, no Vega), a short written analysis (Markdown), and a YAML with
+every coordinate and coefficient. One command does it, entirely on the machine, with
+no chart-rendering runtime. The maths is ordinary
 correlation PCA — the value it adds is the work you would otherwise do by hand:
 orienting the map around a reference, naming the axes in plain words, colouring and
 labelling the points, and writing it up.
@@ -82,7 +83,7 @@ Library, one call:
 import standpoint as sp
 
 pos = sp.positioning("table.csv")             # a path, a raw string, or a DataFrame
-pos.export("out")                             # writes out/<name>.{png,svg,white.png,white.svg,vl.json,md,yaml}
+pos.export("out")                             # writes out/<name>.{png,svg,white.png,white.svg,md,yaml}
 pos.axes        # {'x': 'Cost ↔ Scalability', 'y': 'Simplicity ↔ Power'}
 pos.role_of     # {'AWS': 'best', 'DigitalOcean': 'worst', ...}
 ```
@@ -90,7 +91,7 @@ pos.role_of     # {'AWS': 'best', 'DigitalOcean': 'worst', ...}
 ## Which interface to reach for
 
 - **Library** (`import standpoint as sp`) — inside Python, or to get the `Positioning`
-  object (`.coords`, `.loadings`, `.axes`, `.to_vega()`, `.to_markdown()`, `.export()`).
+  object (`.coords`, `.loadings`, `.axes`, `.to_svg()`, `.to_markdown()`, `.export()`).
 - **CLI** — `standpoint` (argparse) or the twin `standpoint-click`; same flags. Best
   for a one-shot from a file, or scripting.
 - **GUI** — `standpoint-gui` → http://localhost:8000/gui: edit a table in the browser,

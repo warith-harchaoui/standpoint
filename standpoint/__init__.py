@@ -21,9 +21,10 @@ Pipeline
              frame (new_components = R(alpha) @ components).
 
 Then: automatic roles by principled projection, distinct OKLCH colours by map
-position, local-LLM axis pole names from the loadings, and a de-cluttered
-Vega-Lite figure. `export_all` writes PNG + SVG + Vega JSON + a Markdown analysis
-+ a YAML of coordinates and coefficients.
+position, local-LLM axis pole names from the loadings, and a de-cluttered,
+hand-authored, interactive SVG figure (no Vega, no external chart-rendering
+runtime). `export_all` writes PNG + SVG + a Markdown analysis + a YAML of
+coordinates and coefficients.
 
 Author
 ------
@@ -37,7 +38,6 @@ __url__ = "https://www.linkedin.com/in/warith-harchaoui"
 __version__ = "0.7.0"
 
 import argparse
-import json
 import logging
 import math
 import os
@@ -47,7 +47,6 @@ from dataclasses import dataclass
 import best_engine_ai_helper as beh
 import numpy as np
 import pandas as pd
-import vl_convert as vlc
 import yaml
 from best_engine_ai_helper import llm
 from langdetect import DetectorFactory
@@ -115,7 +114,7 @@ __all__ = [
     "assign_roles",
     "axis_poles",
     "gradient_colors",
-    "to_vega",
+    "to_svg",
     "render_figures",
     "png_on_white",
     "export_all",
@@ -1058,19 +1057,14 @@ def noun_forms(word: str, model: str | None = None, lang: str | None = None) -> 
 
 
 # --------------------------------------------------------------------------- #
-# Vega-Lite
+# Hand-authored SVG
 # --------------------------------------------------------------------------- #
-def _vega_field(name: str) -> str:
-    """Escape a column name for use as a Vega-Lite field accessor.
-
-    Vega treats ``.`` and ``[`` / ``]`` in a field string as nested-property accessors,
-    so a criterion literally named "v1.2" would be read as v1 -> 2. Backslash-escaping
-    those characters makes Vega look up the flat key we actually stored.
-    """
-    return name.replace("\\", "\\\\").replace(".", "\\.").replace("[", "\\[").replace("]", "\\]")
+def _esc(text: str) -> str:
+    """Escape the three XML metacharacters for safe inclusion in the SVG markup."""
+    return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def to_vega(
+def to_svg(
     result: PCAResult,
     roles: list[str] | None = None,
     poles: list[str] | None = None,
@@ -1078,13 +1072,17 @@ def to_vega(
     noun_plural: str = "Approaches",
     title: str | None = None,
     attributes: pd.DataFrame | None = None,
-) -> dict:
-    """Build a self-contained Vega-Lite v5 spec (inline data) for the map.
+) -> str:
+    """Build a complete, self-contained, interactive SVG document for the map.
 
-    Layers, bottom to top: a centred cross of axes through the origin (the neutral
-    intersection), every approach coloured by its position (Apple-wheel HSV), the
+    Elements, bottom to top: a centred dashed cross through the origin (the neutral
+    intersection), every approach coloured by its position (Apple-wheel OKLCH), the
     four pole words at the axis ends, and labels for the four corner extremes. No
-    frame, spines, ticks, numeric scales, or arrows.
+    frame, spines, ticks, numeric scales, or arrows. Every dot carries a native
+    ``<title>`` tooltip (the criterion values, or role + coordinates as a fallback)
+    and a pure-CSS ``:hover``/``:focus`` lift — no JavaScript, no external renderer.
+    The background is transparent; :func:`render_figures` derives an opaque-white
+    companion for dark surfaces.
 
     `title` is the fully-localized figure title (e.g. "Voitures dans le quadrant");
     when omitted it defaults to the English "<plural> in the Quadrant" so direct
@@ -1124,11 +1122,12 @@ def to_vega(
     label_font = _scaled(11, 17)
     pole_font = _scaled(18, 26)  # large: the poles anchor how the whole map reads
     legend_font = _scaled(9, 13)
-    dot_size = _scaled(90, 240)
+    dot_size = _scaled(90, 240)  # symbol AREA in px^2, matching the old point mark
+    dot_r = math.sqrt(dot_size / math.pi)
 
-    # Match the de-clutter geometry to the ACTUAL rendered canvas (below), not the
-    # old 900x760 default: with the real height the pixel->data conversion is right,
-    # so labels sit close to their dots instead of being pushed too far vertically.
+    # Match the de-clutter geometry to the ACTUAL rendered canvas, so the
+    # pixel->data conversion is right and labels sit close to their dots instead of
+    # being pushed too far vertically.
     fig_w = 1200
     fig_h = max(900, 26 * n + 160)
     # Labels may spill a little past the dot hull (+/- span) but must stay well inside
@@ -1149,229 +1148,212 @@ def to_vega(
     # Colour scale follows the map: rows top -> bottom, left -> right within each row,
     # so if the legend is shown it reads in the same order the eye scans the plot.
     order = legend_order(result.scores)
-    legend_names = [names[i] for i in order]
-    legend_colors = [colors[i] for i in order]
 
     # A label is dropped only when the map is too crowded to place it without
     # overlapping another. In that case the colour legend earns its keep as the
     # fallback way to identify those dots. When every dot is labelled in place (the
-    # common case) the legend would just repeat all N names, so it is hidden and the
+    # common case) the legend would just repeat all N names, so it is omitted and the
     # plot keeps the whole canvas.
     all_labelled = len(placements) == len(names)
-    color_legend = (
-        None
-        if all_labelled
-        else {
-            "title": noun_plural,
-            "symbolLimit": 0,
-            "labelFontSize": legend_font,
-            "symbolOpacity": 1,
-        }
-    )
 
     # The hover tooltip lists the ORIGINAL criterion values (what the user typed),
     # one line per column, rather than the two abstract PC coordinates: that is what
     # a reader actually wants to compare. `attributes` is the raw options x criteria
-    # table (index = option names); when absent we fall back to the coordinates.
+    # table (index = option names); when absent we fall back to role + coordinates.
     attr_cols = [str(c) for c in attributes.columns] if attributes is not None else []
 
     def _attr_value(nm: str, col: str) -> float | int | None:
-        """One raw cell for `nm` on `col`, as a JSON-safe number (blanks -> None)."""
+        """One raw cell for `nm` on `col`, as a plain number (blanks -> None)."""
         v = attributes.loc[nm, col] if nm in attributes.index else None
         if v is None or pd.isna(v):
             return None
         f = float(v)
         return int(f) if f.is_integer() else f
 
-    points = [
-        {
-            "name": nm,
-            "axis1": float(x),
-            "axis2": float(y),
-            "role": r,
-            "color": c,
-            "label": nm if i in placements else "",
-            "labelx": placements.get(i, (x, y))[0],
-            "labely": placements.get(i, (x, y))[1],
-            **{col: _attr_value(nm, col) for col in attr_cols},
-        }
-        for i, ((x, y), nm, r, c) in enumerate(
-            zip(result.scores, names, roles, colors, strict=False)
-        )
-    ]
+    def tooltip_text(nm: str, r: str, x: float, y: float) -> str:
+        """The native ``<title>`` body: one line per field, newline-separated."""
+        lines = [f"{noun_plural}: {nm}"]
+        if attr_cols:
+            for col in attr_cols:
+                v = _attr_value(nm, col)
+                if v is not None:
+                    lines.append(f"{col}: {v}")
+        else:
+            lines.append(f"role: {r}")
+            lines.append(f"axis1: {x:.2f}")
+            lines.append(f"axis2: {y:.2f}")
+        return "\n".join(lines)
 
-    xdom = {"domain": [-view_x, view_x]}
-    ydom = {"domain": [-view_y, view_y]}
-    bare = {"domain": False, "ticks": False, "labels": False, "grid": False, "title": None}
-    xenc = {"field": "axis1", "type": "quantitative", "scale": xdom, "axis": bare}
-    yenc = {"field": "axis2", "type": "quantitative", "scale": ydom, "axis": bare}
+    # -- pixel mapping ------------------------------------------------------- #
+    PAD = 12  # outer margin, matches the old Vega config.padding
+    TITLE_Y = PAD + 14  # title baseline, independent of the band reserved above
+    TITLE_BAND = 34  # vertical space reserved above the plot for the title
+    LEGEND_W = 0 if all_labelled else max(160, legend_font * 11)
 
-    def rule(x0: float, x1: float, y0: float, y1: float) -> dict:
-        """A Vega-Lite layer drawing one dotted axis segment in data coordinates."""
-        return {
-            "data": {"values": [{}]},
-            "mark": {"type": "rule", "color": PALETTE["axis"], "size": 1.2, "strokeDash": [2, 4]},
-            "encoding": {
-                "x": {"datum": x0, "type": "quantitative", "scale": xdom, "axis": bare},
-                "x2": {"datum": x1},
-                "y": {"datum": y0, "type": "quantitative", "scale": ydom, "axis": bare},
-                "y2": {"datum": y1},
-            },
-        }
+    plot_x0 = PAD
+    plot_y0 = TITLE_BAND
+    canvas_w = fig_w + 2 * PAD + LEGEND_W
+    canvas_h = fig_h + TITLE_BAND + PAD
 
-    def pole_label(x: float, y: float, text: str, align: str, baseline: str) -> dict:
-        """A Vega-Lite text layer placing one italic pole word at an axis end."""
-        return {
-            "data": {"values": [{"x": x, "y": y, "t": text}]},
-            "mark": {
-                "type": "text",
-                "fontSize": pole_font,
-                "fontStyle": "italic",
-                "color": "#6E6E73",
-                "align": align,
-                "baseline": baseline,
-            },
-            "encoding": {
-                "x": {"field": "x", "type": "quantitative", "scale": xdom, "axis": bare},
-                "y": {"field": "y", "type": "quantitative", "scale": ydom, "axis": bare},
-                "text": {"field": "t", "type": "nominal"},
-            },
-        }
+    sx = fig_w / (2 * view_x)
+    sy = fig_h / (2 * view_y)
 
-    edge_x, edge_y = view_x * 0.98, view_y * 0.98  # axes span the full view
-    # Pole words sit far out in the margin, near the axis ends and well beyond the dot
-    # hull (dots reach half the view), so they read as the map's headline rather than
-    # crowding the points. Each hugs its own edge (left/right along the horizontal,
-    # top/bottom centred on the vertical) and points outward.
-    pole_x, pole_y = view_x * 0.92, view_y * 0.92
-    layers = [
-        rule(-edge_x, edge_x, 0, 0),  # horizontal axis
-        rule(0, 0, -edge_y, edge_y),  # vertical axis
-        pole_label(pole_x, 0.0, right, "right", "middle"),
-        pole_label(-pole_x, 0.0, left, "left", "middle"),
-        pole_label(0.0, pole_y, top, "center", "bottom"),
-        pole_label(0.0, -pole_y, bottom, "center", "top"),
-        {  # every dot coloured by position; no legend, each dot is labelled in place
-            "data": {"values": points},
-            "mark": {
-                "type": "point",
-                "filled": True,
-                "opacity": 0.95,
-                "stroke": "white",
-                "strokeWidth": 1,
-                "size": dot_size,
-            },
-            "encoding": {
-                "x": xenc,
-                "y": yenc,
-                "color": {
-                    "field": "name",
-                    "type": "nominal",
-                    "scale": {"domain": legend_names, "range": legend_colors},
-                    # Hidden when every dot is labelled in place; shown only as the
-                    # fallback identity key when crowding dropped a label (see above).
-                    "legend": color_legend,
-                },
-                # Name first, then one line per criterion with its value. Field names
-                # are escaped (dots / brackets are Vega accessors) but the shown title
-                # stays the real column name. Falls back to the coordinates when the
-                # caller passed no attribute table.
-                "tooltip": [
-                    {"field": "name", "type": "nominal", "title": noun_plural},
-                    *(
-                        [
-                            {"field": _vega_field(col), "title": col, "type": "quantitative"}
-                            for col in attr_cols
-                        ]
-                        if attr_cols
-                        else [
-                            {"field": "role", "type": "nominal"},
-                            {"field": "axis1", "type": "quantitative", "format": ".2f"},
-                            {"field": "axis2", "type": "quantitative", "format": ".2f"},
-                        ]
-                    ),
-                ],
-            },
-        },
-        {  # labels: de-cluttered, placed on whichever side is free
-            "data": {"values": points},
-            "transform": [{"filter": "datum.label != ''"}],
-            "mark": {
-                "type": "text",
-                "align": "center",
-                "baseline": "middle",
-                "fontSize": label_font,
-                "color": PALETTE["label"],
-            },
-            "encoding": {
-                "x": {"field": "labelx", "type": "quantitative"},
-                "y": {"field": "labely", "type": "quantitative"},
-                "text": {"field": "label", "type": "nominal"},
-            },
-        },
-    ]
+    def x_px(dx: float) -> float:
+        return plot_x0 + fig_w / 2 + dx * sx
 
-    # Height floor keeps a comfortable landscape aspect; the per-approach term only
-    # matters on a crowded map, where the fallback legend (one row per approach) then
-    # fits beside the plot without being clipped. (Computed above as fig_h so the
-    # de-clutter geometry and the canvas agree.)
-    height = fig_h
+    def y_px(dy: float) -> float:
+        return plot_y0 + fig_h / 2 - dy * sy  # data y is up; SVG y is down
+
     if title is None:  # direct callers get the English default; localized via i18n
         title = f"{noun_plural} in the Quadrant"
-    return {
-        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-        "title": {"text": title, "font": FONT, "fontSize": 18},
-        # Transparent background: Vega-Lite otherwise bakes an opaque white rectangle
-        # into the PNG/SVG. Null lets the map drop cleanly onto any page or slide.
-        "background": None,
-        "width": fig_w,
-        "height": height,
-        "autosize": {"type": "pad", "resize": True},  # grow to fit a fallback legend
-        "config": {
-            "font": FONT,
-            "padding": 12,
-            "view": {"stroke": None},  # no box around the plotting area
-            "axis": {
-                "grid": False,
-                "domain": False,
-                "ticks": False,
-                "labels": False,
-                "labelFont": FONT,
-                "titleFont": FONT,
-            },
-            "text": {"font": FONT},
-        },
-        "layer": layers,
-    }
+
+    parts: list[str] = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
+        f'width="{canvas_w:.0f}" height="{canvas_h:.0f}" viewBox="0 0 {canvas_w:.0f} {canvas_h:.0f}" '
+        f'role="img" aria-labelledby="sp-title sp-desc" font-family="{FONT}">',
+        f"<title id=\"sp-title\">{_esc(title)}</title>",
+        f'<desc id="sp-desc">A 2D positioning map of {n} {_esc(noun_plural.lower())}, '
+        f"{_esc(left)} to {_esc(right)} on the horizontal axis, "
+        f"{_esc(bottom)} to {_esc(top)} on the vertical axis.</desc>",
+        "<style>"
+        ".sp-dot{cursor:pointer}"
+        ".sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}"
+        ".sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}"
+        "</style>",
+    ]
+
+    # -- dashed axis cross ----------------------------------------------------#
+    edge_x, edge_y = view_x * 0.98, view_y * 0.98  # axes span the full view
+    parts.append(
+        f'<line x1="{x_px(-edge_x):.1f}" y1="{y_px(0):.1f}" x2="{x_px(edge_x):.1f}" y2="{y_px(0):.1f}" '
+        f'stroke="{PALETTE["axis"]}" stroke-width="1.2" stroke-dasharray="2,4"/>'
+    )
+    parts.append(
+        f'<line x1="{x_px(0):.1f}" y1="{y_px(-edge_y):.1f}" x2="{x_px(0):.1f}" y2="{y_px(edge_y):.1f}" '
+        f'stroke="{PALETTE["axis"]}" stroke-width="1.2" stroke-dasharray="2,4"/>'
+    )
+
+    # -- pole words -------------------------------------------------------- #
+    # Pole words sit far out in the margin, near the axis ends and well beyond the
+    # dot hull (dots reach half the view), so they read as the map's headline rather
+    # than crowding the points. Each hugs its own edge (left/right along the
+    # horizontal, top/bottom centred on the vertical) and points outward.
+    pole_x, pole_y = view_x * 0.92, view_y * 0.92
+    mid_dy = 0.35 * pole_font  # vertical-centre baseline nudge (the "0.35em" trick)
+
+    def pole_label(dx: float, dy: float, text: str, anchor: str, y_nudge: float, which: str) -> str:
+        # `data-pole` names this text node for the GUI: renaming a pole edits this
+        # exact element's textContent client-side, no re-render round trip.
+        return (
+            f'<text data-pole="{which}" x="{x_px(dx):.1f}" y="{y_px(dy) + y_nudge:.1f}" '
+            f'font-size="{pole_font}" font-style="italic" fill="#6E6E73" '
+            f'text-anchor="{anchor}">{_esc(text)}</text>'
+        )
+
+    parts.append(pole_label(pole_x, 0.0, right, "end", mid_dy, "right"))
+    parts.append(pole_label(-pole_x, 0.0, left, "start", mid_dy, "left"))
+    parts.append(pole_label(0.0, pole_y, top, "middle", -0.21 * pole_font, "top"))  # "bottom" baseline
+    parts.append(pole_label(0.0, -pole_y, bottom, "middle", 0.8 * pole_font, "bottom"))  # "top" baseline
+
+    # -- dots (every approach coloured by position) ------------------------- #
+    label_dy = 0.35 * label_font
+    for i, ((x, y), nm, r, c) in enumerate(zip(result.scores, names, roles, colors, strict=False)):
+        cx, cy = x_px(x), y_px(y)
+        parts.append(
+            f'<g class="sp-dot" tabindex="0" role="img" aria-label="{_esc(tooltip_text(nm, r, x, y))}">'
+            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{dot_r:.2f}" fill="{c}" '
+            f'stroke="white" stroke-width="1" opacity="0.95"/>'
+            f"<title>{_esc(tooltip_text(nm, r, x, y))}</title>"
+            f"</g>"
+        )
+        if i in placements:
+            lx, ly = placements[i]
+            parts.append(
+                f'<text x="{x_px(lx):.1f}" y="{y_px(ly) + label_dy:.1f}" font-size="{label_font}" '
+                f'fill="{PALETTE["label"]}" text-anchor="middle">{_esc(nm)}</text>'
+            )
+
+    # -- fallback legend, only when crowding dropped some in-place labels --- #
+    if not all_labelled:
+        leg_x = plot_x0 + fig_w + 24
+        leg_y = plot_y0 + 8
+        parts.append(
+            f'<text x="{leg_x:.1f}" y="{leg_y:.1f}" font-size="{legend_font}" font-weight="700" '
+            f'fill="{PALETTE["label"]}">{_esc(noun_plural)}</text>'
+        )
+        row_h = legend_font * 1.9
+        for row, i in enumerate(order):
+            ry = leg_y + 20 + row * row_h
+            parts.append(
+                f'<circle cx="{leg_x + 6:.1f}" cy="{ry - legend_font * 0.35:.1f}" r="6" '
+                f'fill="{colors[i]}" opacity="0.95"/>'
+            )
+            parts.append(
+                f'<text x="{leg_x + 18:.1f}" y="{ry:.1f}" font-size="{legend_font}" '
+                f'fill="{PALETTE["label"]}">{_esc(names[i])}</text>'
+            )
+
+    # -- title --------------------------------------------------------------- #
+    parts.append(
+        f'<text x="{plot_x0 + fig_w / 2:.1f}" y="{TITLE_Y}" font-size="18" font-weight="bold" '
+        f'fill="#000" text-anchor="middle">{_esc(title)}</text>'
+    )
+
+    parts.append("</svg>")
+    return "".join(parts)
 
 
 # --------------------------------------------------------------------------- #
-# Three-fold export: figures (PNG + SVG + Vega JSON), markdown, YAML
+# Three-fold export: figures (PNG + SVG), markdown, YAML
 # --------------------------------------------------------------------------- #
-def render_figures(spec: dict, stem: str) -> list[str]:
-    """Rasterize/vectorize a Vega-Lite spec to transparent and white PNG + SVG.
+def _white_variant(svg: str) -> str:
+    """Insert an opaque white background rect right after the opening ``<svg>`` tag.
 
-    Writes four files: the transparent `<stem>.png` / `<stem>.svg` (the default, for
-    dropping onto any coloured page) and a white-background `<stem>.white.png` /
-    `<stem>.white.svg` (for dark surfaces (e.g. GitHub dark mode) where the map's
-    near-black labels would otherwise vanish on a transparent background). Returns
-    the four paths in that order.
+    `svg` is transparent by default (see :func:`to_svg`); this derives the
+    white-background companion by string surgery on the same markup rather than
+    rebuilding the figure, so the two variants are guaranteed pixel-identical
+    except for the backdrop.
+    """
+    i = svg.index(">") + 1
+    m = re.match(r'<svg\b[^>]*\bwidth="([\d.]+)"[^>]*\bheight="([\d.]+)"', svg)
+    w, h = (m.group(1), m.group(2)) if m else ("100%", "100%")
+    return f'{svg[:i]}<rect width="{w}" height="{h}" fill="#FFFFFF"/>{svg[i:]}'
+
+
+def _svg_to_png(svg: str, scale: float = 2.0) -> bytes:
+    """Rasterise an SVG string to PNG bytes via resvg_py, the house rasteriser.
+
+    No browser, no Node, no Vega runtime: it renders exactly the static markup
+    :func:`to_svg` emits.
+    """
+    import resvg_py
+
+    return resvg_py.svg_to_bytes(svg_string=svg, zoom=scale)
+
+
+def render_figures(svg: str, stem: str) -> list[str]:
+    """Write an SVG figure (and its raster companion) as transparent and white pairs.
+
+    `svg` is the transparent figure from :func:`to_svg`. Writes four files: the
+    transparent `<stem>.png` / `<stem>.svg` (the default, for dropping onto any
+    coloured page) and a white-background `<stem>.white.png` / `<stem>.white.svg`
+    (for dark surfaces (e.g. GitHub dark mode) where the map's near-black labels
+    would otherwise vanish on a transparent background). Returns the four paths in
+    that order.
     """
     written: list[str] = []
-    # `spec` already carries background:null; the ".white" pass overrides it. Same
-    # layout both times, so the only difference is the baked-in backdrop.
-    for suffix, variant in ((".", spec), (".white.", {**spec, "background": "white"})):
+    for suffix, variant in ((".", svg), (".white.", _white_variant(svg))):
         png_path, svg_path = f"{stem}{suffix}png", f"{stem}{suffix}svg"
-        with open(png_path, "wb") as fh:
-            fh.write(vlc.vegalite_to_png(vl_spec=variant, scale=2.0))
         with open(svg_path, "w", encoding="utf-8") as fh:
-            fh.write(vlc.vegalite_to_svg(vl_spec=variant))
+            fh.write(variant)
+        with open(png_path, "wb") as fh:
+            fh.write(_svg_to_png(variant))
         written += [png_path, svg_path]
     return written
 
 
-def png_on_white(spec: dict) -> bytes:
-    """Render `spec` to PNG bytes on an opaque white background.
+def png_on_white(svg: str) -> bytes:
+    """Render `svg` to PNG bytes on an opaque white background.
 
     The exported figures are transparent, but the vision self-check sends the image
     to a model whose backend flattens transparency onto a dark canvas, which would
@@ -1379,7 +1361,7 @@ def png_on_white(spec: dict) -> bytes:
     figure's intended reading surface, so the check runs against a white-composited
     copy rather than the transparent file on disk.
     """
-    return vlc.vegalite_to_png(vl_spec={**spec, "background": "white"}, scale=2.0)
+    return _svg_to_png(_white_variant(svg))
 
 
 def vlm_assess(image: str | bytes, model: str | None = None) -> dict:
@@ -1705,16 +1687,15 @@ def export_all(
     noun_plural: str = "Approaches",
     title: str | None = None,
 ) -> list[str]:
-    """Write the full three-fold deliverable for one table: figures (PNG + SVG +
-    Vega JSON), a Markdown interpretation, and a YAML of coordinates + coefficients.
-    Returns the list of paths written.
+    """Write the full three-fold deliverable for one table: figures (PNG + SVG), a
+    Markdown interpretation, and a YAML of coordinates + coefficients. Returns the
+    list of paths written.
     """
-    spec = to_vega(
+    svg = to_svg(
         result, roles=roles, poles=poles, colors=colors, noun_plural=noun_plural, title=title
     )
-    written = render_figures(spec, stem)
+    written = render_figures(svg, stem)
     for path, text in [
-        (f"{stem}.vl.json", json.dumps(spec, indent=2, ensure_ascii=False)),
         (f"{stem}.md", analysis_markdown(result, roles, poles, model)),
         (f"{stem}.yaml", results_yaml(df, result, roles, poles, axis_names, colors)),
     ]:
@@ -1761,9 +1742,9 @@ class Positioning:
         """Map each option name to its role (best / worst / … / competitor)."""
         return dict(zip(self.result.names, self.roles, strict=False))
 
-    def to_vega(self) -> dict:
-        """The Vega-Lite spec for the map."""
-        return to_vega(
+    def to_svg(self) -> str:
+        """The self-contained, interactive SVG document for the map."""
+        return to_svg(
             self.result,
             self.roles,
             self.poles,
@@ -1785,7 +1766,7 @@ class Positioning:
 
     def figure(self, stem: str) -> list[str]:
         """Render the map to `<stem>.png` and `<stem>.svg`; returns the paths."""
-        return render_figures(self.to_vega(), stem)
+        return render_figures(self.to_svg(), stem)
 
     def export(
         self,
@@ -1827,7 +1808,7 @@ def positioning(
     named option into the top-pole / right-pole highlight (see `assign_roles`).
     `lang` forces the output language (one of `SUPPORTED_LANGS`); left `None` it is
     detected from the column names. Returns a `Positioning` with `.coords`,
-    `.loadings`, `.axes`, `.to_vega()`, `.to_markdown()`, `.to_yaml()`, `.export()`.
+    `.loadings`, `.axes`, `.to_svg()`, `.to_markdown()`, `.to_yaml()`, `.export()`.
 
     >>> pos = positioning("examples/programming_languages.csv")
     >>> pos.export("out")
@@ -1849,7 +1830,7 @@ def positioning(
     # "Voitures dans le quadrant", never "Voitures in the Quadrant".
     title = i18n(lang)["title_template"].format(plural=plural)
     # Bundle the geometry and the model-named parts into the façade the caller drives
-    # (.coords / .loadings / .to_vega / .to_markdown / .to_yaml / .export).
+    # (.coords / .loadings / .to_svg / .to_markdown / .to_yaml / .export).
     return Positioning(
         df,
         result,
@@ -1929,7 +1910,7 @@ def run(
         # Assess a white-composited render, not the transparent PNG on disk: the
         # vision model's backend would otherwise flatten transparency onto black and
         # wrongly report the dark legend as cut off (see `png_on_white`).
-        verdict = vlm_assess(png_on_white(pos.to_vega()), model=model)
+        verdict = vlm_assess(png_on_white(pos.to_svg()), model=model)
         if verdict:
             print("\nVision self-check:")
             for key in ("leader_top_right", "readable", "legend_visible"):

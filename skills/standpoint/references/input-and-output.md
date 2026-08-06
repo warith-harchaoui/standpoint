@@ -27,14 +27,13 @@ Markdown tables work identically (first column = names, pipe-delimited).
 
 ## What gets written
 
-`export("out")` / `standpoint … --outdir out` writes seven files per table (`<name>`
+`export("out")` / `standpoint … --outdir out` writes six files per table (`<name>`
 is derived from the reference, or set with `--stem`):
 
 | File | What it is |
 |---|---|
-| `<name>.png` / `<name>.svg` | the figure, **transparent** background (drops onto any page) |
+| `<name>.png` / `<name>.svg` | the figure, **transparent** background (drops onto any page); the SVG is hand-authored and interactive (hover tooltips), no Vega, embeddable anywhere |
 | `<name>.white.png` / `<name>.white.svg` | the figure on **white** (for dark surfaces) |
-| `<name>.vl.json` | the Vega-Lite spec — edit or embed it anywhere Vega runs |
 | `<name>.md` | the written analysis (axes, highlighted options, plain-language read) |
 | `<name>.yaml` | metadata, per-axis loadings, and every option's coordinates / role / colour / original values |
 

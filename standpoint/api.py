@@ -10,7 +10,7 @@ Endpoints
 GET  /             redirect to the GUI.
 GET  /gui          the single-page editor + viewer (see `webgui.GUI_HTML`).
 GET  /api/example  a starter table (CSV text) to populate the grid.
-POST /api/position from an edited table, return the Vega-Lite spec + Markdown + YAML.
+POST /api/position from an edited table, return the SVG + Markdown + YAML.
 
 Run it with ``standpoint-gui`` (installed by the ``gui`` extra) or
 ``uvicorn standpoint.api:app``. It is intentionally *not* imported by the core
@@ -109,7 +109,7 @@ class PositionRequest(BaseModel):
 class PositionResponse(BaseModel):
     """What the browser needs to draw the quadrant and show the write-up."""
 
-    vega: dict
+    svg: str
     markdown: str
     yaml: str
     axes: dict[str, str]
@@ -335,8 +335,8 @@ def position(req: PositionRequest) -> PositionResponse:
     Returns
     -------
     PositionResponse
-        The Vega-Lite spec (rendered client-side by vega-embed), the Markdown
-        interpretation, the YAML dump, and the axis names / poles / roles.
+        The self-contained, interactive SVG (dropped straight into the page), the
+        Markdown interpretation, the YAML dump, and the axis names / poles / roles.
 
     Raises
     ------
@@ -370,12 +370,12 @@ def position(req: PositionRequest) -> PositionResponse:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except (ConnectionError, RuntimeError) as exc:  # model unavailable -> actionable 503
         raise _model_error(exc, req.model) from exc
-    # One payload with everything the page draws from: the Vega-Lite spec for the
-    # chart, the Markdown write-up, the YAML dump for download, and the axis names /
-    # poles / per-option roles the front-end uses to colour the analysis. Bundling
-    # them means the browser draws the whole result from a single round-trip.
+    # One payload with everything the page draws from: the SVG for the chart, the
+    # Markdown write-up, the YAML dump for download, and the axis names / poles /
+    # per-option roles the front-end uses to colour the analysis. Bundling them
+    # means the browser draws the whole result from a single round-trip.
     return PositionResponse(
-        vega=pos.to_vega(),  # spec vega-embed renders client-side
+        svg=pos.to_svg(),  # dropped straight into the page's #chart div
         markdown=markdown,  # the written interpretation
         yaml=pos.to_yaml(),  # coordinates + coefficients, offered as a download
         axes=pos.axes,  # {'x': ..., 'y': ...} axis titles

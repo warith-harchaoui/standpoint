@@ -1,136 +1,181 @@
 meta:
   reference: Standpoint
-  rotation_deg: -0.525
+  rotation_deg: -26.836
   explained_variance_ratio:
-  - 0.4787
-  - 0.4139
-  cumulative_variance: 0.8926
-  n_approaches: 6
+  - 0.4394
+  - 0.3921
+  cumulative_variance: 0.8315
+  n_approaches: 9
   attributes:
   - Nommage Automatique des Axes
-  - Sortie Multilingue
-  - Exécution Locale
   - Une Seule Commande
-  - Livrable Triple
-  - Reproductibilité
-  - Axes Lisibles
-  - Simplicité d'Installation
+  - Exécution Locale
+  - Coordonnées Reproductibles
+  - Analyse Rédigée
+  - Sans Code
+  - Sortie Multilingue
+  - Fondé sur l'ACP
   lower_is_better: []
 axes:
   axis_1:
-    name: Précision ↔ Facilité d'utilisation
-    pole_left: Précision
-    pole_right: Facilité d'utilisation
+    name: Ingéniosité ↔ Efficacité
+    pole_left: Ingéniosité
+    pole_right: Efficacité
     loadings:
-      Nommage Automatique des Axes: 0.3476
-      Sortie Multilingue: 0.4409
-      Exécution Locale: -0.2327
-      Une Seule Commande: 0.4632
-      Livrable Triple: 0.2931
-      Reproductibilité: -0.2262
-      Axes Lisibles: -0.3058
-      Simplicité d'Installation: 0.4307
+      Nommage Automatique des Axes: 0.342
+      Une Seule Commande: 0.3313
+      Exécution Locale: 0.4095
+      Coordonnées Reproductibles: 0.4813
+      Analyse Rédigée: 0.2027
+      Sans Code: -0.3052
+      Sortie Multilingue: 0.0798
+      Fondé sur l'ACP: 0.483
   axis_2:
-    name: Simplicité ↔ Complétude
-    pole_bottom: Simplicité
-    pole_top: Complétude
+    name: Stabilité ↔ Clarté
+    pole_bottom: Stabilité
+    pole_top: Clarté
     loadings:
-      Nommage Automatique des Axes: 0.4019
-      Sortie Multilingue: 0.2072
-      Exécution Locale: 0.3707
-      Une Seule Commande: 0.1426
-      Livrable Triple: 0.442
-      Reproductibilité: 0.4607
-      Axes Lisibles: 0.4007
-      Simplicité d'Installation: -0.264
+      Nommage Automatique des Axes: 0.4383
+      Une Seule Commande: 0.3174
+      Exécution Locale: -0.1788
+      Coordonnées Reproductibles: -0.1669
+      Analyse Rédigée: 0.4073
+      Sans Code: 0.445
+      Sortie Multilingue: 0.5001
+      Fondé sur l'ACP: -0.1825
 approaches:
 - name: Standpoint
   coordinates:
-    axis_1: 2.0269
-    axis_2: 1.8442
+    axis_1: 2.1121
+    axis_2: 1.9308
   role: best
   color: '#FF3B30'
   attributes:
     Nommage Automatique des Axes: 5.0
-    Sortie Multilingue: 5.0
-    Exécution Locale: 5.0
     Une Seule Commande: 5.0
-    Livrable Triple: 5.0
-    Reproductibilité: 5.0
-    Axes Lisibles: 4.0
-    Simplicité d'Installation: 4.0
+    Exécution Locale: 5.0
+    Coordonnées Reproductibles: 5.0
+    Analyse Rédigée: 5.0
+    Sans Code: 4.0
+    Sortie Multilingue: 5.0
+    Fondé sur l'ACP: 5.0
 - name: prince
   coordinates:
-    axis_1: -1.7775
-    axis_2: 1.2662
+    axis_1: 1.985
+    axis_2: -1.6841
   role: competitor
-  color: '#009E89'
+  color: '#B47819'
   attributes:
     Nommage Automatique des Axes: 1.0
-    Sortie Multilingue: 1.0
-    Exécution Locale: 5.0
     Une Seule Commande: 2.0
-    Livrable Triple: 1.0
-    Reproductibilité: 5.0
-    Axes Lisibles: 5.0
-    Simplicité d'Installation: 3.0
+    Exécution Locale: 5.0
+    Coordonnées Reproductibles: 5.0
+    Analyse Rédigée: 1.0
+    Sans Code: 1.0
+    Sortie Multilingue: 1.0
+    Fondé sur l'ACP: 5.0
 - name: PCA (scikit-learn)
   coordinates:
-    axis_1: -1.5323
-    axis_2: 0.945
-  role: worst
-  color: '#A52A2A'
+    axis_1: 1.7274
+    axis_2: -1.9308
+  role: competitor
+  color: '#F591B1'
   attributes:
     Nommage Automatique des Axes: 1.0
-    Sortie Multilingue: 1.0
+    Une Seule Commande: 1.0
     Exécution Locale: 5.0
-    Une Seule Commande: 2.0
-    Livrable Triple: 1.0
-    Reproductibilité: 5.0
-    Axes Lisibles: 4.0
-    Simplicité d'Installation: 3.0
+    Coordonnées Reproductibles: 5.0
+    Analyse Rédigée: 1.0
+    Sans Code: 1.0
+    Sortie Multilingue: 1.0
+    Fondé sur l'ACP: 5.0
 - name: factoextra + FactoMineR
   coordinates:
-    axis_1: -2.0269
-    axis_2: 1.8442
-  role: top
-  color: '#AF52DE'
-  attributes:
-    Nommage Automatique des Axes: 1.0
-    Sortie Multilingue: 1.0
-    Exécution Locale: 5.0
-    Une Seule Commande: 2.0
-    Livrable Triple: 2.0
-    Reproductibilité: 5.0
-    Axes Lisibles: 5.0
-    Simplicité d'Installation: 2.0
-- name: QuadrantMaker
-  coordinates:
-    axis_1: 2.0269
-    axis_2: -1.8442
+    axis_1: 2.1121
+    axis_2: -1.4287
   role: right
   color: '#007AFF'
   attributes:
     Nommage Automatique des Axes: 1.0
-    Sortie Multilingue: 2.0
-    Exécution Locale: 2.0
-    Une Seule Commande: 4.0
-    Livrable Triple: 1.0
-    Reproductibilité: 1.0
-    Axes Lisibles: 2.0
-    Simplicité d'Installation: 5.0
-- name: Diapositives ou tableau blanc
+    Une Seule Commande: 2.0
+    Exécution Locale: 5.0
+    Coordonnées Reproductibles: 5.0
+    Analyse Rédigée: 2.0
+    Sans Code: 1.0
+    Sortie Multilingue: 1.0
+    Fondé sur l'ACP: 5.0
+- name: Tableau
   coordinates:
-    axis_1: 0.4906
-    axis_2: -0.6672
+    axis_1: -0.5292
+    axis_2: 0.6768
   role: competitor
-  color: '#FFA1C1'
+  color: '#15B7D6'
   attributes:
     Nommage Automatique des Axes: 1.0
-    Sortie Multilingue: 3.0
+    Une Seule Commande: 3.0
+    Exécution Locale: 3.0
+    Coordonnées Reproductibles: 3.0
+    Analyse Rédigée: 1.0
+    Sans Code: 4.0
+    Sortie Multilingue: 2.0
+    Fondé sur l'ACP: 1.0
+- name: Power BI
+  coordinates:
+    axis_1: -0.4021
+    axis_2: 0.9322
+  role: competitor
+  color: '#62A962'
+  attributes:
+    Nommage Automatique des Axes: 1.0
+    Une Seule Commande: 3.0
+    Exécution Locale: 3.0
+    Coordonnées Reproductibles: 3.0
+    Analyse Rédigée: 2.0
+    Sans Code: 4.0
+    Sortie Multilingue: 2.0
+    Fondé sur l'ACP: 1.0
+- name: Gartner Magic Quadrant
+  coordinates:
+    axis_1: -0.7473
+    axis_2: 1.9308
+  role: top
+  color: '#AF52DE'
+  attributes:
+    Nommage Automatique des Axes: 2.0
+    Une Seule Commande: 1.0
+    Exécution Locale: 3.0
+    Coordonnées Reproductibles: 2.0
+    Analyse Rédigée: 5.0
+    Sans Code: 5.0
+    Sortie Multilingue: 2.0
+    Fondé sur l'ACP: 1.0
+- name: Excel/PowerPoint 2x2
+  coordinates:
+    axis_1: -0.8595
+    axis_2: 0.4856
+  role: competitor
+  color: '#C0B7FF'
+  attributes:
+    Nommage Automatique des Axes: 1.0
+    Une Seule Commande: 1.0
     Exécution Locale: 5.0
-    Une Seule Commande: 2.0
-    Livrable Triple: 1.0
-    Reproductibilité: 1.0
-    Axes Lisibles: 2.0
-    Simplicité d'Installation: 4.0
+    Coordonnées Reproductibles: 1.0
+    Analyse Rédigée: 1.0
+    Sans Code: 4.0
+    Sortie Multilingue: 3.0
+    Fondé sur l'ACP: 1.0
+- name: Modèle Canva/Figma
+  coordinates:
+    axis_1: -2.1121
+    axis_2: 1.2251
+  role: worst
+  color: '#A52A2A'
+  attributes:
+    Nommage Automatique des Axes: 1.0
+    Une Seule Commande: 1.0
+    Exécution Locale: 2.0
+    Coordonnées Reproductibles: 1.0
+    Analyse Rédigée: 1.0
+    Sans Code: 5.0
+    Sortie Multilingue: 3.0
+    Fondé sur l'ACP: 1.0

@@ -23,7 +23,8 @@ def test_gui_page_served() -> None:
     """`GET /gui` returns the single-page HTML app."""
     r = client.get("/gui")
     assert r.status_code == 200
-    assert "Standpoint" in r.text and "vega-embed" in r.text
+    assert "Standpoint" in r.text and 'id="chart"' in r.text
+    assert "vega" not in r.text.lower()  # no chart-rendering runtime left to load
 
 
 def test_root_redirects_to_gui() -> None:
@@ -50,7 +51,7 @@ def test_position_roundtrip() -> None:
     data = r.json()
     assert data["reference"] == "Python"
     assert data["roles"]["Python"] == "best"
-    assert data["vega"]["layer"]  # a real Vega-Lite spec the browser can render
+    assert data["svg"].startswith("<svg")  # a real SVG the browser drops straight in
     assert data["markdown"].startswith("# Python")
     assert "meta:" in data["yaml"]
 
@@ -60,13 +61,13 @@ def test_position_response_has_full_frontend_contract() -> None:
     """The response carries everything the browser needs to draw and colorize."""
     table = "Language,Speed,Safety,Jobs\nPython,2,3,5\nRust,5,4,3\nGo,4,3,4\nJava,4,5,5"
     data = client.post("/api/position", json={"table": table}).json()
-    assert {"vega", "markdown", "yaml", "axes", "poles", "reference", "roles"} <= set(data)
+    assert {"svg", "markdown", "yaml", "axes", "poles", "reference", "roles"} <= set(data)
     assert set(data["axes"]) == {"x", "y"}
     assert len(data["poles"]) == 4
     # the four highlighted roles the analysis colorizer tints by name
     assert {"best", "worst", "top", "right"} <= set(data["roles"].values())
-    # spec ships transparent; the UI sets the background per the toggle
-    assert data["vega"]["background"] is None
+    # the SVG ships transparent; the UI paints a white rect per the toggle
+    assert "<rect" not in data["svg"]
     assert "Leaderboard" not in data["markdown"]
 
 

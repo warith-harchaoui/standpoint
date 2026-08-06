@@ -26,19 +26,19 @@ human skimming, and for an agent deciding whether to invoke the
 - Commands: `standpoint`, `standpoint-click`, `standpoint-gui`, `standpoint-mcp`,
   `python -m standpoint`.
 - Library: `positioning`, `analyze`, `axis_poles`, `assign_roles`, `gradient_colors`,
-  `to_vega`, `export_all`, `parse_table`, the `Positioning` / `PCAResult` objects.
+  `to_svg`, `export_all`, `parse_table`, the `Positioning` / `PCAResult` objects.
 - Install / run: "install standpoint", "run the standpoint GUI / API / MCP server".
 
 **The user wants a specific standpoint feature.**
 - Axis names in plain words, in the table's own language (English / French / Spanish).
 - A reference option placed top-right; lower-is-better columns (`Price (↓)`, `--lower`).
-- Export to PNG / SVG / Vega-Lite JSON / Markdown / YAML, transparent or white.
+- Export to PNG / interactive SVG / Markdown / YAML, transparent or white, no Vega.
 
 ## Skip it when
 
 - **Ordinary plotting of one or two variables**: a bar / line / scatter / pie of a
   series or a time axis. That is plain charting, not a positioning map; reach for a
-  figures / Vega skill instead.
+  figures skill instead.
 - **PCA for dimensionality reduction inside an ML pipeline**: use scikit-learn
   directly. standpoint is for the *labelled competitive map*, not feature engineering
   or model input.

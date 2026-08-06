@@ -18,9 +18,9 @@ meta:
   - Weight
 axes:
   axis_1:
-    name: Affordable ↔ Durable
+    name: Affordable ↔ Robust
     pole_left: Affordable
-    pole_right: Durable
+    pole_right: Robust
     loadings:
       Price: -0.3459
       Performance: 0.1943
@@ -29,9 +29,9 @@ axes:
       Weight: 0.2949
       Screen: 0.2633
   axis_2:
-    name: Powerful ↔ Portable
-    pole_bottom: Powerful
-    pole_top: Portable
+    name: Vibrant ↔ Nimble
+    pole_bottom: Vibrant
+    pole_top: Nimble
     loadings:
       Price: 0.4357
       Performance: -0.5147

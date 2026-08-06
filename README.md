@@ -2,7 +2,7 @@
 
 [🇫🇷](https://github.com/warith-harchaoui/standpoint/blob/main/LISEZMOI.md) · [🇬🇧](https://github.com/warith-harchaoui/standpoint/blob/main/README.md)
 
-[![CI](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20Vega--Lite-brightgreen.svg)](#local-first)
+[![CI](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20SVG-brightgreen.svg)](#local-first)
 
 `Standpoint` belongs to a collection of libraries called `AI Helpers` developed for building Artificial Intelligence.
 
@@ -24,8 +24,10 @@ of your columns), colours and labels the points, and writes everything out.
 ## Local-first
 
 Everything runs on your machine: parsing, PCA, orientation, colouring, and rendering
-the figure with [`vl-convert`](https://github.com/vega/vl-convert). Your table is never
-uploaded, and there is no telemetry, no account, and nothing to sign up for.
+the figure as hand-authored SVG, rasterised to PNG by
+[`resvg`](https://github.com/RazrFalcon/resvg) — no Vega, no chart-rendering runtime.
+Your table is never uploaded, and there is no telemetry, no account, and nothing to
+sign up for.
 
 The one thing that reaches out is the axis naming and the written analysis, which ask a
 local vision-LLM running on `localhost`. Standpoint does not hard-code a model: it ships
@@ -62,8 +64,9 @@ coordinates, role, colour, and original values.
 
 ## Features
 
-- **One command, three-fold deliverable**: a figure (PNG + SVG + Vega-Lite JSON), a
-  Markdown interpretation, and a YAML of coordinates + coefficients.
+- **One command, three-fold deliverable**: a hand-authored, interactive figure
+  (PNG + SVG, no Vega), a Markdown interpretation, and a YAML of coordinates +
+  coefficients.
 - **Readable axes**: PCA keeps the axes as weighted sums of your columns; a local
   model names the four poles as positive qualities, guarded against acronyms,
   negatives, and antonym pairs.
@@ -200,7 +203,7 @@ As a library:
 import standpoint as sp
 
 pos = sp.positioning("examples/programming_languages.csv")
-pos.export("out")                 # writes out/python.{png,svg,white.png,white.svg,vl.json,md,yaml}
+pos.export("out")                 # writes out/python.{png,svg,white.png,white.svg,md,yaml}
 print(pos.axes)
 # {'x': 'Concurrency ↔ Ecosystem', 'y': 'Safety ↔ Learning'}
 ```
@@ -222,7 +225,7 @@ standpoint-gui                     # browser app → http://localhost:8000/gui
 
 ![The Standpoint GUI: edit a table, generate the quadrant and analysis](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/gui-preview.png)
 
-The GUI's backend is a FastAPI app: `POST /api/position` returns the Vega-Lite spec,
+The GUI's backend is a FastAPI app: `POST /api/position` returns the SVG,
 the Markdown analysis, and the YAML. Serve it with the MCP endpoint mounted so an
 agent can call `position` as a tool:
 
@@ -323,8 +326,8 @@ the contribution and versioning policy is in [CONTRIBUTING.md](https://github.co
 PCA perceptual maps are standard (`factoextra` and `FactoMineR` in R, `prince` and
 `pca` in Python); using a model to read the components is a newer idea. Colours
 come from the ["Good Colors"](https://harchaoui.org/warith/colors/) palette.
-Figures are rendered by [`vl-convert`](https://github.com/vega/vl-convert) over
-[Vega-Lite](https://vega.github.io/vega-lite/).
+Figures are hand-authored SVG, rasterised to PNG by
+[`resvg`](https://github.com/RazrFalcon/resvg).
 
 ## Author
 

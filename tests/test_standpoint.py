@@ -226,20 +226,19 @@ def test_detect_language():
 
 
 # --------------------------------------------------------------------------- #
-# vega spec + full export (render is deterministic via vl_convert)
+# hand-authored SVG + full export (render is deterministic via resvg_py)
 # --------------------------------------------------------------------------- #
-def test_to_vega_structure(result):
-    spec = p4m.to_vega(result)
-    assert spec["$schema"].endswith("v5.json")
-    assert spec["layer"] and spec["width"] > 0 and spec["height"] > 0
-    # the colour legend enumerates every approach
-    for layer in spec["layer"]:
-        scale = layer.get("encoding", {}).get("color", {}).get("scale", {})
-        if isinstance(scale, dict) and "domain" in scale:
-            assert set(scale["domain"]) == set(result.names)
-            break
-    else:
-        pytest.fail("no legend domain found")
+def test_to_svg_structure(result):
+    roles = p4m.assign_roles(result)
+    svg = p4m.to_svg(result, roles=roles, poles=["Left", "Right", "Bottom", "Top"])
+    assert svg.startswith("<svg") and svg.rstrip().endswith("</svg>")
+    assert svg.count("<circle") == len(result.names)  # one dot per approach
+    for name in result.names:
+        assert name in svg  # every approach is named somewhere (dot label or legend)
+    # the four pole words are addressable text nodes, for the GUI's live rename
+    for which in ("left", "right", "top", "bottom"):
+        assert f'data-pole="{which}"' in svg
+    assert 'width="' in svg and 'viewBox="0 0' in svg
 
 
 @pytest.mark.needs_model
@@ -249,8 +248,8 @@ def test_export_all_writes_three_fold(tmp_path, df, result, roles):
     colors = p4m.gradient_colors(result, roles)
     stem = str(tmp_path / "map")
     written = p4m.export_all(df, result, roles, poles, names, colors, stem)
-    # transparent png+svg, white png+svg, then vl.json + md + yaml
-    assert len(written) == 7
+    # transparent png+svg, white png+svg, then md + yaml
+    assert len(written) == 6
     assert Path(f"{stem}.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
     assert Path(f"{stem}.white.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
     assert "<svg" in Path(f"{stem}.svg").read_text()
@@ -354,7 +353,7 @@ def test_positioning_api(df):
     assert pos.role_of[pos.result.reference] == "best"
     assert set(pos.axes) == {"x", "y"}
     assert list(pos.coords.index) == list(df.index)
-    assert pos.to_vega()["layer"]
+    assert pos.to_svg().startswith("<svg")
     assert yaml.safe_load(pos.to_yaml())["meta"]["reference"] == "Python"
 
 
@@ -367,7 +366,6 @@ def test_positioning_export(tmp_path, df):
         "demo.svg",
         "demo.white.png",
         "demo.white.svg",
-        "demo.vl.json",
         "demo.md",
         "demo.yaml",
     }
@@ -394,7 +392,7 @@ def test_axis_poles_llm_quality(result):
 def test_vlm_assessment_of_rendered_figure(result):
     # Assess a white-composited render (the exported figure is transparent, which the
     # model's backend would flatten onto black and misread; see png_on_white).
-    verdict = p4m.vlm_assess(p4m.png_on_white(p4m.to_vega(result)))
+    verdict = p4m.vlm_assess(p4m.png_on_white(p4m.to_svg(result)))
     assert verdict.get("leader_top_right") is True
     # The four italic pole labels at the edges are always drawn; the per-dot legend is
     # now shown only when crowding drops a label, so the check looks at the poles.

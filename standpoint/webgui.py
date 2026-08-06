@@ -1,8 +1,11 @@
 """The single-page Standpoint GUI as one self-contained HTML string.
 
 No build step, no framework, no npm: vanilla JavaScript + Tailwind (Play CDN) +
-vega-embed (to render the Vega-Lite spec live in the browser) + marked (to render the
-Markdown analysis). `standpoint.api` serves this at ``GET /gui``.
+marked (to render the Markdown analysis). The server sends back a complete,
+self-contained SVG (see `standpoint.to_svg`); the page drops it straight into the
+DOM (no chart-rendering runtime, no external spec to interpret) and edits its pole
+labels live by updating their text nodes directly. `standpoint.api` serves this
+page at ``GET /gui``.
 
 Kept as a Python string (rather than a static file) so it ships inside the package:
 the whole GUI is a two-file backend plus this one-string frontend.
@@ -12,7 +15,7 @@ from __future__ import annotations
 
 # The whole page. Tailwind classes carry the styling; the <script> holds a small,
 # dependency-free controller: build an editable grid, serialize it to CSV, POST it,
-# then render the returned Vega-Lite spec and Markdown.
+# then drop the returned SVG into the page and render the Markdown.
 GUI_HTML = r"""<!doctype html>
 <html lang="en">
 <head>
@@ -32,9 +35,6 @@ GUI_HTML = r"""<!doctype html>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&family=Roboto+Serif:wght@400;500;600&family=Roboto+Mono&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     /* The "Good Colors" DATA palette (https://harchaoui.org/warith/colors/) is
@@ -69,8 +69,8 @@ GUI_HTML = r"""<!doctype html>
       linear-gradient(-45deg,transparent 75%,#eee 75%);
       background-size: 20px 20px;
       background-position: 0 0, 0 10px, 10px -10px, -10px 0; }
-    /* Scale the rendered map down to fit the card (SVG stays crisp); exports use
-       the Vega view at native resolution, so this only affects on-screen size. */
+    /* Scale the rendered map down to fit the card (SVG stays crisp); exports read
+       the SVG's own viewBox at native resolution, so this only affects on-screen size. */
     #chart svg, #chart canvas { max-width: 100%; height: auto; display: block; margin: 0 auto; }
     /* The analysis panel, coloured to echo the map (Tailwind's CDN has no prose
        plugin, so the rendered Markdown is themed here by hand). */
@@ -440,7 +440,7 @@ $("newTable").onclick = () => {
   headers = [""];
   rows = [{ name: "", values: [""] }];
   hasResult = false;
-  baseSpec = null; basePoles = null;  // drop the old map's poles; editor hides until the next run
+  baseSvg = null; basePoles = null;  // drop the old map's poles; editor hides until the next run
   $("poleEditor").classList.add("hidden");
   renderGrid();
 };
@@ -558,12 +558,13 @@ function colorizeRoles(html, roles) {
 }
 
 // --- editable axis poles ------------------------------------------------------
-// After a run we keep the server's Vega spec (baseSpec) and the model's four pole
-// names (basePoles = [left, right, bottom, top]) pristine. Every draw rebuilds the
-// spec from them, applying whatever the user typed into the pole inputs, so renaming
-// a pole re-labels the map instantly with no extra model call, and the PNG / SVG
-// exports (rendered from the same view) pick up the new names for free.
-let baseSpec = null, basePoles = null;
+// After a run we keep the server's SVG (baseSvg) and the model's four pole names
+// (basePoles = [left, right, bottom, top]) pristine. Every draw re-inserts baseSvg
+// fresh and then edits the four pole `<text data-pole="...">` nodes directly with
+// whatever the user typed into the pole inputs, so renaming a pole re-labels the
+// map instantly with no extra model call, no chart-rendering runtime, and no spec
+// to rebuild. The PNG / SVG exports read the same live, edited SVG.
+let baseSvg = null, basePoles = null;
 
 // Fill the four pole inputs with the model's names and reveal the compass editor.
 function renderPoleEditors() {
@@ -574,41 +575,34 @@ function renderPoleEditors() {
   $("poleEditor").classList.remove("hidden");
 }
 
-// Rebuild the Vega spec from the pristine server spec: swap each pole label for the
-// user's text (keyed by the ORIGINAL name, so duplicate labels never confuse it) and
-// set the preview background from the toggle. Pure client-side; the model is not re-run.
-function buildSpec() {
-  const spec = JSON.parse(JSON.stringify(baseSpec));
-  if (basePoles && basePoles.length === 4) {
-    const wanted = [$("poleLeft").value, $("poleRight").value, $("poleBottom").value, $("poleTop").value];
-    const rename = {};
-    basePoles.forEach((p, i) => { rename[p] = (wanted[i] || "").trim() || p; });  // blank -> keep original
-    // The four pole words are the only single-datum text layers carrying a `t` field.
-    (spec.layer || []).forEach((L) => {
-      const v = L && L.data && L.data.values;
-      if (Array.isArray(v) && v.length === 1 && v[0] && "t" in v[0] && v[0].t in rename) {
-        v[0].t = rename[v[0].t];
-      }
-    });
+// Draw (or redraw) the quadrant from the pristine SVG + pole inputs + background.
+function drawChart() {
+  if (!baseSvg) return;
+  $("chart").innerHTML = baseSvg;  // fresh, pristine copy every time
+  const svgEl = $("chart").querySelector("svg");
+  if (basePoles && basePoles.length === 4 && svgEl) {
+    const [left, right, bottom, top] = basePoles;
+    const wanted = { left: $("poleLeft").value, right: $("poleRight").value,
+                      bottom: $("poleBottom").value, top: $("poleTop").value };
+    const fallback = { left, right, bottom, top };
+    for (const which of ["left", "right", "bottom", "top"]) {
+      const node = svgEl.querySelector(`[data-pole="${which}"]`);
+      if (node) node.textContent = (wanted[which] || "").trim() || fallback[which];
+    }
   }
-  spec.background = $("bgTransparent").checked ? null : "white";  // checked = transparent
-  return spec;
-}
-
-// Draw (or redraw) the quadrant from the current spec + pole inputs + background.
-async function drawChart() {
-  if (!baseSpec) return;
-  const spec = buildSpec();
+  // Transparent: let the checker pattern show through. Opaque: an actual white
+  // rect painted first in the SVG, so it is part of the image for PNG export too.
   $("chart").classList.toggle("checker", $("bgTransparent").checked);
-  $("chart").textContent = "";
-  // No vega-embed "⋯" menu: the explicit PNG / SVG buttons replace it. SVG renderer
-  // so the map stays crisp when CSS scales it to fit the card.
-  const embed = await vegaEmbed("#chart", spec, { actions: false, renderer: "svg" });
-  chartView = embed.view;  // used by the explicit PNG / SVG export buttons
+  if (svgEl && !$("bgTransparent").checked) {
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("width", "100%"); rect.setAttribute("height", "100%");
+    rect.setAttribute("fill", "#FFFFFF");
+    svgEl.insertBefore(rect, svgEl.firstChild);
+  }
 }
 
-// --- generate: POST the table, render the spec + markdown --------------------
-let lastMd = "", chartView = null;
+// --- generate: POST the table, render the SVG + markdown ----------------------
+let lastMd = "";
 $("run").onclick = async () => {
   const btn = $("run");
   // A run calls a local model and can take a while on a cold start; lock the
@@ -636,13 +630,14 @@ $("run").onclick = async () => {
     if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
     const data = await res.json();
     slug = data.slug || "standpoint";  // name exports after the table's subject
-    // Keep the server spec and the model's pole names pristine; the compass editor
-    // (renderPoleEditors) fills its inputs and every draw rebuilds from them, so the
-    // user can rename a pole and see the map relabel live without another model call.
-    baseSpec = data.vega;
+    // Keep the server SVG and the model's pole names pristine; the compass editor
+    // (renderPoleEditors) fills its inputs and every draw re-inserts baseSvg fresh
+    // and edits it from them, so the user can rename a pole and see the map
+    // relabel live without another model call.
+    baseSvg = data.svg;
     basePoles = (data.poles || []).slice();
     renderPoleEditors();
-    await drawChart();  // honours the background toggle and any pole edits
+    drawChart();  // honours the background toggle and any pole edits
     $("dlPng").classList.remove("hidden"); $("dlSvg").classList.remove("hidden");
     // Render the analysis, then tint each option name by its role so the prose
     // echoes the dots on the map (leader red, weakest brown, top purple, right blue).
@@ -676,13 +671,35 @@ function download(name, text, type) {
 }
 $("dlMd").onclick = () => download(slug + ".md", lastMd, "text/markdown");
 
-// Export the rendered quadrant straight from the Vega view (honours the background
-// toggle): rasterized PNG (2x) or vector SVG.
+// Export the rendered quadrant straight from the live #chart SVG (already carries
+// any pole edits and the background rect from drawChart): vector SVG is a plain
+// serialize; PNG rasterises it through an offscreen canvas at 2x (no server round
+// trip, no chart-rendering runtime).
 async function exportImage(fmt) {
-  if (!chartView) return;
+  const svgEl = $("chart").querySelector("svg");
+  if (!svgEl) return;
   try {
-    const url = await chartView.toImageURL(fmt, fmt === "png" ? 2 : 1);
+    const text = new XMLSerializer().serializeToString(svgEl);
+    let url, revoke = true;
+    if (fmt === "svg") {
+      url = URL.createObjectURL(new Blob([text], { type: "image/svg+xml" }));
+    } else {
+      const scale = 2;
+      const vb = svgEl.viewBox.baseVal;
+      const w = (vb && vb.width) || svgEl.width.baseVal.value;
+      const h = (vb && vb.height) || svgEl.height.baseVal.value;
+      const svgUrl = URL.createObjectURL(new Blob([text], { type: "image/svg+xml" }));
+      const img = new Image();
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = svgUrl; });
+      URL.revokeObjectURL(svgUrl);
+      const canvas = document.createElement("canvas");
+      canvas.width = w * scale; canvas.height = h * scale;
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
+      url = URL.createObjectURL(blob);
+    }
     const a = document.createElement("a"); a.href = url; a.download = slug + "." + fmt; a.click();
+    if (revoke) URL.revokeObjectURL(url);
   } catch (err) {
     $("error").textContent = t("err_image") + err.message;
     $("error").classList.remove("hidden");
@@ -692,11 +709,11 @@ $("dlPng").onclick = () => exportImage("png");
 $("dlSvg").onclick = () => exportImage("svg");
 
 // Renaming any pole (debounced so fast typing doesn't thrash the renderer) or flipping
-// the background redraws the map live from the pristine base spec.
+// the background redraws the map live from the pristine base SVG.
 function debounce(fn, ms) { let h; return (...a) => { clearTimeout(h); h = setTimeout(() => fn(...a), ms); }; }
-const redrawSoon = debounce(() => { if (baseSpec) drawChart(); }, 200);
+const redrawSoon = debounce(() => { if (baseSvg) drawChart(); }, 200);
 ["poleTop", "poleLeft", "poleRight", "poleBottom"].forEach((id) => $(id).addEventListener("input", redrawSoon));
-$("bgTransparent").addEventListener("change", () => { if (baseSpec) drawChart(); });
+$("bgTransparent").addEventListener("change", () => { if (baseSvg) drawChart(); });
 
 // --- language + theme toggles -------------------------------------------------
 // Apply the fetched string table to every [data-i18n] / [data-i18n-aria] node, then

@@ -2,7 +2,7 @@
 numpy>=1.24
 pandas>=2.0
 scikit-learn>=1.3
-vl-convert-python>=1.0     # render the Vega-Lite spec to PNG / SVG
+resvg-py>=0.3              # rasterise the hand-authored SVG to PNG
 PyYAML>=6.0               # YAML deliverable + i18n prompt templates
 langdetect>=1.0.9        # detect the table's language from its column names
 ollama>=0.3              # local LLM for axis names + written analysis (optional at runtime)

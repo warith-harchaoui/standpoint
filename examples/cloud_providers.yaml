@@ -17,9 +17,9 @@ meta:
   lower_is_better: []
 axes:
   axis_1:
-    name: Ease of Use ↔ Scalability
-    pole_left: Ease of Use
-    pole_right: Scalability
+    name: Nimble ↔ Robust
+    pole_left: Nimble
+    pole_right: Robust
     loadings:
       Compute Breadth: 0.5426
       Managed AI/ML: 0.35
@@ -29,9 +29,9 @@ axes:
       Enterprise Trust: 0.4354
       Serverless: -0.2038
   axis_2:
-    name: Affordability ↔ Flexibility
-    pole_bottom: Affordability
-    pole_top: Flexibility
+    name: Frugal ↔ Expansive
+    pole_bottom: Frugal
+    pole_top: Expansive
     loadings:
       Compute Breadth: 0.0298
       Managed AI/ML: 0.2645

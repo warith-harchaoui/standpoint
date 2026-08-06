@@ -12,7 +12,7 @@ pos.coords        # DataFrame: axis-1 / axis-2 per option
 pos.loadings      # DataFrame: criterion weights per axis
 pos.axes          # {'x': 'Cost ↔ Scalability', 'y': 'Simplicity ↔ Power'}
 pos.role_of       # {'AWS': 'best', 'DigitalOcean': 'worst', 'Azure': 'top', ...}
-pos.to_vega()     # a Vega-Lite spec (dict)
+pos.to_svg()      # a self-contained, interactive SVG document (str)
 pos.to_markdown() # the written analysis
 pos.to_yaml()     # coordinates + coefficients
 pos.export("out") # writes every file (see input-and-output.md)
@@ -20,7 +20,7 @@ pos.export("out") # writes every file (see input-and-output.md)
 
 `positioning(data, ...)` accepts a path, a raw CSV/Markdown string, or a pandas
 DataFrame. Lower-level building blocks are exported too: `parse_table`, `analyze`
-(→ `PCAResult`), `assign_roles`, `axis_poles`, `gradient_colors`, `to_vega`,
+(→ `PCAResult`), `assign_roles`, `axis_poles`, `gradient_colors`, `to_svg`,
 `analysis_markdown`, `results_yaml`, `render_figures`, `export_all`.
 
 ## CLI (two twins, identical flags)
@@ -56,7 +56,7 @@ The GUI's backend is a FastAPI app; the useful endpoint for programs is:
 ```
 POST /api/position
   { "table": "<csv text>", "reference": "0", "lower": "Price", "model": "qwen2.5vl:7b" }
-→ { "vega": {...}, "markdown": "...", "yaml": "...", "axes": {...},
+→ { "svg": "<svg ...>...</svg>", "markdown": "...", "yaml": "...", "axes": {...},
     "poles": [...], "reference": "...", "roles": {...} }
 ```
 
