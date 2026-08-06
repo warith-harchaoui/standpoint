@@ -1,61 +1,61 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><title id="sp-title">Laptops in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 10 laptops, Affordable to Robust on the horizontal axis, Vibrant to Nimble on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="24.0" y1="484.0" x2="1200.0" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="925.0" x2="612.0" y2="43.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="493.1" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="end">Robust</text><text data-pole="left" x="60.0" y="493.1" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="start">Affordable</text><text data-pole="top" x="612.0" y="64.5" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="middle">Nimble</text><text data-pole="bottom" x="612.0" y="918.8" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="middle">Vibrant</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: MacBook Air
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><title id="sp-title">Laptops in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 10 laptops, Affordable to Robust on the horizontal axis, Vibrant to Nimble on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="220.8" y1="484.0" x2="1063.5" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="862.0" x2="612.0" y2="106.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="493.1" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="end">Robust</text><text data-pole="left" x="60.0" y="493.1" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="start">Affordable</text><text data-pole="top" x="612.0" y="64.5" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="middle">Nimble</text><text data-pole="bottom" x="612.0" y="918.8" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="middle">Vibrant</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: MacBook Air
 role: best
 axis1: 2.36
 axis2: 2.66"><circle cx="912.0" cy="259.0" r="8.57" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Laptops: MacBook Air
 role: best
 axis1: 2.36
-axis2: 2.66</title></g><text x="912.0" y="239.9" font-size="17" fill="#1C1C1E" text-anchor="middle">MacBook Air</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: MacBook Pro
+axis2: 2.66</title></g><text x="912.0" y="244.9" font-size="17" fill="#1C1C1E" text-anchor="middle">MacBook Air</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: MacBook Pro
 role: right
 axis1: 2.36
 axis2: -1.31"><circle cx="912.0" cy="595.2" r="8.57" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Laptops: MacBook Pro
 role: right
 axis1: 2.36
-axis2: -1.31</title></g><text x="843.8" y="601.2" font-size="17" fill="#1C1C1E" text-anchor="middle">MacBook Pro</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Dell XPS
+axis2: -1.31</title></g><text x="881.6" y="570.7" font-size="17" fill="#1C1C1E" text-anchor="middle">MacBook Pro</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Dell XPS
 role: competitor
 axis1: 0.89
 axis2: -0.40"><circle cx="725.2" cy="517.8" r="8.57" fill="#BC722B" stroke="white" stroke-width="1" opacity="0.95"/><title>Laptops: Dell XPS
 role: competitor
 axis1: 0.89
-axis2: -0.40</title></g><text x="671.8" y="523.7" font-size="17" fill="#1C1C1E" text-anchor="middle">Dell XPS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: ThinkPad X1
+axis2: -0.40</title></g><text x="773.6" y="523.7" font-size="17" fill="#1C1C1E" text-anchor="middle">Dell XPS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: ThinkPad X1
 role: competitor
 axis1: 1.46
 axis2: 0.93"><circle cx="798.1" cy="405.2" r="8.57" fill="#A1B656" stroke="white" stroke-width="1" opacity="0.95"/><title>Laptops: ThinkPad X1
 role: competitor
 axis1: 1.46
-axis2: 0.93</title></g><text x="798.1" y="364.0" font-size="17" fill="#1C1C1E" text-anchor="middle">ThinkPad X1</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Framework
+axis2: 0.93</title></g><text x="828.5" y="380.8" font-size="17" fill="#1C1C1E" text-anchor="middle">ThinkPad X1</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Framework
 role: competitor
 axis1: -1.20
 axis2: 0.93"><circle cx="460.1" cy="405.2" r="8.57" fill="#AB8CE0" stroke="white" stroke-width="1" opacity="0.95"/><title>Laptops: Framework
 role: competitor
 axis1: -1.20
-axis2: 0.93</title></g><text x="460.1" y="458.3" font-size="17" fill="#1C1C1E" text-anchor="middle">Framework</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Asus Zenbook
+axis2: 0.93</title></g><text x="429.8" y="380.8" font-size="17" fill="#1C1C1E" text-anchor="middle">Framework</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Asus Zenbook
 role: competitor
 axis1: -0.88
 axis2: 1.31"><circle cx="500.3" cy="373.0" r="8.57" fill="#72CFFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Laptops: Asus Zenbook
 role: competitor
 axis1: -0.88
-axis2: 1.31</title></g><text x="573.4" y="379.0" font-size="17" fill="#1C1C1E" text-anchor="middle">Asus Zenbook</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: HP Spectre
+axis2: 1.31</title></g><text x="568.4" y="379.0" font-size="17" fill="#1C1C1E" text-anchor="middle">Asus Zenbook</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: HP Spectre
 role: competitor
 axis1: 0.07
 axis2: 0.93"><circle cx="620.8" cy="405.5" r="8.57" fill="#00AA95" stroke="white" stroke-width="1" opacity="0.95"/><title>Laptops: HP Spectre
 role: competitor
 axis1: 0.07
-axis2: 0.93</title></g><text x="620.8" y="436.5" font-size="17" fill="#1C1C1E" text-anchor="middle">HP Spectre</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Lenovo Legion
+axis2: 0.93</title></g><text x="562.5" y="411.4" font-size="17" fill="#1C1C1E" text-anchor="middle">HP Spectre</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Lenovo Legion
 role: worst
 axis1: -1.30
 axis2: -2.29"><circle cx="446.3" cy="677.9" r="8.57" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Laptops: Lenovo Legion
 role: worst
 axis1: -1.30
-axis2: -2.29</title></g><text x="446.3" y="708.9" font-size="17" fill="#1C1C1E" text-anchor="middle">Lenovo Legion</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Acer Swift
+axis2: -2.29</title></g><text x="446.3" y="663.8" font-size="17" fill="#1C1C1E" text-anchor="middle">Lenovo Legion</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Acer Swift
 role: top
 axis1: -2.36
 axis2: 2.66"><circle cx="312.0" cy="259.0" r="8.57" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Laptops: Acer Swift
 role: top
 axis1: -2.36
-axis2: 2.66</title></g><text x="312.0" y="239.9" font-size="17" fill="#1C1C1E" text-anchor="middle">Acer Swift</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Razer Blade
+axis2: 2.66</title></g><text x="312.0" y="244.9" font-size="17" fill="#1C1C1E" text-anchor="middle">Acer Swift</text><g class="sp-dot" tabindex="0" role="img" aria-label="Laptops: Razer Blade
 role: competitor
 axis1: 0.25
 axis2: -2.66"><circle cx="643.7" cy="709.0" r="8.57" fill="#F894B4" stroke="white" stroke-width="1" opacity="0.95"/><title>Laptops: Razer Blade
 role: competitor
 axis1: 0.25
-axis2: -2.66</title></g><text x="643.7" y="689.9" font-size="17" fill="#1C1C1E" text-anchor="middle">Razer Blade</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Laptops in the Quadrant</text></svg>
+axis2: -2.66</title></g><text x="643.7" y="694.9" font-size="17" fill="#1C1C1E" text-anchor="middle">Razer Blade</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Laptops in the Quadrant</text></svg>

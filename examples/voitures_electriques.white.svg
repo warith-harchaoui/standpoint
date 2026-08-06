@@ -1,73 +1,73 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><rect width="1224" height="946" fill="#FFFFFF"/><title id="sp-title">Voitures dans le quadrant</title><desc id="sp-desc">A 2D positioning map of 12 voitures, Économique to Puissant on the horizontal axis, Sûr to Connecté on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="24.0" y1="484.0" x2="1200.0" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="925.0" x2="612.0" y2="43.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="end">Puissant</text><text data-pole="left" x="60.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="start">Économique</text><text data-pole="top" x="612.0" y="64.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Connecté</text><text data-pole="bottom" x="612.0" y="918.0" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Sûr</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Tesla Model 3
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><rect width="1224" height="946" fill="#FFFFFF"/><title id="sp-title">Voitures dans le quadrant</title><desc id="sp-desc">A 2D positioning map of 12 voitures, Économique to Puissant on the horizontal axis, Sûr to Connecté on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="215.0" y1="484.0" x2="1038.0" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="863.0" x2="612.0" y2="105.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="end">Puissant</text><text data-pole="left" x="60.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="start">Économique</text><text data-pole="top" x="612.0" y="64.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Connecté</text><text data-pole="bottom" x="612.0" y="918.0" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Sûr</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Tesla Model 3
 role: best
 axis1: 3.22
 axis2: 0.43"><circle cx="912.0" cy="259.0" r="8.39" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: Tesla Model 3
 role: best
 axis1: 3.22
-axis2: 0.43</title></g><text x="912.0" y="219.4" font-size="16" fill="#1C1C1E" text-anchor="middle">Tesla Model 3</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Renault Mégane E-Tech
+axis2: 0.43</title></g><text x="912.0" y="245.2" font-size="16" fill="#1C1C1E" text-anchor="middle">Tesla Model 3</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Renault Mégane E-Tech
 role: competitor
 axis1: 0.86
 axis2: 0.32"><circle cx="692.2" cy="316.4" r="8.39" fill="#A5C0FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: Renault Mégane E-Tech
 role: competitor
 axis1: 0.86
-axis2: 0.32</title></g><text x="692.2" y="297.6" font-size="16" fill="#1C1C1E" text-anchor="middle">Renault Mégane E-Tech</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Peugeot e-208
+axis2: 0.32</title></g><text x="692.2" y="341.4" font-size="16" fill="#1C1C1E" text-anchor="middle">Renault Mégane E-Tech</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Peugeot e-208
 role: competitor
 axis1: -0.45
 axis2: -0.09"><circle cx="570.0" cy="529.3" r="8.39" fill="#EA8E64" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: Peugeot e-208
 role: competitor
 axis1: -0.45
-axis2: -0.09</title></g><text x="725.4" y="489.7" font-size="16" fill="#1C1C1E" text-anchor="middle">Peugeot e-208</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Hyundai Ioniq 5
+axis2: -0.09</title></g><text x="570.0" y="497.9" font-size="16" fill="#1C1C1E" text-anchor="middle">Peugeot e-208</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Hyundai Ioniq 5
 role: competitor
 axis1: 3.14
 axis2: 0.06"><circle cx="904.6" cy="451.2" r="8.39" fill="#4ECBF7" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: Hyundai Ioniq 5
 role: competitor
 axis1: 3.14
-axis2: 0.06</title></g><text x="904.6" y="411.6" font-size="16" fill="#1C1C1E" text-anchor="middle">Hyundai Ioniq 5</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Kia EV6
+axis2: 0.06</title></g><text x="904.6" y="419.8" font-size="16" fill="#1C1C1E" text-anchor="middle">Hyundai Ioniq 5</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Kia EV6
 role: competitor
 axis1: 3.13
 axis2: -0.10"><circle cx="903.9" cy="535.0" r="8.39" fill="#009E89" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: Kia EV6
 role: competitor
 axis1: 3.13
-axis2: -0.10</title></g><text x="950.3" y="540.6" font-size="16" fill="#1C1C1E" text-anchor="middle">Kia EV6</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Volkswagen ID.3
+axis2: -0.10</title></g><text x="945.3" y="540.6" font-size="16" fill="#1C1C1E" text-anchor="middle">Kia EV6</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Volkswagen ID.3
 role: competitor
 axis1: 0.83
 axis2: -0.15"><circle cx="689.5" cy="564.6" r="8.39" fill="#D1AE49" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: Volkswagen ID.3
 role: competitor
 axis1: 0.83
-axis2: -0.15</title></g><text x="689.5" y="525.0" font-size="16" fill="#1C1C1E" text-anchor="middle">Volkswagen ID.3</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: BMW i4
+axis2: -0.15</title></g><text x="689.5" y="607.2" font-size="16" fill="#1C1C1E" text-anchor="middle">Volkswagen ID.3</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: BMW i4
 role: right
 axis1: 3.22
 axis2: -0.43"><circle cx="912.0" cy="709.0" r="8.39" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: BMW i4
 role: right
 axis1: 3.22
-axis2: -0.43</title></g><text x="912.0" y="690.2" font-size="16" fill="#1C1C1E" text-anchor="middle">BMW i4</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Polestar 2
+axis2: -0.43</title></g><text x="912.0" y="734.0" font-size="16" fill="#1C1C1E" text-anchor="middle">BMW i4</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Polestar 2
 role: competitor
 axis1: 2.32
 axis2: -0.16"><circle cx="827.9" cy="567.9" r="8.39" fill="#75A857" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: Polestar 2
 role: competitor
 axis1: 2.32
-axis2: -0.16</title></g><text x="888.3" y="573.5" font-size="16" fill="#1C1C1E" text-anchor="middle">Polestar 2</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Nissan Leaf
+axis2: -0.16</title></g><text x="772.5" y="573.5" font-size="16" fill="#1C1C1E" text-anchor="middle">Polestar 2</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Nissan Leaf
 role: competitor
 axis1: -0.83
 axis2: -0.12"><circle cx="534.5" cy="548.2" r="8.39" fill="#DF7D9D" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: Nissan Leaf
 role: competitor
 axis1: -0.83
-axis2: -0.12</title></g><text x="534.5" y="599.0" font-size="16" fill="#1C1C1E" text-anchor="middle">Nissan Leaf</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: MG4
+axis2: -0.12</title></g><text x="534.5" y="590.8" font-size="16" fill="#1C1C1E" text-anchor="middle">Nissan Leaf</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: MG4
 role: top
 axis1: -1.53
 axis2: 0.43"><circle cx="469.6" cy="259.0" r="8.39" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: MG4
 role: top
 axis1: -1.53
-axis2: 0.43</title></g><text x="469.6" y="219.4" font-size="16" fill="#1C1C1E" text-anchor="middle">MG4</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Dacia Spring
+axis2: 0.43</title></g><text x="469.6" y="245.2" font-size="16" fill="#1C1C1E" text-anchor="middle">MG4</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Dacia Spring
 role: worst
 axis1: -3.22
 axis2: -0.01"><circle cx="312.0" cy="490.8" r="8.39" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: Dacia Spring
 role: worst
 axis1: -3.22
-axis2: -0.01</title></g><text x="381.7" y="520.8" font-size="16" fill="#1C1C1E" text-anchor="middle">Dacia Spring</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Fiat 500e
+axis2: -0.01</title></g><text x="312.0" y="459.4" font-size="16" fill="#1C1C1E" text-anchor="middle">Dacia Spring</text><g class="sp-dot" tabindex="0" role="img" aria-label="Voitures: Fiat 500e
 role: competitor
 axis1: -1.35
 axis2: 0.02"><circle cx="485.8" cy="475.2" r="8.39" fill="#AB76C3" stroke="white" stroke-width="1" opacity="0.95"/><title>Voitures: Fiat 500e
 role: competitor
 axis1: -1.35
-axis2: 0.02</title></g><text x="541.6" y="505.2" font-size="16" fill="#1C1C1E" text-anchor="middle">Fiat 500e</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Voitures dans le quadrant</text></svg>
+axis2: 0.02</title></g><text x="485.8" y="461.4" font-size="16" fill="#1C1C1E" text-anchor="middle">Fiat 500e</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Voitures dans le quadrant</text></svg>

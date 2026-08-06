@@ -619,11 +619,16 @@ def label_placements(
     scores = result.scores
     sx = 2 * view_x / width_px  # data units per pixel, x
     sy = 2 * view_y / height_px  # data units per pixel, y
-    # A per-axis breathing gap: labels clear their neighbours by this much rather than
-    # butting right up against them, which is what made tight clusters read as glued.
-    pad_x, pad_y = 7 * sx, 7 * sy
-    dot_rx, dot_ry = 7 * sx, 7 * sy
-    row_x, row_y = 1.3 * font_px * sx, 1.3 * font_px * sy  # one ring's worth of push-out
+    # A breathing gap, in pixels: labels clear their neighbours by this much rather
+    # than butting right up against them, which is what made tight clusters read as
+    # glued. Kept tight (rather than a generous margin) so a label reads as *this*
+    # dot's name, not a floating caption. Pixels, not data units, because the two
+    # axes can have different data-per-pixel scales (a non-square view); doing the
+    # direction geometry below in one shared pixel frame is what keeps the visual
+    # gap the same size in x and y.
+    dot_r_px, pad_px, row_px = 5.0, 4.0, 1.1 * font_px
+    pad_x, pad_y = pad_px * sx, pad_px * sy
+    dot_rx, dot_ry = dot_r_px * sx, dot_r_px * sy
     boxes = [(x - dot_rx, y - dot_ry, x + dot_rx, y + dot_ry) for x, y in scores]
 
     # Placement order matters: the four corner extremes go first (they anchor the
@@ -642,13 +647,28 @@ def label_placements(
     placements: dict[int, tuple[float, float]] = {}
     for i in corners + others:
         x, y = scores[i]
-        w = len(result.names[i]) * 0.58 * font_px * sx
-        h = 1.3 * font_px * sy
+        x_px, y_px = x / sx, y / sy  # the dot's centre in the shared pixel frame
+        w_px = len(result.names[i]) * 0.58 * font_px
+        h_px = 1.3 * font_px
         best = None  # (distance, box, (lx, ly)): the free side nearest the dot
         for k in _LABEL_RINGS:
             for ox, oy in _LABEL_DIRS:
-                lx = x + ox * (dot_rx + pad_x + w / 2 + k * (w / 2 + row_x))
-                ly = y + oy * (dot_ry + pad_y + h / 2 + k * row_y)
+                # A unit direction, not the raw (±1, ±1) step: the diagonal entries in
+                # _LABEL_DIRS have magnitude sqrt(2), so using them raw would push a
+                # diagonal label out ~40% farther than a cardinal one for the same
+                # ring. Normalizing first, then sizing the push by the label box's
+                # own half-extent *along that direction* (the ellipse formula below,
+                # all in the shared pixel frame) keeps the gap between the dot and
+                # the label's near edge the same constant in all eight directions.
+                norm = math.hypot(ox, oy)
+                ux, uy = ox / norm, oy / norm
+                half_w_px, half_h_px = max(w_px / 2, 0.01), max(h_px / 2, 0.01)
+                r_dir_px = 1 / math.hypot(ux / half_w_px, uy / half_h_px)
+                push_px = dot_r_px + pad_px + r_dir_px + k * row_px
+                lx_px = x_px + ux * push_px
+                ly_px = y_px + uy * push_px
+                lx, ly = lx_px * sx, ly_px * sy
+                w, h = w_px * sx, h_px * sy
                 box = (lx - w / 2, ly - h / 2, lx + w / 2, ly + h / 2)
                 # Keep labels out of the outer margin reserved for the pole words:
                 # a label whose box edge crosses the bound is treated as blocked.
@@ -1222,17 +1242,6 @@ def to_svg(
         "</style>",
     ]
 
-    # -- dashed axis cross ----------------------------------------------------#
-    edge_x, edge_y = view_x * 0.98, view_y * 0.98  # axes span the full view
-    parts.append(
-        f'<line x1="{x_px(-edge_x):.1f}" y1="{y_px(0):.1f}" x2="{x_px(edge_x):.1f}" y2="{y_px(0):.1f}" '
-        f'stroke="{PALETTE["axis"]}" stroke-width="1.2" stroke-dasharray="2,4"/>'
-    )
-    parts.append(
-        f'<line x1="{x_px(0):.1f}" y1="{y_px(-edge_y):.1f}" x2="{x_px(0):.1f}" y2="{y_px(edge_y):.1f}" '
-        f'stroke="{PALETTE["axis"]}" stroke-width="1.2" stroke-dasharray="2,4"/>'
-    )
-
     # -- pole words -------------------------------------------------------- #
     # Pole words sit far out in the margin, near the axis ends and well beyond the
     # dot hull (dots reach half the view), so they read as the map's headline rather
@@ -1240,6 +1249,27 @@ def to_svg(
     # horizontal, top/bottom centred on the vertical) and points outward.
     pole_x, pole_y = view_x * 0.92, view_y * 0.92
     mid_dy = 0.35 * pole_font  # vertical-centre baseline nudge (the "0.35em" trick)
+
+    # -- dashed axis cross ----------------------------------------------------#
+    # Stop each arm well short of its pole word's own footprint (word width for the
+    # horizontal arm, whose text sits on the same y=0 baseline it would otherwise
+    # cross through; font height for the vertical arm, whose text is horizontally
+    # centred ON the line) so the dashes never run through a letter. `0.58*font_px`
+    # is the same average-character-width estimate `label_placements` uses below.
+    gap_px = 10  # breathing room between the line's tip and the word's nearest edge
+    word_w_px = {w: len(w) * 0.58 * pole_font for w in (left, right, top, bottom)}
+    right_edge = min(view_x * 0.98, pole_x - (word_w_px[right] + gap_px) / sx)
+    left_edge = min(view_x * 0.98, pole_x - (word_w_px[left] + gap_px) / sx)
+    top_edge = min(view_y * 0.98, pole_y - (pole_font + gap_px) / sy)
+    bottom_edge = min(view_y * 0.98, pole_y - (pole_font + gap_px) / sy)
+    parts.append(
+        f'<line x1="{x_px(-left_edge):.1f}" y1="{y_px(0):.1f}" x2="{x_px(right_edge):.1f}" y2="{y_px(0):.1f}" '
+        f'stroke="{PALETTE["axis"]}" stroke-width="1.2" stroke-dasharray="2,4"/>'
+    )
+    parts.append(
+        f'<line x1="{x_px(0):.1f}" y1="{y_px(-bottom_edge):.1f}" x2="{x_px(0):.1f}" y2="{y_px(top_edge):.1f}" '
+        f'stroke="{PALETTE["axis"]}" stroke-width="1.2" stroke-dasharray="2,4"/>'
+    )
 
     def pole_label(dx: float, dy: float, text: str, anchor: str, y_nudge: float, which: str) -> str:
         # `data-pole` names this text node for the GUI: renaming a pole edits this

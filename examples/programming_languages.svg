@@ -1,73 +1,73 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><title id="sp-title">Programming languages in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 12 programming languages, Nimble to Flourishing on the horizontal axis, Robust to Accessible on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="24.0" y1="484.0" x2="1200.0" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="925.0" x2="612.0" y2="43.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="end">Flourishing</text><text data-pole="left" x="60.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="start">Nimble</text><text data-pole="top" x="612.0" y="64.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Accessible</text><text data-pole="bottom" x="612.0" y="918.0" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Robust</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Python
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><title id="sp-title">Programming languages in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 12 programming languages, Nimble to Flourishing on the horizontal axis, Robust to Accessible on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="157.0" y1="484.0" x2="994.5" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="863.0" x2="612.0" y2="105.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="end">Flourishing</text><text data-pole="left" x="60.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="start">Nimble</text><text data-pole="top" x="612.0" y="64.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Accessible</text><text data-pole="bottom" x="612.0" y="918.0" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Robust</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Python
 role: best
 axis1: 2.45
 axis2: 2.86"><circle cx="912.0" cy="259.0" r="8.39" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: Python
 role: best
 axis1: 2.45
-axis2: 2.86</title></g><text x="912.0" y="219.4" font-size="16" fill="#1C1C1E" text-anchor="middle">Python</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Rust
+axis2: 2.86</title></g><text x="912.0" y="284.0" font-size="16" fill="#1C1C1E" text-anchor="middle">Python</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Rust
 role: worst
 axis1: -1.21
 axis2: -2.86"><circle cx="463.8" cy="709.0" r="8.39" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: Rust
 role: worst
 axis1: -1.21
-axis2: -2.86</title></g><text x="463.8" y="669.4" font-size="16" fill="#1C1C1E" text-anchor="middle">Rust</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Go
+axis2: -2.86</title></g><text x="436.2" y="714.6" font-size="16" fill="#1C1C1E" text-anchor="middle">Rust</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Go
 role: competitor
 axis1: 0.65
 axis2: -1.26"><circle cx="691.3" cy="583.2" r="8.39" fill="#75A857" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: Go
 role: competitor
 axis1: 0.65
-axis2: -1.26</title></g><text x="744.6" y="588.8" font-size="16" fill="#1C1C1E" text-anchor="middle">Go</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: JavaScript
+axis2: -1.26</title></g><text x="727.2" y="588.8" font-size="16" fill="#1C1C1E" text-anchor="middle">Go</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: JavaScript
 role: competitor
 axis1: 2.08
 axis2: 1.57"><circle cx="866.8" cy="360.3" r="8.39" fill="#9CB7FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: JavaScript
 role: competitor
 axis1: 2.08
-axis2: 1.57</title></g><text x="866.8" y="320.7" font-size="16" fill="#1C1C1E" text-anchor="middle">JavaScript</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: TypeScript
+axis2: 1.57</title></g><text x="895.8" y="337.0" font-size="16" fill="#1C1C1E" text-anchor="middle">JavaScript</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: TypeScript
 role: competitor
 axis1: 2.32
 axis2: -0.50"><circle cx="895.5" cy="523.4" r="8.39" fill="#59D5FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: TypeScript
 role: competitor
 axis1: 2.32
-axis2: -0.50</title></g><text x="895.5" y="483.8" font-size="16" fill="#1C1C1E" text-anchor="middle">TypeScript</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Java
+axis2: -0.50</title></g><text x="895.5" y="509.6" font-size="16" fill="#1C1C1E" text-anchor="middle">TypeScript</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Java
 role: right
 axis1: 2.45
 axis2: -2.02"><circle cx="912.0" cy="643.2" r="8.39" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: Java
 role: right
 axis1: 2.45
-axis2: -2.02</title></g><text x="912.0" y="603.6" font-size="16" fill="#1C1C1E" text-anchor="middle">Java</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: C++
+axis2: -2.02</title></g><text x="939.6" y="648.8" font-size="16" fill="#1C1C1E" text-anchor="middle">Java</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: C++
 role: competitor
 axis1: -0.41
 axis2: -1.29"><circle cx="561.4" cy="585.4" r="8.39" fill="#CC744A" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: C++
 role: competitor
 axis1: -0.41
-axis2: -1.29</title></g><text x="498.8" y="591.0" font-size="16" fill="#1C1C1E" text-anchor="middle">C++</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: C#
+axis2: -1.29</title></g><text x="538.5" y="591.0" font-size="16" fill="#1C1C1E" text-anchor="middle">C++</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: C#
 role: competitor
 axis1: 1.22
 axis2: -1.84"><circle cx="760.9" cy="628.4" r="8.39" fill="#009E89" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: C#
 role: competitor
 axis1: 1.22
-axis2: -1.84</title></g><text x="760.9" y="658.4" font-size="16" fill="#1C1C1E" text-anchor="middle">C#</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Ruby
+axis2: -1.84</title></g><text x="779.2" y="634.0" font-size="16" fill="#1C1C1E" text-anchor="middle">C#</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Ruby
 role: top
 axis1: 0.01
 axis2: 2.86"><circle cx="613.0" cy="259.0" r="8.39" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: Ruby
 role: top
 axis1: 0.01
-axis2: 2.86</title></g><text x="645.6" y="264.6" font-size="16" fill="#1C1C1E" text-anchor="middle">Ruby</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Kotlin
+axis2: 2.86</title></g><text x="585.5" y="264.6" font-size="16" fill="#1C1C1E" text-anchor="middle">Ruby</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Kotlin
 role: competitor
 axis1: 0.08
 axis2: -1.15"><circle cx="622.2" cy="574.2" r="8.39" fill="#D1AE49" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: Kotlin
 role: competitor
 axis1: 0.08
-axis2: -1.15</title></g><text x="622.2" y="625.0" font-size="16" fill="#1C1C1E" text-anchor="middle">Kotlin</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Swift
+axis2: -1.15</title></g><text x="650.8" y="608.3" font-size="16" fill="#1C1C1E" text-anchor="middle">Kotlin</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Swift
 role: competitor
 axis1: -0.55
 axis2: -1.04"><circle cx="545.0" cy="565.8" r="8.39" fill="#DF7D9D" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: Swift
 role: competitor
 axis1: -0.55
-axis2: -1.04</title></g><text x="545.0" y="526.2" font-size="16" fill="#1C1C1E" text-anchor="middle">Swift</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Elixir
+axis2: -1.04</title></g><text x="495.2" y="571.4" font-size="16" fill="#1C1C1E" text-anchor="middle">Swift</text><g class="sp-dot" tabindex="0" role="img" aria-label="Programming languages: Elixir
 role: competitor
 axis1: -2.45
 axis2: 0.46"><circle cx="312.0" cy="447.9" r="8.39" fill="#C790DF" stroke="white" stroke-width="1" opacity="0.95"/><title>Programming languages: Elixir
 role: competitor
 axis1: -2.45
-axis2: 0.46</title></g><text x="312.0" y="408.3" font-size="16" fill="#1C1C1E" text-anchor="middle">Elixir</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Programming languages in the Quadrant</text></svg>
+axis2: 0.46</title></g><text x="312.0" y="472.9" font-size="16" fill="#1C1C1E" text-anchor="middle">Elixir</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Programming languages in the Quadrant</text></svg>
