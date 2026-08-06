@@ -601,12 +601,30 @@ def label_placements(
     font_px: float = 11.0,
     keepin_x: float | None = None,
     keepin_y: float | None = None,
-) -> dict[int, tuple[float, float]]:
+) -> dict[int, tuple[float, float, str]]:
     """Greedy de-clutter: choose which approaches to label and *where* to put each
     label. For every dot (corner extremes first, then outermost), try eight sides
-    across a few concentric rings and keep the closest placement that clears every
-    dot and every label already placed, with a small breathing gap. Returns
-    {index: (label_x, label_y)} for the labels that fit.
+    in priority order (right, left, up, down, then the four diagonals) across a
+    few concentric rings, and take the first one that clears every dot and every
+    label already placed, with a small breathing gap. First fit rather than best
+    fit: every direction at a given ring already carries the same gap, so "first
+    that clears" already is "closest" — and it means a label defaults to sitting
+    right of its dot, the most legible side, only moving elsewhere when that side
+    is actually blocked. A direction that would flip the label to the other side
+    of an axis from its own dot (a dot just below the x-axis getting a label that
+    reads above it) is skipped outright, so a label never appears to belong to
+    the wrong quadrant.
+
+    A cardinal placement is edge-anchored, not centred: right/left labels get
+    `start`/`end` so their near edge — not their midpoint — sits the fixed gap
+    away from the dot, which is what keeps that gap looking the same size for a
+    short name and a long one (a centred "JavaScript" would otherwise read as
+    farther from its dot than a centred "Go", even though both start the same
+    distance away). Up/down and diagonal placements stay centred (`middle`),
+    since there the label sits directly above/below/askew of the dot rather than
+    beside it. Returns {index: (label_x, label_y, text_anchor)} for the labels
+    that fit, `text_anchor` one of `"start"`/`"end"`/`"middle"` for the caller to
+    render with.
 
     `view_x` / `view_y` are the half-extents of each axis's domain (they can differ),
     so the pixel-to-data conversion is correct even when the map is not square.
@@ -626,7 +644,7 @@ def label_placements(
     # axes can have different data-per-pixel scales (a non-square view); doing the
     # direction geometry below in one shared pixel frame is what keeps the visual
     # gap the same size in x and y.
-    dot_r_px, pad_px, row_px = 5.0, 4.0, 1.1 * font_px
+    dot_r_px, pad_px, row_px = 5.0, 3.0, 0.6 * font_px
     pad_x, pad_y = pad_px * sx, pad_px * sy
     dot_rx, dot_ry = dot_r_px * sx, dot_r_px * sy
     boxes = [(x - dot_rx, y - dot_ry, x + dot_rx, y + dot_ry) for x, y in scores]
@@ -644,32 +662,90 @@ def label_placements(
     # candidate box on every edge, so a kept label keeps its gap from dots and from
     # labels already placed. Points with no free side anywhere carry no label rather
     # than overlap; the caller then falls back to the colour legend to name them.
-    placements: dict[int, tuple[float, float]] = {}
+    # A dot within this many pixels of an axis counts as "on" it for the
+    # same-quadrant rule below: forcing an exact-zero comparison would let a dot
+    # one pixel off the line still get flipped to the wrong side.
+    axis_tol_px = 1.0
+    # R: the dot-to-label distance, a constant 2.5x the dot radius (per ring, one
+    # extra `row_px` step further out). Eight fixed cases, one per direction in
+    # `_LABEL_DIRS` (right, left, up, down, then the diagonals) -- each says where
+    # the label's anchor point sits and which SVG `text-anchor` renders it there:
+    #   right        anchor=start,  (x+R,      y)
+    #   left         anchor=end,    (x-R,      y)
+    #   top          anchor=middle, (x,        y+R)
+    #   bottom       anchor=middle, (x,        y-R+ch)   -- see below for the +ch
+    #   top-right    anchor=start,  (x+R,      y+R)      -- Euclidean R*sqrt(2)
+    #   top-left     anchor=end,    (x-R,      y+R)
+    #   bottom-right anchor=start,  (x+R,      y-R-ch)
+    #   bottom-left  anchor=end,    (x-R,      y-R-ch)
+    # `ch` (one line-height) only touches the "bottom" cases, and with opposite
+    # signs, because "top"/"bottom" are vertically CENTRED on their anchor point
+    # (SVG has no "centre" baseline, so the renderer nudges the baseline down by
+    # ~0.35*ch to fake it -- see `label_dy` in `to_svg`) while the diagonals are
+    # baseline-anchored like left/right. Centring already puts a "top" label's
+    # near (bottom) edge close to the dot with no correction needed; a "bottom"
+    # label's near (top) edge is a full line-height above its baseline, so
+    # pulling the baseline UP by `ch` (+ch) brings that near edge back down to R.
+    # The bottom-diagonals are baseline-anchored already (no centring nudge), so
+    # their near (top) edge sits BELOW the raw y-R point by that same line-height
+    # -- pushing the baseline DOWN by `ch` (-ch) compensates the other way.
+    ch_px = 1.3 * font_px
+    placements: dict[int, tuple[float, float, str]] = {}
     for i in corners + others:
         x, y = scores[i]
         x_px, y_px = x / sx, y / sy  # the dot's centre in the shared pixel frame
         w_px = len(result.names[i]) * 0.58 * font_px
-        h_px = 1.3 * font_px
-        best = None  # (distance, box, (lx, ly)): the free side nearest the dot
+        h_px = ch_px
+        half_w_px, half_h_px = max(w_px / 2, 0.01), max(h_px / 2, 0.01)
+        found = None  # (box, (lx, ly, anchor)): the first direction, first ring, that fits
         for k in _LABEL_RINGS:
             for ox, oy in _LABEL_DIRS:
-                # A unit direction, not the raw (±1, ±1) step: the diagonal entries in
-                # _LABEL_DIRS have magnitude sqrt(2), so using them raw would push a
-                # diagonal label out ~40% farther than a cardinal one for the same
-                # ring. Normalizing first, then sizing the push by the label box's
-                # own half-extent *along that direction* (the ellipse formula below,
-                # all in the shared pixel frame) keeps the gap between the dot and
-                # the label's near edge the same constant in all eight directions.
-                norm = math.hypot(ox, oy)
-                ux, uy = ox / norm, oy / norm
-                half_w_px, half_h_px = max(w_px / 2, 0.01), max(h_px / 2, 0.01)
-                r_dir_px = 1 / math.hypot(ux / half_w_px, uy / half_h_px)
-                push_px = dot_r_px + pad_px + r_dir_px + k * row_px
-                lx_px = x_px + ux * push_px
-                ly_px = y_px + uy * push_px
-                lx, ly = lx_px * sx, ly_px * sy
-                w, h = w_px * sx, h_px * sy
-                box = (lx - w / 2, ly - h / 2, lx + w / 2, ly + h / 2)
+                r_px = 2.5 * dot_r_px + k * row_px
+                if oy == 0:  # right / left
+                    anchor = "start" if ox > 0 else "end"
+                    lx_px = x_px + ox * r_px
+                    ly_px = y_px
+                elif ox == 0 and oy > 0:  # top
+                    anchor = "middle"
+                    lx_px = x_px
+                    ly_px = y_px + r_px
+                elif ox == 0:  # bottom
+                    anchor = "middle"
+                    lx_px = x_px
+                    ly_px = y_px - r_px + ch_px
+                elif oy > 0:  # top-right / top-left
+                    anchor = "start" if ox > 0 else "end"
+                    lx_px = x_px + ox * r_px
+                    ly_px = y_px + r_px
+                else:  # bottom-right / bottom-left
+                    anchor = "start" if ox > 0 else "end"
+                    lx_px = x_px + ox * r_px
+                    ly_px = y_px - r_px - ch_px
+                box_px = (
+                    (lx_px, ly_px - half_h_px, lx_px + w_px, ly_px + half_h_px)
+                    if anchor == "start"
+                    else (lx_px - w_px, ly_px - half_h_px, lx_px, ly_px + half_h_px)
+                    if anchor == "end"
+                    else (lx_px - half_w_px, ly_px - half_h_px, lx_px + half_w_px, ly_px + half_h_px)
+                )
+                # Never let a label cross to the other side of an axis from its own
+                # dot (a dot just below the x-axis must not get a label that reads
+                # above it): skip a direction that would flip the sign of either
+                # coordinate, unless the dot itself already sits on that axis.
+                if abs(x_px) > axis_tol_px and (lx_px >= 0) != (x_px >= 0):
+                    continue
+                if abs(y_px) > axis_tol_px and (ly_px >= 0) != (y_px >= 0):
+                    continue
+                # A purely vertical push keeps the label's x at the dot's own x; for
+                # a dot that already sits near the vertical axis, that centres the
+                # label ON the dashed line instead of beside it. Same for a purely
+                # horizontal push straddling the horizontal axis. Only cardinals can
+                # have this problem (a diagonal always moves off both lines at once).
+                if ox == 0 and abs(x_px) < half_w_px:
+                    continue
+                if oy == 0 and abs(y_px) < half_h_px:
+                    continue
+                box = (box_px[0] * sx, box_px[1] * sy, box_px[2] * sx, box_px[3] * sy)
                 # Keep labels out of the outer margin reserved for the pole words:
                 # a label whose box edge crosses the bound is treated as blocked.
                 if keepin_x is not None and (box[0] < -keepin_x or box[2] > keepin_x):
@@ -679,14 +755,17 @@ def label_placements(
                 probe = (box[0] - pad_x, box[1] - pad_y, box[2] + pad_x, box[3] + pad_y)
                 if any(_overlaps(probe, b) for b in boxes):
                     continue
-                dist = math.hypot(lx - x, ly - y)
-                if best is None or dist < best[0]:
-                    best = (dist, box, (float(lx), float(ly)))
-            if best is not None:  # nearest ring with room wins; no need to push further
+                # First fit, not best fit: _LABEL_DIRS is priority-ordered (right,
+                # left, up, down, then diagonals), and every direction at a given
+                # ring already carries the same gap, so the first one that clears
+                # everything is exactly the preferred one.
+                found = (box, (float(lx_px * sx), float(ly_px * sy), anchor))
                 break
-        if best is not None:
-            boxes.append(best[1])
-            placements[i] = best[2]
+            if found is not None:
+                break
+        if found is not None:
+            boxes.append(found[0])
+            placements[i] = found[1]
     return placements
 
 
@@ -1297,10 +1376,10 @@ def to_svg(
             f"</g>"
         )
         if i in placements:
-            lx, ly = placements[i]
+            lx, ly, anchor = placements[i]
             parts.append(
                 f'<text x="{x_px(lx):.1f}" y="{y_px(ly) + label_dy:.1f}" font-size="{label_font}" '
-                f'fill="{PALETTE["label"]}" text-anchor="middle">{_esc(nm)}</text>'
+                f'fill="{PALETTE["label"]}" text-anchor="{anchor}">{_esc(nm)}</text>'
             )
 
     # -- fallback legend, only when crowding dropped some in-place labels --- #

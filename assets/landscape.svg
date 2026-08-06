@@ -4,52 +4,52 @@ axis1: 2.11
 axis2: 1.93"><circle cx="912.0" cy="259.0" r="8.65" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Standpoint
 role: best
 axis1: 2.11
-axis2: 1.93</title></g><text x="912.0" y="244.9" font-size="17" fill="#1C1C1E" text-anchor="middle">Standpoint</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: prince
+axis2: 1.93</title></g><text x="899.5" y="264.9" font-size="17" fill="#1C1C1E" text-anchor="end">Standpoint</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: prince
 role: competitor
 axis1: 1.98
 axis2: -1.68"><circle cx="893.9" cy="680.2" r="8.65" fill="#B47819" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: prince
 role: competitor
 axis1: 1.98
-axis2: -1.68</title></g><text x="864.0" y="656.3" font-size="17" fill="#1C1C1E" text-anchor="middle">prince</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: PCA (scikit-learn)
+axis2: -1.68</title></g><text x="906.4" y="686.2" font-size="17" fill="#1C1C1E" text-anchor="start">prince</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: PCA (scikit-learn)
 role: competitor
 axis1: 1.73
 axis2: -1.93"><circle cx="857.4" cy="709.0" r="8.65" fill="#F591B1" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: PCA (scikit-learn)
 role: competitor
 axis1: 1.73
-axis2: -1.93</title></g><text x="857.4" y="735.0" font-size="17" fill="#1C1C1E" text-anchor="middle">PCA (scikit-learn)</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: factoextra + FactoMineR
+axis2: -1.93</title></g><text x="844.9" y="715.0" font-size="17" fill="#1C1C1E" text-anchor="end">PCA (scikit-learn)</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: factoextra + FactoMineR
 role: right
 axis1: 2.11
 axis2: -1.43"><circle cx="912.0" cy="650.5" r="8.65" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: factoextra + FactoMineR
 role: right
 axis1: 2.11
-axis2: -1.43</title></g><text x="881.4" y="625.8" font-size="17" fill="#1C1C1E" text-anchor="middle">factoextra + FactoMineR</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Tableau
+axis2: -1.43</title></g><text x="899.5" y="656.4" font-size="17" fill="#1C1C1E" text-anchor="end">factoextra + FactoMineR</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Tableau
 role: competitor
 axis1: -0.53
 axis2: 0.68"><circle cx="536.8" cy="405.1" r="8.65" fill="#15B7D6" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Tableau
 role: competitor
 axis1: -0.53
-axis2: 0.68</title></g><text x="493.3" y="411.1" font-size="17" fill="#1C1C1E" text-anchor="middle">Tableau</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Power BI
+axis2: 0.68</title></g><text x="569.7" y="466.1" font-size="17" fill="#1C1C1E" text-anchor="start">Tableau</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Power BI
 role: competitor
 axis1: -0.40
 axis2: 0.93"><circle cx="554.9" cy="375.4" r="8.65" fill="#62A962" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Power BI
 role: competitor
 axis1: -0.40
-axis2: 0.93</title></g><text x="554.9" y="342.6" font-size="17" fill="#1C1C1E" text-anchor="middle">Power BI</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Gartner Magic Quadrant
+axis2: 0.93</title></g><text x="567.4" y="381.3" font-size="17" fill="#1C1C1E" text-anchor="start">Power BI</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Gartner Magic Quadrant
 role: top
 axis1: -0.75
 axis2: 1.93"><circle cx="505.9" cy="259.0" r="8.65" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Gartner Magic Quadrant
 role: top
 axis1: -0.75
-axis2: 1.93</title></g><text x="505.9" y="244.9" font-size="17" fill="#1C1C1E" text-anchor="middle">Gartner Magic Quadrant</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Excel/PowerPoint 2x2
+axis2: 1.93</title></g><text x="518.4" y="264.9" font-size="17" fill="#1C1C1E" text-anchor="start">Gartner Magic Quadrant</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Excel/PowerPoint 2x2
 role: competitor
 axis1: -0.86
 axis2: 0.49"><circle cx="489.9" cy="427.4" r="8.65" fill="#C0B7FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Excel/PowerPoint 2x2
 role: competitor
 axis1: -0.86
-axis2: 0.49</title></g><text x="489.9" y="453.4" font-size="17" fill="#1C1C1E" text-anchor="middle">Excel/PowerPoint 2x2</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Canva/Figma template
+axis2: 0.49</title></g><text x="502.4" y="433.4" font-size="17" fill="#1C1C1E" text-anchor="start">Excel/PowerPoint 2x2</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Canva/Figma template
 role: worst
 axis1: -2.11
 axis2: 1.23"><circle cx="312.0" cy="341.2" r="8.65" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Canva/Figma template
 role: worst
 axis1: -2.11
-axis2: 1.23</title></g><text x="312.0" y="385.9" font-size="17" fill="#1C1C1E" text-anchor="middle">Canva/Figma template</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Positioning maps in the Quadrant</text></svg>
+axis2: 1.23</title></g><text x="324.5" y="381.8" font-size="17" fill="#1C1C1E" text-anchor="start">Canva/Figma template</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Positioning maps in the Quadrant</text></svg>
