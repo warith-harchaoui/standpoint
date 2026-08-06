@@ -51,12 +51,12 @@ Deux familles se font face :
 - **Les tableaux de bord BI et outils de mise en page manuels** (`Tableau`,
   `Power BI`, les 2×2 sous `Excel`/`PowerPoint`, les modèles `Canva`/`Figma`) sont
   rapides à prendre en main et avec peu ou pas de code, mais chaque point est placé à
-  la main : rien n'est dérivé des données, rien n'est reproductible, et les axes
+  la main : rien n'est dérivé des données, rien n'est reproductible et les axes
   veulent dire ce que vous décidez.
 - **Le Magic Quadrant de Gartner** occupe le pôle de l'analyse rédigée : il livre un
   quadrant étiqueté accompagné d'un véritable texte, mais les placements sont
   arbitrés à la main par des analystes — non dérivés d'une matrice, non
-  reproductibles, et impossibles à exécuter soi-même.
+  reproductibles et impossibles à exécuter soi-même.
 
 Standpoint occupe le coin qu'aucun d'eux ne couvre : la
 carte **dérivée** d'une boîte à outils ACP *plus* l'artéfact **fini, étiqueté et

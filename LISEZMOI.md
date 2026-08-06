@@ -14,13 +14,13 @@ Sachez où se situe vraiment chaque option.
 
 Standpoint lit un tableau de comparaison (les options en lignes, les critères en
 colonnes, des nombres dans les cellules) et produit une carte de positionnement 2D,
-une courte analyse rédigée, et un fichier YAML avec toutes les coordonnées et tous
+une courte analyse rédigée et un fichier YAML avec toutes les coordonnées et tous
 les coefficients. Une seule commande suffit.
 
 La méthode est une analyse en composantes principales (ACP) ordinaire, utilisée de
 longue date pour les cartes perceptuelles. Standpoint y ajoute le travail que vous feriez sinon à la
 main : il oriente la carte autour d'une option de référence, nomme les axes en mots
-simples (dans la langue de vos colonnes), colore et étiquette les points, et écrit
+simples (dans la langue de vos colonnes), colore et étiquette les points et écrit
 tout le résultat.
 
 ## Tout en local
@@ -68,7 +68,7 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
 ## Fonctionnalités
 
 - **Une commande, un livrable en trois volets** : une figure (PNG + SVG + JSON
-  Vega-Lite), une interprétation Markdown, et un YAML de coordonnées + coefficients.
+  Vega-Lite), une interprétation Markdown et un YAML de coordonnées + coefficients.
 - **Axes lisibles** : l'ACP garde les axes sous forme de sommes pondérées de vos
   colonnes ; un modèle local nomme les quatre pôles par des qualités positives,
   avec un garde-fou contre les acronymes, les négatifs et les paires d'antonymes.
@@ -79,7 +79,7 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
 - **Orienté sur une référence** : l'option qui vous intéresse est pivotée en haut à
   droite ; une référence maximale sur tous les critères est placée juste au-delà du
   meilleur concurrent, plutôt qu'en valeur aberrante.
-- **Quatre options mises en avant** : le leader, le plus faible globalement, et les
+- **Quatre options mises en avant** : le leader, le plus faible globalement et les
   deux concurrents qui vont le plus loin vers les pôles haut et droit.
 - **Consciente de la polarité** : marquez une colonne « le plus bas, le meilleur » avec
   `(↓)` (ou `--lower`) et `standpoint` reformule un inconvénient en bénéfice
@@ -186,10 +186,10 @@ standpoint --help                                               # confirme que l
 - 🍎🐧🪟 **GUI : « The model '...' is not installed »** : `ollama pull qwen2.5vl:7b`
   (ou le modèle passé via `--model`).
 - 🍎🐧 **`Address already in use` sur `standpoint-gui`** : le port 8000 est déjà pris,
-  trouvez le processus avec `lsof -i :8000`, ou lancez
+  trouvez le processus avec `lsof -i :8000` ou lancez
   `uvicorn standpoint.api:app --port 8001` sur un port libre.
 - 🪟 **`Address already in use` sur `standpoint-gui`** : trouvez le processus avec
-  `netstat -ano | findstr :8000`, ou lancez `uvicorn standpoint.api:app --port 8001`
+  `netstat -ano | findstr :8000` ou lancez `uvicorn standpoint.api:app --port 8001`
   sur un port libre.
 - 🍎🐧🪟 **Python ancien (< 3.10)** : vérifiez avec `python3 --version` (ou
   `python --version` sous Windows) ; Standpoint requiert 3.10 ou plus. Installez un
@@ -271,7 +271,7 @@ manquante n'avantage jamais une option.
 
 La première ligne est la référence et va en haut à droite. Changez-la avec
 `--reference "<nom>"`. Marquez une colonne « le plus bas, le meilleur » avec `(↓)`, par
-ex. `Price (↓)`, ou listez-la dans `--lower`.
+ex. `Price (↓)` ou listez-la dans `--lower`.
 
 ## Comment ça marche
 
@@ -282,14 +282,14 @@ ex. `Price (↓)`, ou listez-la dans `--lower`.
 3. Pivoter la carte pour que la référence soit en haut à droite. Si la référence
    obtient le maximum partout, elle est placée juste au-delà du meilleur concurrent
    sur chaque axe, plutôt qu'à l'écart toute seule.
-4. Étiqueter. Les quatre options mises en avant (leader, plus faible, et les deux
+4. Étiqueter. Les quatre options mises en avant (leader, plus faible et les deux
    concurrents les plus proches des pôles haut et droit) découlent directement de la
    géométrie de la carte. Chaque option prend sa propre couleur selon sa position.
    Un modèle local lit les loadings et nomme les quatre extrémités d'axes, comme des
    qualités positives, dans la langue de vos colonnes (anglais, français, espagnol).
 
 La figure se limite à une croix pointillée pour les axes, les mots-pôles aux
-extrémités, des étiquettes seulement là où elles rentrent, et une légende pour le
+extrémités, des étiquettes seulement là où elles rentrent et une légende pour le
 reste.
 
 ![Voitures électriques, une entrée française donne un titre et des axes en français](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/voitures_electriques.png)
@@ -297,14 +297,14 @@ reste.
 ## Notes
 
 - Les noms d'axes viennent d'un modèle local. Un garde-fou les garde positifs,
-  distincts et sans acronymes ; un `--model` plus gros aide, et `--check` demande au
+  distincts et sans acronymes ; un `--model` plus gros aide et `--check` demande au
   modèle de vision si la figure se lit correctement.
 - Le plus haut, le meilleur, par défaut. Pour une colonne où le plus bas est le meilleur, marquez
   son en-tête avec `(↓)` (`Price (↓)`, `Latency (↓)`) ou passez `--lower Price,Latency`.
   Standpoint la négativise et nomme le pôle par le bénéfice (« Abordable »,
   « Léger »), jamais par l'inconvénient.
 - Chaque figure est écrite deux fois : un `.png` / `.svg` **transparent** qui se pose
-  sur n'importe quelle page, et une version **fond blanc** `.white.png` / `.white.svg`
+  sur n'importe quelle page et une version **fond blanc** `.white.png` / `.white.svg`
   pour les surfaces sombres où les étiquettes presque noires disparaîtraient sur la
   transparence.
 - C'est une projection 2D. Les axes portent une fraction annoncée de la variance :
