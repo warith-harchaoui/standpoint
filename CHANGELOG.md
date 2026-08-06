@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`mcp` extra installs a broken MCP server.** `fastapi-mcp>=0.3,<1` calls the
+  underlying MCP SDK's `Server(name, description)` positionally; `mcp` 2.0.0 dropped
+  that second positional argument, so `standpoint-mcp` failed at import with
+  `TypeError: Server.__init__() takes 2 positional arguments but 3 were given`. The
+  `mcp` extra now pins `mcp<2`.
+
 ### Changed
 
 - **No more Vega, anywhere.** `to_vega()` is replaced by `to_svg()`: the positioning

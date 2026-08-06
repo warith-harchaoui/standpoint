@@ -44,8 +44,10 @@ eval = ["deepeval>=1.0"]
 # openpyxl the CSV<->XLSX conversions.
 gui = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9", "openpyxl>=3.1"]
 # `mcp` exposes the same FastAPI app as MCP tools (standpoint.mcp); it needs the gui
-# backend plus fastapi-mcp.
-mcp = ["standpoint[gui]", "fastapi-mcp>=0.3,<1"]
+# backend plus fastapi-mcp. `mcp` (the underlying SDK) is capped below 2: fastapi-mcp
+# 0.4.0 calls Server(name, description) positionally, which mcp>=2.0.0 broke by
+# dropping the second positional arg. Recheck this cap when fastapi-mcp catches up.
+mcp = ["standpoint[gui]", "fastapi-mcp>=0.3,<1", "mcp<2"]
 
 [project.urls]
 Homepage = "https://github.com/warith-harchaoui/standpoint"
