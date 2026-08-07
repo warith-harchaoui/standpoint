@@ -93,6 +93,32 @@ def test_reference_at_pareto_ideal(result):
     assert result.scores[i, 1] == pytest.approx(others[:, 1].max())
 
 
+def test_reference_never_collides_with_a_dominant_competitor():
+    # A reference that is NOT all-max (it loses on "Price") still gets softened onto
+    # the Pareto frontier. When a single competitor happens to define that frontier
+    # on both axes at once, landing the reference exactly there would tie it
+    # pixel-for-pixel with that competitor -- one dot for two options, and
+    # label_placements() would fight to caption both. The reference must land
+    # strictly past that competitor instead (as README promises: "placed just past
+    # the best competitor"), never exactly on top of it.
+    df = pd.DataFrame(
+        {
+            "Price": [1, 2, 4, 5, 3],
+            "Quality": [5, 4, 3, 1, 4],
+            "Service": [5, 4, 3, 2, 3],
+            "Ambiance": [5, 4, 2, 1, 2],
+        },
+        index=["Le Bernardin", "Nobu", "Chipotle", "McDonald's", "In-N-Out Burger"],
+    )
+    result = p4m.analyze(df, reference=0)
+    ref_i = result.names.index("Le Bernardin")
+    others = np.delete(result.scores, ref_i, axis=0)
+    assert not np.any(np.all(np.isclose(others, result.scores[ref_i]), axis=1))
+    # still weakly dominates: at least as far out as every competitor on each axis
+    assert result.scores[ref_i, 0] >= others[:, 0].max()
+    assert result.scores[ref_i, 1] >= others[:, 1].max()
+
+
 def test_components_orthonormal(result):
     gram = result.components @ result.components.T
     assert np.allclose(gram, np.eye(2), atol=1e-6)

@@ -1,79 +1,79 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><title id="sp-title">Providers in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 13 providers, Nimble to Robust on the horizontal axis, Frugal to Expansive on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="157.0" y1="484.0" x2="1067.0" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="863.0" x2="612.0" y2="105.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="end">Robust</text><text data-pole="left" x="60.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="start">Nimble</text><text data-pole="top" x="612.0" y="64.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Expansive</text><text data-pole="bottom" x="612.0" y="918.0" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Frugal</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: AWS
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><title id="sp-title">Providers in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 13 providers, Nimble to Robust on the horizontal axis, Frugal to Expansive on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="157.0" y1="484.0" x2="1067.0" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="863.0" x2="612.0" y2="105.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="end">Robust</text><text data-pole="left" x="60.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="start">Nimble</text><text data-pole="top" x="612.0" y="64.7" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Expansive</text><text data-pole="bottom" x="612.0" y="918.0" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Frugal</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: AWS
 role: best
-axis1: 2.20
-axis2: 2.55"><circle cx="912.0" cy="259.0" r="8.31" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: AWS
+axis1: 2.26
+axis2: 2.60"><circle cx="912.0" cy="259.0" r="8.31" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: AWS
 role: best
-axis1: 2.20
-axis2: 2.55</title></g><text x="924.5" y="264.6" font-size="16" fill="#1C1C1E" text-anchor="start">AWS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Google Cloud
+axis1: 2.26
+axis2: 2.60</title></g><text x="924.5" y="264.6" font-size="16" fill="#1C1C1E" text-anchor="start">AWS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Google Cloud
 role: competitor
-axis1: 1.38
-axis2: 1.84"><circle cx="799.5" cy="321.4" r="8.31" fill="#6BD5A0" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Google Cloud
+axis1: 1.32
+axis2: 1.79"><circle cx="787.9" cy="329.1" r="8.31" fill="#6BD5A0" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Google Cloud
 role: competitor
-axis1: 1.38
-axis2: 1.84</title></g><text x="812.0" y="327.0" font-size="16" fill="#1C1C1E" text-anchor="start">Google Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Microsoft Azure
+axis1: 1.32
+axis2: 1.79</title></g><text x="800.4" y="334.7" font-size="16" fill="#1C1C1E" text-anchor="start">Google Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Microsoft Azure
 role: top
-axis1: 2.20
-axis2: 2.55"><circle cx="912.0" cy="259.0" r="8.31" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Microsoft Azure
+axis1: 2.15
+axis2: 2.50"><circle cx="897.7" cy="267.9" r="8.31" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Microsoft Azure
 role: top
-axis1: 2.20
-axis2: 2.55</title></g><text x="899.5" y="264.6" font-size="16" fill="#1C1C1E" text-anchor="end">Microsoft Azure</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Oracle Cloud
+axis1: 2.15
+axis2: 2.50</title></g><text x="885.2" y="273.5" font-size="16" fill="#1C1C1E" text-anchor="end">Microsoft Azure</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Oracle Cloud
 role: competitor
-axis1: 1.26
-axis2: -0.76"><circle cx="783.2" cy="550.9" r="8.31" fill="#DEAB4D" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Oracle Cloud
+axis1: 1.20
+axis2: -0.81"><circle cx="771.9" cy="554.0" r="8.31" fill="#DEAB4D" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Oracle Cloud
 role: competitor
-axis1: 1.26
-axis2: -0.76</title></g><text x="795.7" y="556.5" font-size="16" fill="#1C1C1E" text-anchor="start">Oracle Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: IBM Cloud
+axis1: 1.20
+axis2: -0.81</title></g><text x="784.4" y="559.6" font-size="16" fill="#1C1C1E" text-anchor="start">Oracle Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: IBM Cloud
 role: right
-axis1: 1.77
-axis2: 0.04"><circle cx="852.6" cy="480.9" r="8.31" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: IBM Cloud
+axis1: 1.71
+axis2: -0.02"><circle cx="839.7" cy="485.4" r="8.31" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: IBM Cloud
 role: right
-axis1: 1.77
-axis2: 0.04</title></g><text x="865.1" y="474.0" font-size="16" fill="#1C1C1E" text-anchor="start">IBM Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Alibaba Cloud
+axis1: 1.71
+axis2: -0.02</title></g><text x="852.2" y="524.3" font-size="16" fill="#1C1C1E" text-anchor="start">IBM Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Alibaba Cloud
 role: competitor
-axis1: 1.08
-axis2: 0.50"><circle cx="759.6" cy="439.6" r="8.31" fill="#BAD070" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Alibaba Cloud
+axis1: 1.03
+axis2: 0.45"><circle cx="749.0" cy="444.9" r="8.31" fill="#BAD070" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Alibaba Cloud
 role: competitor
-axis1: 1.08
-axis2: 0.50</title></g><text x="772.1" y="445.2" font-size="16" fill="#1C1C1E" text-anchor="start">Alibaba Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: DigitalOcean
+axis1: 1.03
+axis2: 0.45</title></g><text x="761.5" y="450.5" font-size="16" fill="#1C1C1E" text-anchor="start">Alibaba Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: DigitalOcean
 role: worst
-axis1: -2.09
-axis2: -1.57"><circle cx="327.1" cy="622.8" r="8.31" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: DigitalOcean
+axis1: -2.15
+axis2: -1.62"><circle cx="326.8" cy="624.5" r="8.31" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: DigitalOcean
 role: worst
-axis1: -2.09
-axis2: -1.57</title></g><text x="339.6" y="628.4" font-size="16" fill="#1C1C1E" text-anchor="start">DigitalOcean</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Cloudflare
+axis1: -2.15
+axis2: -1.62</title></g><text x="339.3" y="630.1" font-size="16" fill="#1C1C1E" text-anchor="start">DigitalOcean</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Cloudflare
 role: competitor
-axis1: -1.20
-axis2: 2.32"><circle cx="448.4" cy="278.9" r="8.31" fill="#10C4CB" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Cloudflare
+axis1: -1.26
+axis2: 2.27"><circle cx="445.2" cy="287.4" r="8.31" fill="#10C4CB" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Cloudflare
 role: competitor
-axis1: -1.20
-axis2: 2.32</title></g><text x="460.9" y="284.5" font-size="16" fill="#1C1C1E" text-anchor="start">Cloudflare</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Vercel
+axis1: -1.26
+axis2: 2.27</title></g><text x="457.7" y="293.0" font-size="16" fill="#1C1C1E" text-anchor="start">Cloudflare</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Vercel
 role: competitor
-axis1: -2.20
-axis2: 1.96"><circle cx="312.0" cy="310.7" r="8.31" fill="#3F9EDA" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Vercel
+axis1: -2.26
+axis2: 1.91"><circle cx="312.0" cy="318.6" r="8.31" fill="#3F9EDA" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Vercel
 role: competitor
-axis1: -2.20
-axis2: 1.96</title></g><text x="324.5" y="316.3" font-size="16" fill="#1C1C1E" text-anchor="start">Vercel</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Hetzner
+axis1: -2.26
+axis2: 1.91</title></g><text x="324.5" y="324.2" font-size="16" fill="#1C1C1E" text-anchor="start">Vercel</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Hetzner
 role: competitor
-axis1: -0.89
-axis2: -2.55"><circle cx="491.3" cy="709.0" r="8.31" fill="#E482A1" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Hetzner
+axis1: -0.94
+axis2: -2.60"><circle cx="487.0" cy="709.0" r="8.31" fill="#E482A1" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Hetzner
 role: competitor
-axis1: -0.89
-axis2: -2.55</title></g><text x="503.8" y="714.6" font-size="16" fill="#1C1C1E" text-anchor="start">Hetzner</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Fly.io
+axis1: -0.94
+axis2: -2.60</title></g><text x="499.5" y="714.6" font-size="16" fill="#1C1C1E" text-anchor="start">Hetzner</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Fly.io
 role: competitor
-axis1: -1.24
-axis2: 0.73"><circle cx="443.6" cy="419.2" r="8.31" fill="#787CD0" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Fly.io
+axis1: -1.29
+axis2: 0.68"><circle cx="440.5" cy="424.9" r="8.31" fill="#787CD0" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Fly.io
 role: competitor
-axis1: -1.24
-axis2: 0.73</title></g><text x="456.1" y="424.8" font-size="16" fill="#1C1C1E" text-anchor="start">Fly.io</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Render
+axis1: -1.29
+axis2: 0.68</title></g><text x="453.0" y="430.5" font-size="16" fill="#1C1C1E" text-anchor="start">Fly.io</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Render
 role: competitor
-axis1: -1.82
-axis2: 0.53"><circle cx="364.4" cy="437.0" r="8.31" fill="#AF73BD" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Render
+axis1: -1.87
+axis2: 0.48"><circle cx="363.2" cy="442.4" r="8.31" fill="#AF73BD" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Render
 role: competitor
-axis1: -1.82
-axis2: 0.53</title></g><text x="376.9" y="442.6" font-size="16" fill="#1C1C1E" text-anchor="start">Render</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Vast.ai
+axis1: -1.87
+axis2: 0.48</title></g><text x="375.7" y="448.0" font-size="16" fill="#1C1C1E" text-anchor="start">Render</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Vast.ai
 role: competitor
-axis1: -0.13
-axis2: -2.24"><circle cx="594.6" cy="681.2" r="8.31" fill="#DE805F" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Vast.ai
+axis1: -0.18
+axis2: -2.29"><circle cx="587.9" cy="681.7" r="8.31" fill="#DE805F" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Vast.ai
 role: competitor
-axis1: -0.13
-axis2: -2.24</title></g><text x="607.1" y="686.8" font-size="16" fill="#1C1C1E" text-anchor="start">Vast.ai</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Providers in the Quadrant</text></svg>
+axis1: -0.18
+axis2: -2.29</title></g><text x="600.4" y="687.3" font-size="16" fill="#1C1C1E" text-anchor="start">Vast.ai</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Providers in the Quadrant</text></svg>

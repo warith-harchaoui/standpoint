@@ -43,8 +43,8 @@ axes:
 approaches:
 - name: AWS
   coordinates:
-    axis_1: 2.2037
-    axis_2: 2.5502
+    axis_1: 2.2575
+    axis_2: 2.6018
   role: best
   color: '#FF3B30'
   attributes:
@@ -57,8 +57,8 @@ approaches:
     Serverless: 5.0
 - name: Google Cloud
   coordinates:
-    axis_1: 1.3773
-    axis_2: 1.843
+    axis_1: 1.3235
+    axis_2: 1.7915
   role: competitor
   color: '#6BD5A0'
   attributes:
@@ -71,8 +71,8 @@ approaches:
     Serverless: 4.0
 - name: Microsoft Azure
   coordinates:
-    axis_1: 2.2037
-    axis_2: 2.5502
+    axis_1: 2.1499
+    axis_2: 2.4987
   role: top
   color: '#AF52DE'
   attributes:
@@ -85,8 +85,8 @@ approaches:
     Serverless: 4.0
 - name: Oracle Cloud
   coordinates:
-    axis_1: 1.2574
-    axis_2: -0.7578
+    axis_1: 1.2036
+    axis_2: -0.8093
   role: competitor
   color: '#DEAB4D'
   attributes:
@@ -99,8 +99,8 @@ approaches:
     Serverless: 2.0
 - name: IBM Cloud
   coordinates:
-    axis_1: 1.7671
-    axis_2: 0.0355
+    axis_1: 1.7133
+    axis_2: -0.016
   role: right
   color: '#007AFF'
   attributes:
@@ -113,8 +113,8 @@ approaches:
     Serverless: 2.0
 - name: Alibaba Cloud
   coordinates:
-    axis_1: 1.0845
-    axis_2: 0.5036
+    axis_1: 1.0307
+    axis_2: 0.4521
   role: competitor
   color: '#BAD070'
   attributes:
@@ -127,8 +127,8 @@ approaches:
     Serverless: 3.0
 - name: DigitalOcean
   coordinates:
-    axis_1: -2.0927
-    axis_2: -1.573
+    axis_1: -2.1465
+    axis_2: -1.6245
   role: worst
   color: '#A52A2A'
   attributes:
@@ -141,8 +141,8 @@ approaches:
     Serverless: 2.0
 - name: Cloudflare
   coordinates:
-    axis_1: -1.2016
-    axis_2: 2.3246
+    axis_1: -1.2554
+    axis_2: 2.2731
   role: competitor
   color: '#10C4CB'
   attributes:
@@ -155,8 +155,8 @@ approaches:
     Serverless: 5.0
 - name: Vercel
   coordinates:
-    axis_1: -2.2037
-    axis_2: 1.9642
+    axis_1: -2.2575
+    axis_2: 1.9127
   role: competitor
   color: '#3F9EDA'
   attributes:
@@ -169,8 +169,8 @@ approaches:
     Serverless: 5.0
 - name: Hetzner
   coordinates:
-    axis_1: -0.8869
-    axis_2: -2.5502
+    axis_1: -0.9407
+    axis_2: -2.6018
   role: competitor
   color: '#E482A1'
   attributes:
@@ -183,8 +183,8 @@ approaches:
     Serverless: 1.0
 - name: Fly.io
   coordinates:
-    axis_1: -1.2369
-    axis_2: 0.7348
+    axis_1: -1.2907
+    axis_2: 0.6833
   role: competitor
   color: '#787CD0'
   attributes:
@@ -197,8 +197,8 @@ approaches:
     Serverless: 4.0
 - name: Render
   coordinates:
-    axis_1: -1.8188
-    axis_2: 0.5329
+    axis_1: -1.8726
+    axis_2: 0.4814
   role: competitor
   color: '#AF73BD'
   attributes:
@@ -211,8 +211,8 @@ approaches:
     Serverless: 4.0
 - name: Vast.ai
   coordinates:
-    axis_1: -0.1278
-    axis_2: -2.2351
+    axis_1: -0.1816
+    axis_2: -2.2866
   role: competitor
   color: '#DE805F'
   attributes:

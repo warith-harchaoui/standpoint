@@ -441,6 +441,15 @@ def analyze(
         ideal_x = max(float(others[:, 0].max()), 0.0) * soften_reference
         ideal_y = max(float(others[:, 1].max()), 0.0) * soften_reference
         if ideal_x > 0 and ideal_y > 0:
+            # A single competitor can define the frontier on both axes at once (the
+            # lone point reaching furthest right AND furthest up); landing the
+            # reference exactly there ties it pixel-for-pixel with that competitor
+            # -- one dot, two labels fighting over it. Nudge it a hair further out
+            # so it stays strictly "past" that competitor (matching the README's
+            # promise), not merely tied with them.
+            if np.any(np.all(np.isclose(others, [ideal_x, ideal_y]), axis=1)):
+                ideal_x *= 1.05
+                ideal_y *= 1.05
             scores_rot[ref_idx] = [ideal_x, ideal_y]
 
     # Centre the cloud on the origin (mid-range), so the axis cross sits in its
