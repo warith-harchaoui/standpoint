@@ -14,7 +14,7 @@ La comparaison (le plus haut, le meilleur, sur une échelle de 1 à 5) :
 | --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Standpoint** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
 | prince | ⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
-| PCA (scikit-learn) | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
+| PCA | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
 | factoextra + FactoMineR | ⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
 | Tableau | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ |
 | Power BI | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ |
@@ -30,7 +30,7 @@ Représentation 2D du tableau ci-dessus.
 
 ![Carte de positionnement](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/paysage.png)
 
-La carte est un résumé en 2D des 8 critères : à lire comme une forme, pas comme un classement. « Standpoint » se situe dans le coin en haut à droite. Les axes se lisent **Horizontal — Simplicité ↔ Compréhensibilité** et **Vertical — Précision ↔ Accessibilité**.
+La carte est un résumé en 2D des 8 critères : à lire comme une forme, pas comme un classement. « Standpoint » se situe dans le coin en haut à droite. Les axes se lisent **Horizontal — Ingéniosité ↔ Efficacité** et **Vertical — Stabilité ↔ Clarté**.
 <!-- FIGURE:END -->
 
 Les en-têtes du tableau étant en français, la carte sort **entièrement en français** :
@@ -68,7 +68,7 @@ multilingue et livrable en trois volets, en une seule commande.
 - **Standpoint est ici la référence**, donc pivoté en haut à droite par
   construction. Cette carte est notre *lecture des compromis*, pas un classement
   objectif : les notes sont subjectives et « le plus haut, le meilleur » partout. Changez
-  la référence (`--reference "PCA (scikit-learn)"`) et les mêmes données se
+  la référence (`--reference "PCA"`) et les mêmes données se
   réorientent autour d'elle.
 - Le cœur mathématique (ACP de corrélation, loadings lisibles) est **exactement ce
   que les boîtes à outils font bien** : Standpoint ne prétend pas mieux calculer. Ce

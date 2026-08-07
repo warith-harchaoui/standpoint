@@ -13,7 +13,7 @@ The comparison (higher is better, on a 1–5 scale):
 | --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Standpoint** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
 | prince | ⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
-| PCA (scikit-learn) | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
+| PCA | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
 | factoextra + FactoMineR | ⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
 | Tableau | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ |
 | Power BI | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ |
@@ -29,7 +29,7 @@ The comparison (higher is better, on a 1–5 scale):
 
 ![Positioning map](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/landscape.png)
 
-The map is a 2-D summary of the eight criteria, so read it as a shape, not a scoreboard. `Standpoint` is at the top-right corner. The axes read **Horizontal — Ease of Use ↔ Automation** and **Vertical — Efficiency ↔ Versatility**.
+The map is a 2-D summary of the eight criteria, so read it as a shape, not a scoreboard. `Standpoint` is at the top-right corner. The axes read **Horizontal — Accessible ↔ Efficient** and **Vertical — Consistent ↔ Expressive**.
 <!-- FIGURE:END -->
 
 ## How to read it
@@ -60,7 +60,7 @@ one command.
 - **Standpoint is the reference row**, so it is rotated to the top-right by
   construction. This map is our *read of the tradeoffs*, not an objective ranking:
   the ratings are subjective and higher-is-better throughout. Change the reference
-  (`--reference "PCA (scikit-learn)"`) and the same data re-orients around it.
+  (`--reference "PCA"`) and the same data re-orients around it.
 - The maths at the core (correlation PCA, readable loadings) is **exactly what the
   toolkits do well**. Standpoint doesn't claim to out-compute them. What it adds is
   the automation and the finished deliverable around that maths.
