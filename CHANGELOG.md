@@ -30,6 +30,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fills cells that are still blank (so it never overwrites what the user typed), so a
   table built by hand with these buttons silently kept every such cell stuck at `"3"`
   instead of getting a real score from the model.
+- **A non-dominant reference could land exactly on a competitor's coordinates.**
+  `analyze()`'s reference-softening clamps a reference onto the Pareto frontier (max
+  x, max y of the field); when a single competitor defines that frontier on both axes
+  at once, the reference landed exactly on that competitor's point -- one dot for two
+  options. `examples/cloud_providers.csv` already exhibited this: AWS and Microsoft
+  Azure were tied at identical coordinates in the committed example. The softened
+  position now nudges 5% further out whenever it would otherwise exactly match
+  another point, so the reference stays "just past" the competitor, as documented,
+  rather than tied with them.
 
 ### Changed
 
