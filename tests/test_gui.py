@@ -27,6 +27,18 @@ def test_gui_page_served() -> None:
     assert "vega" not in r.text.lower()  # no chart-rendering runtime left to load
 
 
+def test_checker_background_stays_light_in_dark_mode() -> None:
+    """The transparency checkerboard must carry its own light background-color.
+
+    Without one, its gradient's "transparent" stops fall through to whatever is
+    behind #chart -- the card, which dark mode recolors to near-black via
+    `.dark .bg-white` -- turning half the squares near-black and swallowing the
+    map's own near-black labels.
+    """
+    css = client.get("/gui").text
+    assert "#chart.checker { background-color:#fff;" in css
+
+
 def test_root_redirects_to_gui() -> None:
     """`GET /` redirects to the GUI page."""
     r = client.get("/", follow_redirects=False)

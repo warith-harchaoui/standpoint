@@ -62,7 +62,14 @@ GUI_HTML = r"""<!doctype html>
     input:focus-visible, select:focus-visible, button:focus-visible, label:focus-within {
       outline: 2px solid #64748b; outline-offset: 2px;
     }
-    #chart.checker { background-image:
+    /* An explicit background-color (not "let the card show through") so the
+       checker always reads as light gray-on-white -- like any alpha-transparency
+       checkerboard -- regardless of theme. Without it, dark mode's near-black card
+       background (`.dark .bg-white`) leaks through the "transparent" gradient
+       stops, turning half the squares near-black and swallowing the map's own
+       near-black labels (the same near-black-on-transparency problem the exported
+       `.white.png` exists to solve, reappearing in the live preview). */
+    #chart.checker { background-color:#fff; background-image:
       linear-gradient(45deg,#eee 25%,transparent 25%),
       linear-gradient(-45deg,#eee 25%,transparent 25%),
       linear-gradient(45deg,transparent 75%,#eee 75%),
