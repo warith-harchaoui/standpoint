@@ -28,7 +28,7 @@ axis1: -0.53
 axis2: 0.68"><circle cx="536.8" cy="405.1" r="8.65" fill="#15B7D6" stroke="white" stroke-width="1" opacity="0.95"/><title>Cartes de positionnement: Tableau
 role: competitor
 axis1: -0.53
-axis2: 0.68</title></g><text x="569.7" y="466.1" font-size="17" fill="#1C1C1E" text-anchor="start">Tableau</text><g class="sp-dot" tabindex="0" role="img" aria-label="Cartes de positionnement: Power BI
+axis2: 0.68</title></g><text x="524.3" y="398.6" font-size="17" fill="#1C1C1E" text-anchor="end">Tableau</text><g class="sp-dot" tabindex="0" role="img" aria-label="Cartes de positionnement: Power BI
 role: competitor
 axis1: -0.40
 axis2: 0.93"><circle cx="554.9" cy="375.4" r="8.65" fill="#62A962" stroke="white" stroke-width="1" opacity="0.95"/><title>Cartes de positionnement: Power BI
@@ -52,4 +52,4 @@ axis1: -2.11
 axis2: 1.23"><circle cx="312.0" cy="341.2" r="8.65" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Cartes de positionnement: Modèle Canva/Figma
 role: worst
 axis1: -2.11
-axis2: 1.23</title></g><text x="324.5" y="381.8" font-size="17" fill="#1C1C1E" text-anchor="start">Modèle Canva/Figma</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Cartes de positionnement dans le quadrant</text></svg>
+axis2: 1.23</title></g><text x="324.5" y="347.2" font-size="17" fill="#1C1C1E" text-anchor="start">Modèle Canva/Figma</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Cartes de positionnement dans le quadrant</text></svg>

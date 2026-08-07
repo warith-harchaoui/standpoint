@@ -149,6 +149,35 @@ def test_corner_extremes(result):
     assert result.names[ext["tr"]] == result.reference
 
 
+def test_label_placements_dedupe_tied_corners():
+    # A point far out on one axis with a near-zero value on the other (e.g. Dacia
+    # Spring in examples/voitures_electriques.csv: axis_1=-3.22, axis_2=-0.01) is a
+    # near-tie between two diagonal corners and can win both "tl" and "bl". Placing
+    # it twice made the second pass dodge its own already-placed label as if it were
+    # a stranger's, stranding the label far from its dot.
+    names = ["Reference", "Runner up", "Extreme"]
+    features = ["a", "b"]
+    scores = np.array([[3.0, 3.0], [1.0, 1.0], [-3.2, -0.01]])
+    result = p4m.PCAResult(
+        names=names,
+        features=features,
+        scores=scores,
+        components=np.zeros((2, 2)),
+        explained_variance_ratio=np.array([0.8, 0.1]),
+        rotation_deg=0.0,
+        reference="Reference",
+        x_std=np.zeros((3, 2)),
+    )
+    ext = p4m.corner_extremes(scores)
+    assert ext["tl"] == ext["bl"] == 2  # the tie this test guards against
+    placements = p4m.label_placements(result, view_x=4.0, view_y=4.0)
+    lx, ly, _ = placements[2]
+    # the label stays close to its dot (within a couple of label rows), not off
+    # chasing a phantom collision with itself
+    assert abs(lx - scores[2, 0]) < 1.0
+    assert abs(ly - scores[2, 1]) < 1.0
+
+
 # --------------------------------------------------------------------------- #
 # pole-name guard (the quality rules, enforced in code)
 # --------------------------------------------------------------------------- #

@@ -651,8 +651,12 @@ def label_placements(
 
     # Placement order matters: the four corner extremes go first (they anchor the
     # reading of the map), then the rest from the outermost inward. Whoever places
-    # first gets the side it wants before the canvas fills up.
-    corners = list(corner_extremes(scores).values())
+    # first gets the side it wants before the canvas fills up. A point near-tied
+    # between two diagonals (e.g. an extreme x with a near-zero y) can win more than
+    # one corner slot; dedupe by index (keeping first occurrence) so it is placed
+    # once, not twice -- placing it twice made the second pass dodge its own
+    # already-placed label as if it were a stranger's, stranding it far from its dot.
+    corners = list(dict.fromkeys(corner_extremes(scores).values()))
     others = sorted(
         (i for i in range(len(result.names)) if i not in corners),
         key=lambda i: -float(np.hypot(*scores[i])),
