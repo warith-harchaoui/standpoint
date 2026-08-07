@@ -14,6 +14,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   that second positional argument, so `standpoint-mcp` failed at import with
   `TypeError: Server.__init__() takes 2 positional arguments but 3 were given`. The
   `mcp` extra now pins `mcp<2`.
+- **A label could be placed twice and stranded far from its dot.** A point extreme on
+  one axis with a near-zero value on the other can win two diagonal corner slots at
+  once (the `tl`/`bl` or `tr`/`br` projections nearly tie); `label_placements()`
+  placed its label for each win, and the second pass dodged its own first label as if
+  it belonged to a stranger. `corner_extremes()`'s output is now deduped by index
+  before placement.
+- **GUI: the transparency checkerboard turned unreadable in dark mode.** `#chart.checker`
+  let its gradient's `transparent` stops fall through to the card behind it; dark
+  mode recolors that card near-black, so half the checker squares went near-black too
+  and swallowed the map's own near-black labels. The checker now carries its own
+  explicit white background.
+- **GUI: a cell added via "+ Option (row)" / "+ Criterion (column)" defeated Autofill.**
+  Both prefilled new cells with `"3"` instead of leaving them blank; Autofill only
+  fills cells that are still blank (so it never overwrites what the user typed), so a
+  table built by hand with these buttons silently kept every such cell stuck at `"3"`
+  instead of getting a real score from the model.
 
 ### Changed
 
