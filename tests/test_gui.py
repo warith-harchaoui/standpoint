@@ -39,6 +39,19 @@ def test_checker_background_stays_light_in_dark_mode() -> None:
     assert "#chart.checker { background-color:#fff;" in css
 
 
+def test_new_row_and_column_cells_start_blank() -> None:
+    """A cell added by "+ Option (row)" / "+ Criterion (column)" must start blank.
+
+    Autofill ("Laziness") only fills cells that are still blank, and the server
+    already imputes a genuinely missing cell with its column's minimum. A prefilled
+    placeholder value here would silently defeat both: neither treats an existing
+    value as missing, so it would sit there unscored and un-imputed.
+    """
+    js = client.get("/gui").text
+    assert 'values: headers.map(() => "")' in js  # addRow
+    assert 'r.values.push("")' in js  # addCol
+
+
 def test_root_redirects_to_gui() -> None:
     """`GET /` redirects to the GUI page."""
     r = client.get("/", follow_redirects=False)

@@ -438,8 +438,12 @@ function syncReference() {
   if (cur && cur < rows.length) sel.value = cur;
 }
 
-$("addRow").onclick = () => { rows.push({ name: t("new_option"), values: headers.map(() => "3") }); renderGrid(); };
-$("addCol").onclick = () => { headers.push(t("new_criterion")); rows.forEach((r) => r.values.push("3")); renderGrid(); };
+// Blank, not a placeholder "3": the server already imputes a missing cell with its
+// column's minimum (never helps an option), and Laziness only fills cells that are
+// still blank -- a prefilled "3" would silently block both, since neither treats an
+// existing "3" as missing.
+$("addRow").onclick = () => { rows.push({ name: t("new_option"), values: headers.map(() => "") }); renderGrid(); };
+$("addCol").onclick = () => { headers.push(t("new_criterion")); rows.forEach((r) => r.values.push("")); renderGrid(); };
 // New Table: a blank slate with one empty option and one empty criterion, so the user
 // can build a table from scratch, adding rows and columns as they go.
 $("newTable").onclick = () => {
