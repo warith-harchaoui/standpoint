@@ -444,6 +444,30 @@ def test_axis_poles_llm_quality(result):
 
 
 @pytest.mark.needs_model
+def test_noun_forms_translates_across_a_forced_language():
+    # The GUI's language toggle passes an explicit `lang` that can differ from the
+    # table's own language (e.g. an English "Programming Language" column, FR
+    # forced). noun_forms() must actually translate the word, not silently echo
+    # the original -- a half-translated title ("Programming languages dans le
+    # quadrant") is the visible symptom of this regressing.
+    s, p = p4m.noun_forms("Programming Language", lang="fr")
+    assert s.lower() != "programming language"
+    assert p.lower() != "programming languages"
+    assert "langage" in s.lower()
+    assert "langage" in p.lower()
+
+
+@pytest.mark.needs_model
+def test_noun_forms_guards_synonym_drift_within_same_language():
+    # Without a forced cross-language override, the anti-hallucination guard must
+    # still catch the model swapping in an unrelated synonym (e.g. Voiture ->
+    # Vehicule) -- this must not regress from the cross-language fix above.
+    s, p = p4m.noun_forms("Voiture")  # auto-detected as French, no lang override
+    assert s.lower().startswith("voitur")
+    assert p.lower().startswith("voitur")
+
+
+@pytest.mark.needs_model
 def test_vlm_assessment_of_rendered_figure(result):
     # Assess a white-composited render (the exported figure is transparent, which the
     # model's backend would flatten onto black and misread; see png_on_white).

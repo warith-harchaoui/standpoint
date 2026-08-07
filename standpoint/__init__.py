@@ -1138,8 +1138,9 @@ def noun_forms(word: str, model: str | None = None, lang: str | None = None) -> 
         naive = (word[:-1].capitalize(), word.capitalize())
     else:
         naive = (word.capitalize(), word.capitalize() + "s")
+    word_lang = detect_language([word])
     if lang is None:
-        lang = detect_language([word])
+        lang = word_lang
     try:
         schema = {
             "type": "object",
@@ -1157,12 +1158,18 @@ def noun_forms(word: str, model: str | None = None, lang: str | None = None) -> 
         s = (str(data.get("singular") or "").strip() or naive[0]).capitalize()
         p = (str(data.get("plural") or "").strip() or naive[1]).capitalize()
         # Guard against the model swapping in a synonym (e.g. Voiture -> Véhicules):
-        # a valid form must share a prefix with the actual column word.
-        prefix = word.lower()[: max(3, len(word) - 2)]
-        if not s.lower().startswith(prefix):
-            s = naive[0]
-        if not p.lower().startswith(prefix):
-            p = naive[1]
+        # a valid form must share a prefix with the actual column word. Only within
+        # the word's own language, though -- a deliberate cross-language override
+        # (e.g. the GUI's language toggle asking for French on an English "Language"
+        # column) correctly returns "Langue", which shares no prefix with the
+        # English original; the guard would wrongly discard it and leave the title
+        # half-translated ("Programming languages dans le quadrant").
+        if lang == word_lang:
+            prefix = word.lower()[: max(3, len(word) - 2)]
+            if not s.lower().startswith(prefix):
+                s = naive[0]
+            if not p.lower().startswith(prefix):
+                p = naive[1]
         return s, p
     except Exception:
         return naive

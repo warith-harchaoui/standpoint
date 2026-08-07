@@ -257,9 +257,13 @@ def test_autofill_roundtrip_fills_matrix() -> None:
 
 @pytest.mark.needs_model
 def test_position_language_and_slug() -> None:
-    """A forced language localizes the whole report; the slug is the plural stem."""
+    """A forced language localizes the whole report, slug included."""
     table = "Programming Language,Performance,Ease of Learning\nPython,2,5\nRust,5,2\nGo,4,4"
     data = client.post("/api/position", json={"table": table, "lang": "fr"}).json()
-    assert data["slug"] == "programming-languages"  # plural noun, slugified
+    # The slug is the plural noun, slugified, translated to French like the rest of
+    # the deliverable (noun_forms() translates a forced cross-language override; see
+    # standpoint/__init__.py). "programming-languages" here would mean the noun stayed
+    # English while the rest of the report went French -- the bug this guards against.
+    assert data["slug"] == "langages-de-programmation"
     assert "## Interprétation" in data["markdown"]  # analysis headings follow the language
     assert "Approches mises en avant" in data["markdown"]

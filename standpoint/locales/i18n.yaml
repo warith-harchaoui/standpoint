@@ -14,8 +14,8 @@ en:
   # title is localized, so a French table never reads "Voitures in the Quadrant".
   title_template: "{plural} in the Quadrant"
   noun_prompt: |
-    Give the singular and plural of EXACTLY this word, in English, capitalized, without
-    replacing it by a synonym: "{word}".
+    Translate this word to English if it isn't already, then give its singular and
+    plural forms, capitalized, not a different synonym: "{word}".
     Reply as JSON: {{"singular": "...", "plural": "..."}}.
   glossary_prefix: "Glossary, translate these to plain words, never output the acronym: "
   axis_prompt: |
@@ -153,8 +153,8 @@ fr:
   # « Voitures dans le quadrant », jamais « Voitures in the Quadrant ».
   title_template: "{plural} dans le quadrant"
   noun_prompt: |
-    Donnez le singulier et le pluriel EXACTEMENT de ce mot, en français, avec une
-    majuscule, sans le remplacer par un synonyme : « {word} ».
+    Traduisez ce mot en français s'il ne l'est pas déjà, puis donnez son singulier et
+    son pluriel, avec une majuscule, pas un synonyme différent : « {word} ».
     Répondez en JSON : {{"singular": "...", "plural": "..."}}.
   glossary_prefix: "Glossaire, traduisez en mots simples, n'affichez jamais l'acronyme : "
   axis_prompt: |
@@ -293,8 +293,8 @@ es:
   # «Coches en el cuadrante», nunca «Coches in the Quadrant».
   title_template: "{plural} en el cuadrante"
   noun_prompt: |
-    Da el singular y el plural EXACTAMENTE de esta palabra, en español, con mayúscula,
-    sin reemplazarla por un sinónimo: «{word}».
+    Traduce esta palabra al español si no lo está ya, y luego da su singular y
+    plural, con mayúscula, no un sinónimo diferente: «{word}».
     Responde en JSON: {{"singular": "...", "plural": "..."}}.
   glossary_prefix: "Glosario, traduce a palabras simples, nunca muestres la sigla: "
   axis_prompt: |
