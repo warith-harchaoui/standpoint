@@ -39,6 +39,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   position now nudges 5% further out whenever it would otherwise exactly match
   another point, so the reference stays "just past" the competitor, as documented,
   rather than tied with them.
+- **The GUI's language toggle produced a half-translated title.** `noun_forms()`'s
+  anti-hallucination guard compared the model's translation against the *original*
+  word's prefix, which no real translation shares ("Language" -> "Langue"); it
+  silently discarded every correct cross-language translation and kept the source
+  word. The `noun_prompt` templates also read as "don't translate" rather than
+  "translate" on a word that isn't already in the target language. Toggling the
+  shipped English example to French read "Programming languages dans le quadrant".
+  The guard now only applies within the word's own language; all three prompt
+  templates lead with "translate this word... if it isn't already".
 
 ### Changed
 
