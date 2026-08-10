@@ -45,25 +45,24 @@ def _load_module(name: str, filename: str):
     return module
 
 
-# Reuse 01_generate_tables.py's SUBJECTS and 01b_generate_tables_from_web.py's
-# WEB_SUBJECTS as the single source of truth for each table's language, keyed by
-# its filename's numeric prefix -- rather than re-detecting or duplicating it here.
+# Reuse every 01*_generate_tables*.py script's subject list as the single source of
+# truth for each table's language, keyed by its filename's numeric prefix -- rather
+# than re-detecting or duplicating it here.
 _gen_tables = _load_module("gen_tables", "01_generate_tables.py")
 _gen_tables_web = _load_module("gen_tables_web", "01b_generate_tables_from_web.py")
-SUBJECT_LANG = {i: lang for i, (_subject, lang) in enumerate(_gen_tables.SUBJECTS)}
-SUBJECT_LANG.update(
-    {
-        _gen_tables_web.START_INDEX + i: lang
-        for i, (_subject, lang, _options) in enumerate(_gen_tables_web.WEB_SUBJECTS)
-    }
-)
-SUBJECT_NAME = {i: subject for i, (subject, _lang) in enumerate(_gen_tables.SUBJECTS)}
-SUBJECT_NAME.update(
-    {
-        _gen_tables_web.START_INDEX + i: subject
-        for i, (subject, _lang, _options) in enumerate(_gen_tables_web.WEB_SUBJECTS)
-    }
-)
+_gen_tables_more = _load_module("gen_tables_more", "01c_generate_tables_more.py")
+SUBJECT_LANG: dict[int, str] = {}
+SUBJECT_NAME: dict[int, str] = {}
+for i, (subject, lang) in enumerate(_gen_tables.SUBJECTS):
+    SUBJECT_LANG[i], SUBJECT_NAME[i] = lang, subject
+for i, (subject, lang, _options) in enumerate(_gen_tables_web.WEB_SUBJECTS):
+    idx = _gen_tables_web.START_INDEX + i
+    SUBJECT_LANG[idx], SUBJECT_NAME[idx] = lang, subject
+for i, (subject, lang) in enumerate(_gen_tables_more.SUBJECTS):
+    idx = _gen_tables_more.START_INDEX + i
+    SUBJECT_LANG[idx], SUBJECT_NAME[idx] = lang, subject
+
+PROCESSED_LOG = OUT_DIR / ".processed"
 
 # The one hardcoded prompt vlm_assess() sends (not in i18n.yaml -- it describes
 # chart conventions, not table content, so it's language-independent). Copied here
@@ -215,11 +214,17 @@ def main() -> None:
         print(f"No tables found in {TABLES_DIR}; run 01_generate_tables.py first.", file=sys.stderr)
         sys.exit(1)
 
+    # Resumable: a table already recorded here (from a previous run, e.g. before
+    # more subjects were added) is skipped rather than reprocessed and duplicated.
+    processed = set(PROCESSED_LOG.read_text().split()) if PROCESSED_LOG.exists() else set()
+    todo = [p for p in csv_paths if p.stem not in processed]
+    print(f"{len(csv_paths)} tables total, {len(processed)} already processed, {len(todo)} to do.")
+
     counts = dict.fromkeys(sinks, 0)
-    for csv_path in csv_paths:
+    for n, csv_path in enumerate(todo, 1):
         idx = int(csv_path.stem.split("_", 1)[0])
         subject, lang = SUBJECT_NAME[idx], SUBJECT_LANG[idx]
-        print(f"[{idx + 1}/{len(csv_paths)}] {csv_path.name} ({lang})...", flush=True)
+        print(f"[{n}/{len(todo)}] {csv_path.name} ({lang})...", flush=True)
         try:
             df = sp.parse_table(str(csv_path))
             df, lower = sp.resolve_polarity(df)
@@ -249,7 +254,11 @@ def main() -> None:
             if ex is not None:
                 sinks["vlm_assess"].write(json.dumps(ex, ensure_ascii=False) + "\n")
                 counts["vlm_assess"] += 1
+
+            with PROCESSED_LOG.open("a", encoding="utf-8") as f:
+                f.write(csv_path.stem + "\n")
         except Exception as exc:
+            # not logged as processed: a table that errors this run is retried next run
             print(f"  !! skipped {csv_path.name}: {exc}", file=sys.stderr)
         finally:
             for f in sinks.values():
