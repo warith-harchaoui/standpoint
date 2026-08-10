@@ -27,8 +27,7 @@ tout le résultat.
 
 Tout tourne sur votre machine : la lecture du tableau, l'ACP, l'orientation, la
 coloration et le rendu de la figure en SVG écrit à la main, converti en PNG par
-[`resvg`](https://github.com/RazrFalcon/resvg) — aucun Vega, aucun moteur de rendu
-de graphiques externe. Votre tableau n'est jamais envoyé nulle part ; pas de
+[`resvg`](https://github.com/RazrFalcon/resvg). Votre tableau n'est jamais envoyé nulle part ; pas de
 télémétrie, pas de compte, rien à créer.
 
 Seuls le nommage des axes et l'analyse rédigée sollicitent un vision-LLM local tournant
@@ -69,7 +68,7 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
 ## Fonctionnalités
 
 - **Une commande, un livrable en trois volets** : une figure interactive écrite à
-  la main (PNG + SVG, sans Vega), une interprétation Markdown et un YAML de
+  la main, une interprétation Markdown et un YAML de
   coordonnées + coefficients.
 - **Axes lisibles** : l'ACP garde les axes sous forme de sommes pondérées de vos
   colonnes ; un modèle local nomme les quatre pôles par des qualités positives,
@@ -133,11 +132,13 @@ veut plus de contrôle.
 - 🪟 **Windows** (PowerShell) : `winget install Python.Python.3.12 Git.Git`
 
 Pour les noms d'axes et l'analyse rédigée, installez [Ollama](https://ollama.com) et
-téléchargez le modèle par défaut une fois :
+démarrez-le. Vous ne choisissez **pas** de modèle : dès la première utilisation,
+best-engine-ai-helper résout le meilleur vision-LLM local pour votre machine à
+partir de `standpoint/llm.brief.yaml` et le télécharge une seule fois.
 
-- 🍎 **macOS** : `brew install ollama`, puis `ollama serve &` et `ollama pull qwen2.5vl:7b`
-- 🐧 **Ubuntu/Debian** : `curl -fsSL https://ollama.com/install.sh | sh`, puis `ollama pull qwen2.5vl:7b`
-- 🪟 **Windows** : installez depuis [ollama.com/download](https://ollama.com/download), puis `ollama pull qwen2.5vl:7b`
+- 🍎 **macOS** : `brew install ollama`, puis `ollama serve &`
+- 🐧 **Ubuntu/Debian** : `curl -fsSL https://ollama.com/install.sh | sh`, puis `ollama serve &`
+- 🪟 **Windows** : installez depuis [ollama.com/download](https://ollama.com/download), puis lancez-le
 
 **Utilisez un environnement virtuel.** Installer dans le Python système est la
 première cause de commande introuvable après installation ou de conflit de version
@@ -205,8 +206,10 @@ standpoint --help                                               # confirme que l
 - 🪟 **GUI : « The local Ollama server is not reachable »** : lancez l'application
   Ollama depuis le menu Démarrer, puis vérifiez avec
   `Invoke-WebRequest http://localhost:11434`.
-- 🍎🐧🪟 **GUI : « The model '...' is not installed »** : `ollama pull qwen2.5vl:7b`
-  (ou le modèle passé via `--model`).
+- 🍎🐧🪟 **GUI : « The model '...' is not installed »** : `ollama pull <tag>` avec le
+  tag de l'erreur (celui résolu dans `standpoint/llm.engine.yaml`, ou le `--model`
+  que vous avez passé) ; supprimez ce fichier pour forcer une nouvelle résolution
+  après un changement de matériel.
 - 🍎🐧 **`Address already in use` sur `standpoint-gui`** : le port 8000 est déjà pris,
   trouvez le processus avec `lsof -i :8000` ou lancez
   `uvicorn standpoint.api:app --port 8001` sur un port libre.
