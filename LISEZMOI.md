@@ -44,7 +44,7 @@ puis tout fonctionne hors ligne.
 
 [🗺️ Paysage](https://github.com/warith-harchaoui/standpoint/blob/main/PAYSAGE.md)
 
-[📋 Exemples](https://github.com/warith-harchaoui/standpoint/blob/main/EXAMPLES.md)
+[📋 Exemples](https://github.com/warith-harchaoui/standpoint/blob/main/EXEMPLES.md)
 
 
 Entrée : un tableau d'options et de leurs notes.
