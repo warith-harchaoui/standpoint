@@ -59,6 +59,36 @@ Apache-2.0) — the only real ~500M-parameter vision-capable model available. Ge
 
 **Go/no-go: GO.** Proceeding with SmolVLM2-500M-Instruct as planned.
 
+## Phase 4 export path -- revised (2026-08-10)
+
+The original plan assumed GGUF export (via llama.cpp's `convert_hf_to_gguf.py`)
+would cover Windows/Ubuntu, alongside native MLX for Mac. **That assumption doesn't
+hold for this architecture**: a fresh clone of `llama.cpp` (`checkpoints/llama.cpp/`,
+gitignored) has zero references to `idefics3` or `smolvlm` anywhere in
+`convert_hf_to_gguf.py` -- confirmed directly by grepping the script, not inferred
+from search results, since an earlier GitHub discussion suggesting "Idefics3 not
+supported" could have been stale. It is not stale. Community GGUF uploads of
+SmolVLM2 exist on Ollama's hub, but not via this conversion path as shipped in
+`llama.cpp`'s current `master`.
+
+Revised plan for the two targets the user asked for:
+
+- **Mac**: native MLX, unchanged -- served either through Ollama's MLX engine
+  (0.30+, if it accepts a locally fine-tuned MLX model, not just its own curated
+  library -- to be confirmed once a trained adapter exists) or directly via
+  `mlx_vlm.server`, which ships as its own OpenAI-compatible-ish HTTP server.
+- **Windows/Ubuntu**: plain `transformers` inference (SmolVLM2 is a native HF
+  `transformers` architecture, runs anywhere `torch` does, GPU or CPU) behind a
+  small local HTTP shim that speaks Ollama's `/api/chat` request/response shape.
+  `best_engine_ai_helper.llm.chat(backend="ollama", base_url=...)` only needs
+  something answering at that URL in that shape -- it doesn't care whether the
+  process behind it is real Ollama or this shim, so standpoint's existing
+  `--model`/`model=` override still works unmodified, just pointed at a different
+  `base_url` on non-Mac platforms.
+
+Exact shim design deferred to Phase 4 itself (after training + Phase 3's real
+numbers exist) rather than built speculatively now.
+
 ## Layout
 
 ```
@@ -66,21 +96,23 @@ distillation/
   README.md                 # this file
   requirements.txt
   scripts/
+    _table_utils.py             # dedupe_ratings(): enforces validate_table()'s own
+                                 # no-duplicate-row/-column rule at generation time
     _mlx_vlm_idefics3_patch.py  # upstream trainer bug workaround (see above)
     run_lora.py                 # mlx_vlm.lora, with the patch applied first
-    01_generate_tables.py       # Phase 1a (next)
-    02_generate_dataset.py      # Phase 1b
+    01_generate_tables.py       # Phase 1a: 30 hand-curated subjects
+    01b_generate_tables_from_web.py  # Phase 1a: 20 subjects, real web-sourced options
+    01c_generate_tables_more.py      # Phase 1a: 245 more curated subjects (scale-up)
+    02_generate_dataset.py      # Phase 1b (resumable: data/dataset/.processed)
     03_train_lora.py            # Phase 2
     04_evaluate.py              # Phase 3
-    05_export_gguf.py           # Phase 4a
-    06_export_mlx.py            # Phase 4b
+    05_export.py                # Phase 4 (design pending Phase 3's numbers, see above)
   data/                      # generated datasets (gitignored; regenerable)
   checkpoints/               # LoRA adapters + merged/converted models (gitignored)
 ```
 
 ## Full plan
 
-See the plan this branch executes: phases, per-task risk assessment, and the export
-architecture (GGUF for Windows/Ubuntu/Mac-via-llama.cpp, native MLX for Mac-native
-speed via Ollama's dual backend) are recorded in this session's plan file and
+See the plan this branch executes: phases, per-task risk assessment, and the
+(revised) export architecture are recorded in this session's plan file and
 summarized progressively in this README as each phase completes.
