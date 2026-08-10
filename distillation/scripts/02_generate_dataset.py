@@ -22,6 +22,7 @@ plus ``distillation/data/dataset/images/`` for the vlm_assess image files.
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import sys
@@ -206,23 +207,54 @@ def vlm_assess_negative_example(
 # --------------------------------------------------------------------------- #
 # main
 # --------------------------------------------------------------------------- #
+def parse_args() -> argparse.Namespace:
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--shard-id",
+        type=int,
+        default=None,
+        help="This worker's shard (0-indexed). Requires --num-shards. Writes to "
+        "<task>.shard<N>.jsonl and .processed.shard<N> instead of the shared files, "
+        "so concurrent shards never write the same file (JSONL lines, especially "
+        "narrative text, can exceed the OS's atomic-write size, so two processes "
+        "appending to one shared file risks interleaved/corrupted lines) -- merge "
+        "with merge_shards.py once all shards finish.",
+    )
+    ap.add_argument("--num-shards", type=int, default=None)
+    return ap.parse_args()
+
+
 def main() -> None:
+    args = parse_args()
+    sharded = args.shard_id is not None
+    if sharded and (args.num_shards is None or not (0 <= args.shard_id < args.num_shards)):
+        print("--shard-id requires --num-shards and 0 <= shard-id < num-shards", file=sys.stderr)
+        sys.exit(1)
+    suffix = f".shard{args.shard_id}" if sharded else ""
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     sinks = {
-        name: (OUT_DIR / f"{name}.jsonl").open("a", encoding="utf-8")
+        name: (OUT_DIR / f"{name}{suffix}.jsonl").open("a", encoding="utf-8")
         for name in ("pole_naming", "noun_forms", "narrative", "vlm_assess")
     }
+    shard_log = OUT_DIR / f".processed{suffix}"
     csv_paths = sorted(TABLES_DIR.glob("*.csv"))
     if not csv_paths:
         print(f"No tables found in {TABLES_DIR}; run 01_generate_tables.py first.", file=sys.stderr)
         sys.exit(1)
 
-    # Resumable: a table already recorded here (from a previous run, e.g. before
-    # more subjects were added) is skipped rather than reprocessed and duplicated.
+    # Resumable: a table already recorded in the SHARED log (any prior run, sharded
+    # or not) is skipped everywhere, so shards never duplicate work a previous
+    # single-process run already did.
     processed = set(PROCESSED_LOG.read_text().split()) if PROCESSED_LOG.exists() else set()
     todo = [p for p in csv_paths if p.stem not in processed]
-    print(f"{len(csv_paths)} tables total, {len(processed)} already processed, {len(todo)} to do.")
+    if sharded:
+        todo = [p for p in todo if int(p.stem.split("_", 1)[0]) % args.num_shards == args.shard_id]
+    print(
+        f"{len(csv_paths)} tables total, {len(processed)} already processed, "
+        f"{len(todo)} to do{f' (shard {args.shard_id}/{args.num_shards})' if sharded else ''}."
+    )
 
     counts = dict.fromkeys(sinks, 0)
     for n, csv_path in enumerate(todo, 1):
@@ -259,7 +291,7 @@ def main() -> None:
                 sinks["vlm_assess"].write(json.dumps(ex, ensure_ascii=False) + "\n")
                 counts["vlm_assess"] += 1
 
-            with PROCESSED_LOG.open("a", encoding="utf-8") as f:
+            with shard_log.open("a", encoding="utf-8") as f:
                 f.write(csv_path.stem + "\n")
         except Exception as exc:
             # not logged as processed: a table that errors this run is retried next run
