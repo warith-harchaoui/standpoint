@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2026-08-10
+
+### Fixed
+
+- **`requirements.txt` drifted from `pyproject.toml`.** It still listed `ollama` as a
+  runtime dependency and was missing `best-engine-ai-helper`, left over from the
+  [0.7.0](#070---2026-08-05) migration that made `best-engine-ai-helper` the hard runtime dependency
+  and dropped the direct `ollama` import. `ollama` is only needed by
+  `tests/conftest.py` for `@needs_model` tests, so it moves to the `dev` extra.
+
 ## [0.8.1] - 2026-08-10
 
 ### Added
