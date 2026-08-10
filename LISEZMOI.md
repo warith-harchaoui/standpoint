@@ -335,6 +335,10 @@ python3 -m ruff format --check standpoint tests
 Le standard de code de ce dépôt est [CODING.md](https://github.com/warith-harchaoui/standpoint/blob/main/CODING.md) ;
 la politique de contribution et de versionnage est dans [CONTRIBUTING.md](https://github.com/warith-harchaoui/standpoint/blob/main/CONTRIBUTING.md).
 
+## Auteur
+
+[Warith Harchaoui](https://www.linkedin.com/in/warith-harchaoui)
+
 ## Crédits
 
 Les cartes perceptuelles ACP sont classiques (`factoextra` et `FactoMineR` en R,
@@ -343,10 +347,6 @@ idée plus récente. Les couleurs viennent de la palette
 ["Good Colors"](https://harchaoui.org/warith/colors/). Les figures sont écrites à
 la main en SVG et converties en PNG par
 [`resvg`](https://github.com/RazrFalcon/resvg).
-
-## Auteur
-
-[Warith Harchaoui](https://www.linkedin.com/in/warith-harchaoui)
 
 ## Licence
 

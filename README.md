@@ -321,6 +321,10 @@ python3 -m ruff format --check standpoint tests
 The coding standard for this repository is [CODING.md](https://github.com/warith-harchaoui/standpoint/blob/main/CODING.md);
 the contribution and versioning policy is in [CONTRIBUTING.md](https://github.com/warith-harchaoui/standpoint/blob/main/CONTRIBUTING.md).
 
+## Author
+
+[Warith Harchaoui](https://www.linkedin.com/in/warith-harchaoui)
+
 ## Credits
 
 PCA perceptual maps are standard (`factoextra` and `FactoMineR` in R, `prince` and
@@ -328,10 +332,6 @@ PCA perceptual maps are standard (`factoextra` and `FactoMineR` in R, `prince` a
 come from the ["Good Colors"](https://harchaoui.org/warith/colors/) palette.
 Figures are hand-authored SVG, rasterised to PNG by
 [`resvg`](https://github.com/RazrFalcon/resvg).
-
-## Author
-
-[Warith Harchaoui](https://www.linkedin.com/in/warith-harchaoui)
 
 ## License
 

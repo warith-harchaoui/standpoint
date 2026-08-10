@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.8.0] - 2026-08-10
 
 ### Fixed
 
@@ -51,6 +51,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **GUI chrome now matches sprezzature's neutral gray, not Tailwind's blue-tinted
+  "slate".** The page's headings, borders, and hint text used Tailwind's `slate-*`
+  utilities in light mode while the hand-written dark-mode overrides already
+  hardcoded true-neutral hex values (`#171717`, `#e5e5e5`, `#d4d4d4`, ...) — the two
+  modes were quietly using different gray families. Every `slate-*` class is now
+  `neutral-*`, which resolves to those same hexes: measuring
+  harchaoui.org/warith/sprezzature/figures.html confirms its ink (`#171717`), card
+  border (`#e5e5e5`) and outline-button border (`#d4d4d4`) are exactly Tailwind's
+  `neutral-900/200/300`. The hero headline grows to the reference's measured 48px,
+  section headings (`Table`, `Options`, `Quadrant`, `Basic Analysis`) go from
+  20px/600 to the reference's 24px/700, cards move from `rounded-xl`/20-28px padding
+  to `rounded-2xl`/24-32px padding with a solid (not translucent) border, and the
+  outline-button padding is now pixel-exact (`.5rem 1rem`) to the reference's pill
+  buttons. The DATA-only colour rule (map dots + role-tinted names stay the sole
+  source of colour; chrome stays neutral) is unchanged.
 - **No more Vega, anywhere.** `to_vega()` is replaced by `to_svg()`: the positioning
   map is now built as a hand-authored, self-contained, interactive SVG (native
   `<title>` tooltips, pure-CSS `:hover`/`:focus`, no JavaScript, no external

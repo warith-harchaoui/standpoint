@@ -2,23 +2,13 @@
 #
 #     pip install -r requirements-dev.txt
 #
-# Runtime deps, plus everything the test suite and the linters need. This installs
-# the optional server surfaces (FastAPI + MCP) so tests/test_gui.py and
-# tests/test_mcp.py run; the heavier, opt-in bits stay out of here:
+# Derived from pyproject.toml's [dev] and [gui] extras -- the same combination
+# CI installs from (`pip install -e ".[dev,gui]"`). Kept only for contributors
+# who prefer `pip install -r requirements-dev.txt` -- edit the extras in
+# pyproject.toml, not this file, to change what installs. The heavier, opt-in
+# bits stay out of here:
 #   - DeepEval (tests/test_eval.py)      -> pip install ".[eval]"   (needs Ollama)
+#   - fastapi-mcp (tests/test_mcp.py)    -> pip install ".[mcp]"
 #   - Playwright (tests/test_gui_e2e.py) -> pip install playwright && playwright install chromium
-
-# Runtime:
--r requirements.txt
-
-# Test + lint tooling:
-pytest>=7.0
-ruff>=0.5
-httpx>=0.27            # Starlette TestClient transport (GUI/MCP endpoint tests)
-
-# Optional surfaces exercised by the tests:
-fastapi>=0.110
-uvicorn>=0.29
-python-multipart>=0.0.9   # file uploads
-openpyxl>=3.1             # CSV <-> XLSX
-fastapi-mcp>=0.3,<1       # the MCP surface
+-e .[dev,gui]
+ruff==0.15.21

@@ -108,26 +108,27 @@ GUI_HTML = r"""<!doctype html>
        "floating panel" fill. Light mode already works this way (white on --paper). */
     .dark .bg-white { background-color:#0a0a0a !important; }
     .dark .card { border-color:#262626 !important; }
-    .dark .text-slate-900 { color:#f5f5f5 !important; }
-    .dark .text-slate-800 { color:#e5e5e5 !important; }
-    .dark .text-slate-700 { color:#d4d4d4 !important; }
-    .dark .text-slate-600, .dark .text-slate-500 { color:#a3a3a3 !important; }
-    .dark .text-slate-400 { color:#737373 !important; }
-    .dark .text-slate-300 { color:#404040 !important; }
-    .dark .bg-slate-100 { background-color:#262626 !important; }
-    .dark .bg-slate-200 { background-color:#404040 !important; }
-    .dark .hover\:bg-slate-100:hover { background-color:#262626 !important; }
-    .dark .hover\:bg-slate-200:hover { background-color:#404040 !important; }
+    .dark .text-neutral-900 { color:#f5f5f5 !important; }
+    .dark .text-neutral-800 { color:#e5e5e5 !important; }
+    .dark .text-neutral-700 { color:#d4d4d4 !important; }
+    .dark .text-neutral-600, .dark .text-neutral-500 { color:#a3a3a3 !important; }
+    .dark .text-neutral-400 { color:#737373 !important; }
+    .dark .text-neutral-300 { color:#404040 !important; }
+    .dark .bg-neutral-100 { background-color:#262626 !important; }
+    .dark .bg-neutral-200 { background-color:#404040 !important; }
+    .dark .hover\:bg-neutral-100:hover { background-color:#262626 !important; }
+    .dark .hover\:bg-neutral-200:hover { background-color:#404040 !important; }
     .dark .hover\:bg-red-100:hover { background-color:#7f1d1d !important; }
-    .dark .border-slate-400 { border-color:#525252 !important; }
+    .dark .border-neutral-400 { border-color:#525252 !important; }
     .dark input, .dark select { background-color:#0B0B0C; color:#e5e5e5; border-color:#404040; }
     .dark #run { background:#e5e5e5 !important; color:#0B0B0C !important; }
     .dark .analysis { color:#d4d4d4; }
     .dark .analysis h1, .dark .analysis h2, .dark .analysis strong { color:#f5f5f5; }
     .dark .analysis h2 { border-color:#262626; }
-    /* Subtle card border, sprezzature style (neutral-200/70 in light); no shadow, the
-       border alone separates a card from the page (dark variant set above). */
-    .card { border:1px solid rgba(229,229,229,.7); }
+    /* Card border, sprezzature style: solid neutral-200 (#e5e5e5), the exact border
+       colour measured off harchaoui.org/warith/sprezzature/figures.html; no shadow,
+       the border alone separates a card from the page (dark variant set above). */
+    .card { border:1px solid #e5e5e5; }
     /* Header toggle buttons: transparent pills, sprezzature nav style (their lang/theme
        buttons carry no background until hovered, unlike a permanently-filled chip). */
     .toggle-btn { font-size:1.15rem; line-height:1; width:2.25rem; height:2.25rem;
@@ -155,7 +156,7 @@ GUI_HTML = r"""<!doctype html>
        colour in this app always means "data"; see the palette comment above). */
     .btn { display:inline-flex; align-items:center; gap:.35rem; border-radius:.5rem;
       border:1px solid #d4d4d4; background:#ffffff; color:#404040; font-weight:500;
-      padding:.5rem .85rem; font-size:.875rem; white-space:nowrap;
+      padding:.5rem 1rem; font-size:.875rem; white-space:nowrap;
       transition:border-color .15s, background-color .15s; }
     .btn:hover { border-color:#a3a3a3; background:#fafafa; }
     .dark .btn { border-color:#404040; background:transparent; color:#d4d4d4; }
@@ -163,7 +164,7 @@ GUI_HTML = r"""<!doctype html>
     .btn-sm { padding:.3rem .65rem; font-size:.75rem; }
   </style>
 </head>
-<body class="text-slate-800">
+<body class="text-neutral-800">
   <!-- Sticky, translucent nav bar (sprezzature style): full-width band, thin, with the
        brand mark on the left and the language / theme toggles on the right. The page
        title and tagline live in the hero below, not here, so the bar stays slim. -->
@@ -174,7 +175,7 @@ GUI_HTML = r"""<!doctype html>
              position. It is chrome, not data, so it carries no palette meaning. -->
         <img src="/static/logo-header.png" alt="Standpoint logo: an old map with a compass rose"
              width="28" height="28" class="w-7 h-7 rounded shrink-0" />
-        <span class="font-semibold tracking-tight text-slate-900">Standpoint</span>
+        <span class="font-semibold tracking-tight text-neutral-900">Standpoint</span>
       </div>
       <!-- Language (🇫🇷/🇬🇧) and theme (🌞/🌛) toggles. Both persist in localStorage;
            the language one re-localizes the whole page, including the LLM output. -->
@@ -192,15 +193,15 @@ GUI_HTML = r"""<!doctype html>
     <!-- Hero: a small monospace "eyebrow" tag over a serif display headline, sprezzature
          style (their eyebrow carries the page/skill slug; ours carries the product's). -->
     <div>
-      <p class="eyebrow text-sm text-slate-500">standpoint</p>
-      <h1 class="headline mt-1 text-3xl sm:text-4xl font-bold tracking-tight text-slate-900" data-i18n="baseline">Know where each option actually stands.</h1>
+      <p class="eyebrow text-sm text-neutral-500">standpoint</p>
+      <h1 class="headline mt-1 text-4xl sm:text-5xl font-bold tracking-tight text-neutral-900" data-i18n="baseline">Know where each option actually stands.</h1>
     </div>
 
     <!-- 1 · Your table -->
-    <section class="card bg-white rounded-xl p-5 sm:p-7 space-y-6">
+    <section class="card bg-white rounded-2xl p-6 sm:p-8 space-y-6">
       <div class="flex items-center gap-3">
         <span class="accent"></span>
-        <h2 class="text-xl font-semibold" data-i18n="table_title">Table</h2>
+        <h2 class="text-2xl font-bold" data-i18n="table_title">Table</h2>
       </div>
 
       <div class="flex items-center gap-2 flex-wrap">
@@ -208,7 +209,7 @@ GUI_HTML = r"""<!doctype html>
         <button id="newTable" class="btn" data-i18n="new_table">🆕 New Table</button>
         <button id="addRow" class="btn" data-i18n="add_row">＋ Option (row)</button>
         <button id="addCol" class="btn" data-i18n="add_col">＋ Criterion (column)</button>
-        <span class="mx-1 text-slate-300 hidden sm:inline">|</span>
+        <span class="mx-1 text-neutral-300 hidden sm:inline">|</span>
         <!-- "Laziness / Paresse": fill every empty cell from the model's knowledge once
              the row and column names are typed (common for a headers-only upload). -->
         <button id="flemme" class="btn" data-i18n="flemme" data-i18n-aria="flemme_aria">😴 Laziness (auto-fill)</button>
@@ -222,7 +223,7 @@ GUI_HTML = r"""<!doctype html>
         <button id="dlCsv" class="btn" data-i18n="download_csv">Download CSV</button>
         <button id="dlXlsx" class="btn" data-i18n="download_xlsx">Download XLSX</button>
       </div>
-      <p class="text-xs text-slate-500 leading-relaxed">
+      <p class="text-xs text-neutral-500 leading-relaxed">
         <span data-i18n="hint_higher">Higher is better by default.</span><br>
         <span data-i18n="hint_toggle">Toggle ⬇️ / ⬆️ on a column to set whether lower or higher is the better score.</span>
       </p>
@@ -233,10 +234,10 @@ GUI_HTML = r"""<!doctype html>
     </section>
 
     <!-- 2 · Options -->
-    <section class="card bg-white rounded-xl p-5 sm:p-7 space-y-6">
+    <section class="card bg-white rounded-2xl p-6 sm:p-8 space-y-6">
       <div class="flex items-center gap-3">
         <span class="accent"></span>
-        <h2 class="text-xl font-semibold" data-i18n="options_title">Options</h2>
+        <h2 class="text-2xl font-bold" data-i18n="options_title">Options</h2>
       </div>
 
       <div class="space-y-4 max-w-xl">
@@ -255,15 +256,15 @@ GUI_HTML = r"""<!doctype html>
               style="background:#171717" data-i18n="generate">Generate quadrant</button>
     </section>
 
-    <p id="status" role="status" aria-live="polite" class="text-sm text-slate-500 hidden"></p>
+    <p id="status" role="status" aria-live="polite" class="text-sm text-neutral-500 hidden"></p>
     <p id="error" role="alert" aria-live="assertive" class="text-sm font-medium hidden" style="color:#FF3B30"></p>
 
     <!-- 3 · Quadrant -->
-    <section class="card bg-white rounded-xl p-5 sm:p-7 space-y-5">
+    <section class="card bg-white rounded-2xl p-6 sm:p-8 space-y-5">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <span class="accent"></span>
-          <h2 class="text-xl font-semibold" data-i18n="quadrant_title">Quadrant</h2>
+          <h2 class="text-2xl font-bold" data-i18n="quadrant_title">Quadrant</h2>
         </div>
         <div class="flex gap-2">
           <button id="dlPng" class="btn btn-sm hidden">PNG</button>
@@ -277,8 +278,8 @@ GUI_HTML = r"""<!doctype html>
            over left ✚ right over bottom. Hidden until the first quadrant exists. -->
       <div id="poleEditor" class="hidden space-y-3">
         <div class="flex items-baseline gap-2 flex-wrap">
-          <span class="text-sm font-semibold text-slate-700" data-i18n="poles_title">Axis poles</span>
-          <span class="text-xs text-slate-500" data-i18n="poles_hint">Rename the four poles; the map updates live.</span>
+          <span class="text-sm font-semibold text-neutral-700" data-i18n="poles_title">Axis poles</span>
+          <span class="text-xs text-neutral-500" data-i18n="poles_hint">Rename the four poles; the map updates live.</span>
         </div>
         <div class="grid grid-cols-3 gap-2 w-full max-w-md items-center">
           <span></span>
@@ -287,7 +288,7 @@ GUI_HTML = r"""<!doctype html>
           <span></span>
           <input id="poleLeft" type="text" data-i18n-aria="aria_pole_left" aria-label="Left pole name"
                  class="border rounded-lg px-2 py-1 text-sm text-center w-full" />
-          <span class="text-center text-slate-400 text-sm select-none" aria-hidden="true">✚</span>
+          <span class="text-center text-neutral-400 text-sm select-none" aria-hidden="true">✚</span>
           <input id="poleRight" type="text" data-i18n-aria="aria_pole_right" aria-label="Right pole name"
                  class="border rounded-lg px-2 py-1 text-sm text-center w-full" />
           <span></span>
@@ -297,21 +298,21 @@ GUI_HTML = r"""<!doctype html>
         </div>
       </div>
 
-      <div id="chart" class="min-h-[420px] flex items-center justify-center overflow-x-auto text-slate-400" data-i18n="chart_placeholder">
+      <div id="chart" class="min-h-[420px] flex items-center justify-center overflow-x-auto text-neutral-400" data-i18n="chart_placeholder">
         Generate to see the map.
       </div>
     </section>
 
     <!-- Analysis -->
-    <section class="card bg-white rounded-xl p-5 sm:p-7 space-y-5">
+    <section class="card bg-white rounded-2xl p-6 sm:p-8 space-y-5">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <span class="accent"></span>
-          <h2 class="text-xl font-semibold" data-i18n="analysis_title">Basic Analysis</h2>
+          <h2 class="text-2xl font-bold" data-i18n="analysis_title">Basic Analysis</h2>
         </div>
         <button id="dlMd" class="btn btn-sm hidden" data-i18n="download_md">Download Markdown</button>
       </div>
-      <div id="comments" class="analysis max-w-none text-slate-400" data-i18n="analysis_placeholder">
+      <div id="comments" class="analysis max-w-none text-neutral-400" data-i18n="analysis_placeholder">
         The written interpretation appears here once you generate.
       </div>
     </section>
@@ -320,7 +321,7 @@ GUI_HTML = r"""<!doctype html>
   <!-- Minimal footer, sprezzature style: a full-width band with a border-top divider
        and one muted line, echoing the local-first pitch from the hero. -->
   <footer class="site-footer mt-4">
-    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 text-sm text-slate-500" data-i18n="footer_note">
+    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 text-sm text-neutral-500" data-i18n="footer_note">
       Local-first: your table never leaves this machine.
     </div>
   </footer>
@@ -392,9 +393,9 @@ function renderGrid() {
         <div class="flex gap-1 text-xs">
           <button aria-label="${low ? t("aria_lower") : t("aria_higher")}"
                   title="${low ? t("title_lower") : t("title_higher")}"
-                  class="px-1 rounded ${low ? 'bg-slate-300' : 'bg-slate-100'} hover:bg-slate-200"
+                  class="px-1 rounded ${low ? 'bg-neutral-300' : 'bg-neutral-100'} hover:bg-neutral-200"
                   onclick="toggleLower(${i})">${low ? '⬇️' : '⬆️'}</button>
-          <button aria-label="${t("aria_del_col")}" title="${t("title_del_col")}" class="px-1 rounded bg-slate-100 hover:bg-red-100"
+          <button aria-label="${t("aria_del_col")}" title="${t("title_del_col")}" class="px-1 rounded bg-neutral-100 hover:bg-red-100"
                   onclick="delCol(${i})">✕</button>
         </div>
       </div>`;
@@ -418,7 +419,7 @@ function renderGrid() {
       tr.appendChild(td);
     });
     const del = document.createElement("td");
-    del.innerHTML = `<button aria-label="${t("aria_del_row", {n: ri + 1})}" title="${t("title_del_row")}" class="px-1 text-xs rounded bg-slate-100 hover:bg-red-100"
+    del.innerHTML = `<button aria-label="${t("aria_del_row", {n: ri + 1})}" title="${t("title_del_row")}" class="px-1 text-xs rounded bg-neutral-100 hover:bg-red-100"
         onclick="delRow(${ri})">✕</button>`;
     tr.appendChild(del);
     g.appendChild(tr);
