@@ -202,7 +202,7 @@ def write_csv(path: Path, subject: str, options: list[str], data: dict) -> None:
     ratings = dedupe_ratings(criteria, ratings)
     with path.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["Option", *criteria])
+        w.writerow([subject.title(), *criteria])
         for name, row in zip(options, ratings, strict=True):
             w.writerow([name, *row])
 
