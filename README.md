@@ -98,6 +98,25 @@ and the exhaustive
 
 ## Installation
 
+### The two commands that matter
+
+If you already have Python 3.10–3.13, this is the entire install:
+
+```bash
+pip install --upgrade standpoint
+```
+
+The same command installs it the first time and updates it every time after —
+one thing to remember, not two. Add an extra for the browser GUI / API
+(`pip install --upgrade "standpoint[gui]"`) or the MCP server
+(`pip install --upgrade "standpoint[mcp]"`). Using [pipx](https://pipx.pypa.io)
+instead keeps it isolated from every other Python project: `pipx install
+standpoint` the first time, `pipx upgrade standpoint` after.
+
+Everything below is the fuller walkthrough — prerequisites, a virtual
+environment, troubleshooting — for a machine that doesn't have Python set up
+yet, or for anyone who wants more control.
+
 **Prerequisites:** **Python 3.10–3.13** and **git**, cross-platform:
 
 - 🍎 **macOS** ([Homebrew](https://brew.sh)): `brew install python git`

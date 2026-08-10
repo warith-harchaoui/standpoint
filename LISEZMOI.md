@@ -106,6 +106,26 @@ et le catalogue exhaustif
 
 ## Installation
 
+### Les deux commandes qui comptent
+
+Si vous avez déjà Python 3.10–3.13, c'est toute l'installation :
+
+```bash
+pip install --upgrade standpoint
+```
+
+La même commande installe la première fois et met à jour toutes les fois
+suivantes : une seule chose à retenir, pas deux. Ajoutez un extra pour la GUI
+navigateur / l'API (`pip install --upgrade "standpoint[gui]"`) ou le serveur
+MCP (`pip install --upgrade "standpoint[mcp]"`). Avec
+[pipx](https://pipx.pypa.io), l'installation reste isolée de tout autre projet
+Python : `pipx install standpoint` la première fois, `pipx upgrade standpoint`
+ensuite.
+
+Tout ce qui suit est le mode d'emploi complet, prérequis, environnement
+virtuel, dépannage, pour une machine sans Python déjà en place, ou pour qui
+veut plus de contrôle.
+
 **Prérequis :** **Python 3.10–3.13** et **git**, multiplateforme :
 
 - 🍎 **macOS** ([Homebrew](https://brew.sh)) : `brew install python git`
