@@ -12,6 +12,12 @@ out/
 .deepeval/
 standpoint/llm.engine.yaml
 
+# distillation/ — model weights, adapters, and generated datasets are large and
+# fully regenerable from the scripts; never committed. distillation/.venv/ and
+# distillation/data/ are already covered by the generic .venv/ and data/ patterns
+# above.
+distillation/checkpoints/
+
 # --- Python bytecode & caches ---
 __pycache__/
 *.py[cod]

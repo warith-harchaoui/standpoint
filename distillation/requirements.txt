@@ -1,0 +1,14 @@
+# standpoint/distillation — training-only dependencies, kept out of the
+# standpoint package's own install footprint (mirrors gui/mcp/eval extras).
+#
+#     python3 -m venv distillation/.venv
+#     source distillation/.venv/bin/activate
+#     pip install -r distillation/requirements.txt
+#
+# Apple Silicon only (mlx). Not published, not part of the standpoint package.
+mlx>=0.20
+mlx-vlm[train]>=0.1
+torch>=2.2          # mlx-vlm's HF interop pulls this in regardless of backend
+torchvision>=0.17   # SmolVLM's HF image processor backend needs this explicitly
+huggingface_hub>=0.25
+pillow>=10.0
