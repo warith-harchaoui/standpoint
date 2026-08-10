@@ -17,6 +17,7 @@ import re
 import sys
 from pathlib import Path
 
+from _table_utils import dedupe_ratings
 from best_engine_ai_helper import llm
 
 import standpoint as sp
@@ -111,6 +112,7 @@ def write_csv(path: Path, subject: str, data: dict) -> None:
             f"{subject}: ratings shape mismatch (options={len(options)}, "
             f"criteria={len(criteria)}, ratings={[len(r) for r in ratings]})"
         )
+    ratings = dedupe_ratings(criteria, ratings)
     with path.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["Option", *criteria])

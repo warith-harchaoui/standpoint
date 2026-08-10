@@ -18,6 +18,7 @@ import re
 import sys
 from pathlib import Path
 
+from _table_utils import dedupe_ratings
 from best_engine_ai_helper import llm
 
 import standpoint as sp
@@ -184,7 +185,7 @@ def generate_criteria_and_ratings(subject: str, lang: str, options: list[str]) -
             f"the option at index i in this order: {joined}."
         )
     data = llm.chat(
-        prompt, engine=sp.engine(), kind="vlm", json_schema=RATINGS_SCHEMA, temperature=0.7
+        prompt, engine=sp.engine(), kind="vlm", json_schema=RATINGS_SCHEMA, temperature=0.4
     )
     if not isinstance(data, dict):
         raise ValueError(f"non-JSON response for {subject!r}: {data!r}")
@@ -198,6 +199,7 @@ def write_csv(path: Path, subject: str, options: list[str], data: dict) -> None:
             f"{subject}: ratings shape mismatch (options={len(options)}, "
             f"criteria={len(criteria)}, ratings={[len(r) for r in ratings]})"
         )
+    ratings = dedupe_ratings(criteria, ratings)
     with path.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["Option", *criteria])
