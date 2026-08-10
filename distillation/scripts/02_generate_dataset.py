@@ -51,6 +51,7 @@ def _load_module(name: str, filename: str):
 _gen_tables = _load_module("gen_tables", "01_generate_tables.py")
 _gen_tables_web = _load_module("gen_tables_web", "01b_generate_tables_from_web.py")
 _gen_tables_more = _load_module("gen_tables_more", "01c_generate_tables_more.py")
+_gen_tables_final = _load_module("gen_tables_final", "01d_generate_tables_final.py")
 SUBJECT_LANG: dict[int, str] = {}
 SUBJECT_NAME: dict[int, str] = {}
 for i, (subject, lang) in enumerate(_gen_tables.SUBJECTS):
@@ -60,6 +61,9 @@ for i, (subject, lang, _options) in enumerate(_gen_tables_web.WEB_SUBJECTS):
     SUBJECT_LANG[idx], SUBJECT_NAME[idx] = lang, subject
 for i, (subject, lang) in enumerate(_gen_tables_more.SUBJECTS):
     idx = _gen_tables_more.START_INDEX + i
+    SUBJECT_LANG[idx], SUBJECT_NAME[idx] = lang, subject
+for i, (subject, lang) in enumerate(_gen_tables_final.SUBJECTS):
+    idx = _gen_tables_final.START_INDEX + i
     SUBJECT_LANG[idx], SUBJECT_NAME[idx] = lang, subject
 
 PROCESSED_LOG = OUT_DIR / ".processed"

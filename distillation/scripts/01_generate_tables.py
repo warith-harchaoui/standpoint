@@ -115,7 +115,11 @@ def write_csv(path: Path, subject: str, data: dict) -> None:
     ratings = dedupe_ratings(criteria, ratings)
     with path.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["Option", *criteria])
+        # A meaningful first-column header, not the placeholder "Option": production
+        # tables (examples/*.csv) always name it after the subject (e.g. "Laptop"),
+        # and it becomes df.index.name, which noun_forms()/positioning() use to name
+        # the deliverable's title.
+        w.writerow([subject.title(), *criteria])
         for name, row in zip(options, ratings, strict=True):
             w.writerow([name, *row])
 

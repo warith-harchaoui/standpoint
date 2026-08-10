@@ -1,9 +1,19 @@
 # Distilling Standpoint's local VLM to a 500M engine
 
 Status: **Phase 0 (feasibility spike) passed.** Working on Phase 1 (dataset
-generation). Not yet usable — the current production engine (resolved via
-`best-engine-ai-helper`, per `standpoint/llm.brief.yaml`) remains the default and
-the only supported path until this produces real evaluation numbers (Phase 3).
+generation), target ~500-570 tables. Not yet usable — the current production
+engine (resolved via `best-engine-ai-helper`, per `standpoint/llm.brief.yaml`)
+remains the default and the only supported path until this produces real
+evaluation numbers (Phase 3).
+
+**On the table count**: asked whether 1000 tables was reachable, I measured actual
+throughput rather than guess -- combined Phase 1a+1b cost is ~90s/table on this
+machine (one Ollama instance, no true parallelism across the concurrent
+generation processes), so 1000 fully-processed tables would take ~25 hours, not
+one night. Settled on ~500-570 as a target that's both a meaningfully larger
+corpus and achievable within an extended run. `data/tables/` and
+`data/dataset/.processed` show the real, current counts at any point --
+authoritative over any number in this file.
 
 ## Goal
 
