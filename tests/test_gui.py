@@ -1,9 +1,13 @@
 """Smoke tests for the browser GUI backend (`dev-gui` investigation).
 
 These run only when the ``gui`` extra (FastAPI + a test client) is installed, so the
-default suite is unaffected. They exercise the three endpoints end to end; the
-positive-path round-trips call the real local model, which `tests/conftest.py`
-guarantees is present, mirroring how the core library is tested.
+default suite is unaffected. They exercise the endpoints end to end; the positive-path
+round-trips call the real local model, which `tests/conftest.py` guarantees is
+present, mirroring how the core library is tested.
+
+Grouped as functional scenarios rather than one test per assertion: several checks
+against the same request (e.g. one `GET /gui` fetch, one `/api/position` round-trip)
+share that single call instead of re-fetching for each fact being verified.
 """
 
 from __future__ import annotations
@@ -19,37 +23,25 @@ from standpoint.api import app  # noqa: E402  (after importorskip by design)
 client = starlette_testclient.TestClient(app)
 
 
-def test_gui_page_served() -> None:
-    """`GET /gui` returns the single-page HTML app."""
-    r = client.get("/gui")
-    assert r.status_code == 200
-    assert "Standpoint" in r.text and 'id="chart"' in r.text
-    assert "vega" not in r.text.lower()  # no chart-rendering runtime left to load
+def test_gui_page_served_and_wired() -> None:
+    """`GET /gui` returns the single-page app, correctly wired end to end.
 
-
-def test_checker_background_stays_light_in_dark_mode() -> None:
-    """The transparency checkerboard must carry its own light background-color.
-
-    Without one, its gradient's "transparent" stops fall through to whatever is
-    behind #chart -- the card, which dark mode recolors to near-black via
-    `.dark .bg-white` -- turning half the squares near-black and swallowing the
-    map's own near-black labels.
+    One fetch, several regression checks against it: the page loads with no
+    leftover chart-rendering runtime, the transparency checker carries its own
+    light background (else dark mode swallows near-black labels behind it -- see
+    `.dark .bg-white`), a freshly added row/column cell starts genuinely blank (so
+    Autofill and the server's own min-impute both still treat it as missing), and
+    the favicon/apple-touch-icon/manifest/header logo are all linked.
     """
-    css = client.get("/gui").text
-    assert "#chart.checker { background-color:#fff;" in css
-
-
-def test_new_row_and_column_cells_start_blank() -> None:
-    """A cell added by "+ Option (row)" / "+ Criterion (column)" must start blank.
-
-    Autofill ("Laziness") only fills cells that are still blank, and the server
-    already imputes a genuinely missing cell with its column's minimum. A prefilled
-    placeholder value here would silently defeat both: neither treats an existing
-    value as missing, so it would sit there unscored and un-imputed.
-    """
-    js = client.get("/gui").text
-    assert 'values: headers.map(() => "")' in js  # addRow
-    assert 'r.values.push("")' in js  # addCol
+    html = client.get("/gui").text
+    assert "Standpoint" in html and 'id="chart"' in html
+    assert "vega" not in html.lower()  # no chart-rendering runtime left to load
+    assert "#chart.checker { background-color:#fff;" in html
+    assert 'values: headers.map(() => "")' in html  # addRow
+    assert 'r.values.push("")' in html  # addCol
+    assert 'rel="manifest"' in html
+    assert 'rel="apple-touch-icon"' in html
+    assert "/static/logo-header.png" in html  # the header brand mark
 
 
 def test_root_redirects_to_gui() -> None:
@@ -68,58 +60,43 @@ def test_example_endpoint_returns_csv() -> None:
 
 
 @pytest.mark.needs_model
-def test_position_roundtrip() -> None:
-    """`POST /api/position` returns a full, drawable result on a valid table."""
+def test_position_roundtrip_has_full_frontend_contract() -> None:
+    """`POST /api/position` returns everything the browser needs to draw and colorize."""
     table = "Language,Speed,Safety,Jobs\nPython,2,3,5\nRust,5,4,3\nGo,4,3,4\nJava,4,5,5"
     r = client.post("/api/position", json={"table": table, "reference": "0"})
     assert r.status_code == 200
     data = r.json()
+    assert {"svg", "markdown", "yaml", "axes", "poles", "reference", "roles"} <= set(data)
     assert data["reference"] == "Python"
     assert data["roles"]["Python"] == "best"
-    assert data["svg"].startswith("<svg")  # a real SVG the browser drops straight in
-    assert data["markdown"].startswith("# Python")
-    assert "meta:" in data["yaml"]
-
-
-@pytest.mark.needs_model
-def test_position_response_has_full_frontend_contract() -> None:
-    """The response carries everything the browser needs to draw and colorize."""
-    table = "Language,Speed,Safety,Jobs\nPython,2,3,5\nRust,5,4,3\nGo,4,3,4\nJava,4,5,5"
-    data = client.post("/api/position", json={"table": table}).json()
-    assert {"svg", "markdown", "yaml", "axes", "poles", "reference", "roles"} <= set(data)
     assert set(data["axes"]) == {"x", "y"}
     assert len(data["poles"]) == 4
     # the four highlighted roles the analysis colorizer tints by name
     assert {"best", "worst", "top", "right"} <= set(data["roles"].values())
-    # the SVG ships transparent; the UI paints a white rect per the toggle
-    assert "<rect" not in data["svg"]
+    assert data["svg"].startswith("<svg")  # a real SVG the browser drops straight in
+    assert "<rect" not in data["svg"]  # ships transparent; the UI paints white per toggle
+    assert data["markdown"].startswith("# Python")
     assert "Leaderboard" not in data["markdown"]
+    assert "meta:" in data["yaml"]
 
 
-def test_position_rejects_degenerate_table() -> None:
-    """A table with too few options yields a clean 400, not a 500."""
-    r = client.post("/api/position", json={"table": "A,B\nonly,1"})
+def test_position_rejects_bad_tables() -> None:
+    """A table too small or blank yields a clean 400, not a 500, either way."""
+    r = client.post("/api/position", json={"table": "A,B\nonly,1"})  # too few options
     assert r.status_code == 400
     assert "detail" in r.json()
-
-
-def test_position_rejects_empty_table() -> None:
-    """An empty table body is rejected with 400."""
-    r = client.post("/api/position", json={"table": "   "})
+    r = client.post("/api/position", json={"table": "   "})  # blank
     assert r.status_code == 400
 
 
-def test_upload_csv_normalizes_to_grid() -> None:
-    """`POST /api/upload` accepts a CSV file and returns clean CSV for the grid."""
+def test_upload_normalizes_csv_and_xlsx_to_grid() -> None:
+    """`POST /api/upload` accepts a CSV or an `.xlsx` file and returns clean CSV."""
     csv = b"Language,Speed,Safety\nPython,2,2\nRust,5,5\n"
     r = client.post("/api/upload", files={"file": ("table.csv", csv, "text/csv")})
     assert r.status_code == 200
     assert r.text.splitlines()[0] == "Language,Speed,Safety"
     assert "Python,2,2" in r.text  # ints stay ints (no "2.0")
 
-
-def test_upload_xlsx_roundtrips() -> None:
-    """An uploaded `.xlsx` is read (via pandas/openpyxl) back into CSV."""
     pd = pytest.importorskip("pandas")
     pytest.importorskip("openpyxl")
     import io
@@ -163,14 +140,6 @@ def test_app_icons_served(path: str, content_type: str) -> None:
     r = client.get(path)
     assert r.status_code == 200
     assert r.headers["content-type"].startswith(content_type)
-
-
-def test_gui_head_links_icons_and_manifest() -> None:
-    """The page advertises the favicon, apple-touch icon, and web manifest."""
-    html = client.get("/gui").text
-    assert 'rel="manifest"' in html
-    assert 'rel="apple-touch-icon"' in html
-    assert "/static/logo-header.png" in html  # the header brand mark
 
 
 def test_position_reports_ollama_down_cleanly(monkeypatch: pytest.MonkeyPatch) -> None:

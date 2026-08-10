@@ -52,11 +52,25 @@ def _placeholders(text: str) -> set[str]:
 
 
 @pytest.mark.parametrize("lang", sp.SUPPORTED_LANGS)
-def test_every_language_has_all_blocks(lang: str) -> None:
-    """Each supported language carries the prompt keys plus the `gui` and `analysis` blocks."""
+def test_language_is_complete_and_formats_cleanly(lang: str) -> None:
+    """One language's whole i18n table: every required block/placeholder, no format errors.
+
+    Merges what used to be four separate checks (blocks present, prompts keep their
+    placeholders, `analysis` templates format, `ratings_prompt` formats) since they
+    all walk the same `sp.i18n(lang)` table for one language and are cheap/model-free;
+    splitting them bought no extra signal, just three extra reads of the same fixture.
+    """
     d = sp.i18n(lang)
     for key in (*_PROMPT_REQUIRED, "glossary_prefix", "gui", "analysis"):
         assert key in d, f"{lang} is missing {key!r}"
+    for key, needed in _PROMPT_REQUIRED.items():
+        for token in needed:
+            assert token in d[key], f"{lang}.{key} dropped {token}"
+    for template in d["analysis"].values():
+        # A stray `{foo}` would raise KeyError here; a missing one is harmless.
+        str(template).format(**_ANALYSIS_ARGS)
+    out = d["ratings_prompt"].format(noun="Language", options="A, B", criteria="X, Y")
+    assert "Language" in out and "A, B" in out and "X, Y" in out
 
 
 def test_gui_and_analysis_keys_match_across_languages() -> None:
@@ -76,33 +90,6 @@ def test_gui_placeholders_are_known_and_consistent() -> None:
         assert len(set(map(frozenset, sets.values()))) == 1, (
             f"gui.{key} placeholders differ by language"
         )
-
-
-def test_analysis_templates_format_without_error() -> None:
-    """Every `analysis` template fills cleanly with the real arguments (no stray field)."""
-    for lang in sp.SUPPORTED_LANGS:
-        for key, template in sp.i18n(lang)["analysis"].items():
-            # A stray `{foo}` would raise KeyError here; a missing one is harmless.
-            str(template).format(**_ANALYSIS_ARGS), f"{lang}.analysis.{key} failed to format"
-
-
-@pytest.mark.parametrize("lang", sp.SUPPORTED_LANGS)
-def test_prompts_keep_required_placeholders(lang: str) -> None:
-    """Each localized prompt keeps the placeholders the pipeline fills in."""
-    d = sp.i18n(lang)
-    for key, needed in _PROMPT_REQUIRED.items():
-        for token in needed:
-            assert token in d[key], f"{lang}.{key} dropped {token}"
-
-
-def test_ratings_prompt_formats_without_error() -> None:
-    """`ratings_prompt` fills with its three arguments without a stray-placeholder error."""
-    for lang in sp.SUPPORTED_LANGS:
-        # A stray `{field}` would raise KeyError; the escaped `{{ }}` JSON example is fine.
-        out = sp.i18n(lang)["ratings_prompt"].format(
-            noun="Language", options="A, B", criteria="X, Y"
-        )
-        assert "Language" in out and "A, B" in out and "X, Y" in out
 
 
 def test_suggest_ratings_rejects_empty_input() -> None:

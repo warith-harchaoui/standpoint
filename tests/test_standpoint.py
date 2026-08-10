@@ -7,6 +7,12 @@ is present (pulling it once if needed) before any test runs. Tests that exercise
 model (axis naming in the table's own
 language and the vision assessment of the rendered figure) therefore always call the
 real local LLM.
+
+Tests are functional/scenario-shaped rather than one-per-function: several assertions
+about the same fixture or the same call are grouped into one test so a failure still
+points at a specific behaviour, but redundant setup (and, for `@needs_model` tests,
+redundant real LLM calls) isn't repeated. See CODING.md's "rationalize the suite"
+rule.
 """
 
 import re
@@ -41,16 +47,24 @@ def roles(result) -> list[str]:
     return p4m.assign_roles(result)
 
 
+@pytest.fixture(scope="module")
+def poles(result) -> list[str]:
+    """Model-named poles for `result`, computed once and shared by every consumer.
+
+    Only requested by `@needs_model` tests, so the conftest guard still gates it; the
+    single shared call avoids re-running the (deterministic, temperature=0) axis
+    naming for every test that needs a set of poles.
+    """
+    return p4m.axis_poles(result)
+
+
 # --------------------------------------------------------------------------- #
 # parsing
 # --------------------------------------------------------------------------- #
-def test_parse_csv_shape(df):
+def test_parse_table_reads_csv_and_markdown(df):
     assert df.shape == (12, 7)
     assert df.index[0] == "Python"
     assert df.notna().all().all()  # the example has no blanks
-
-
-def test_parse_markdown_matches_csv():
     md = "| Tool | Speed | Safety |\n|---|---|---|\n| a | 1 | 2 |\n| b | 3 | 4 |\n"
     d = p4m.parse_table(md)
     assert list(d.index) == ["a", "b"]
@@ -74,23 +88,22 @@ def test_impute_uses_column_minimum():
 # --------------------------------------------------------------------------- #
 # analyze / orientation
 # --------------------------------------------------------------------------- #
-def test_analyze_shapes(result):
+def test_analyze_orients_the_reference_top_right(result):
+    # Shape of the fit...
     assert result.scores.shape == (12, 2)
     assert result.components.shape == (2, 7)
     assert result.reference == "Python"
     assert result.explained_variance_ratio.shape == (2,)
-
-
-def test_reference_lands_top_right(result):
+    # ...the reference actually lands top-right (positive on both axes)...
     x, y = result.scores[result.names.index(result.reference)]
     assert x > 0 and y > 0
-
-
-def test_reference_at_pareto_ideal(result):
-    i = result.names.index(result.reference)
-    others = np.delete(result.scores, i, axis=0)
-    assert result.scores[i, 0] == pytest.approx(others[:, 0].max())
-    assert result.scores[i, 1] == pytest.approx(others[:, 1].max())
+    # ...at the Pareto-ideal point (no competitor beats it on either axis)...
+    others = np.delete(result.scores, result.names.index(result.reference), axis=0)
+    assert x == pytest.approx(others[:, 0].max())
+    assert y == pytest.approx(others[:, 1].max())
+    # ...and the two canonical axes stay an orthonormal basis after rotation.
+    gram = result.components @ result.components.T
+    assert np.allclose(gram, np.eye(2), atol=1e-6)
 
 
 def test_reference_never_collides_with_a_dominant_competitor():
@@ -119,25 +132,16 @@ def test_reference_never_collides_with_a_dominant_competitor():
     assert result.scores[ref_i, 1] >= others[:, 1].max()
 
 
-def test_components_orthonormal(result):
-    gram = result.components @ result.components.T
-    assert np.allclose(gram, np.eye(2), atol=1e-6)
-
-
 # --------------------------------------------------------------------------- #
 # roles / colours / legend
 # --------------------------------------------------------------------------- #
-def test_roles_are_principled(result, roles):
+def test_roles_are_geometrically_principled(result, roles):
     role_of = dict(zip(result.names, roles, strict=False))
     assert role_of[result.reference] == "best"
     for r in ("best", "worst", "top", "right"):
         assert roles.count(r) == 1
-
-
-def test_axis_champions_are_geometric(result, roles):
     # the "top"/"right" highlights are the challengers reaching furthest up the
-    # vertical / along the horizontal axis, with the leader (and top) excluded.
-    role_of = dict(zip(result.names, roles, strict=False))
+    # vertical / along the horizontal axis, with the leader excluded.
     idx = {n: k for k, n in enumerate(result.names)}
     leader = result.reference
     non_leader = [k for k, n in enumerate(result.names) if n != leader]
@@ -207,29 +211,26 @@ def test_label_placements_dedupe_tied_corners():
 # --------------------------------------------------------------------------- #
 # pole-name guard (the quality rules, enforced in code)
 # --------------------------------------------------------------------------- #
-def test_finalize_poles_rejects_shared_words():
-    out = p4m.finalize_poles(
+def test_finalize_poles_enforces_its_invariants():
+    # distinct/antonym words across the four labels are rejected...
+    shared = p4m.finalize_poles(
         ["Cost Efficient", "High Cost", "User Friendly", "Privacy First"],
         ["Value", "Budget", "Simplicity", "Trust"],
     )
-    words = [p4m._content_words(o) for o in out]
+    words = [p4m._content_words(o) for o in shared]
     for a in range(4):
         for b in range(a + 1, 4):
             assert not (words[a] & words[b])  # no antonym/shared-word pair
-
-
-def test_finalize_poles_rejects_negatives():
-    out = p4m.finalize_poles(
+    # ...negative/drawback words are rejected...
+    negatives = p4m.finalize_poles(
         ["High Cost", "Slow", "Complex", "Weak"],
         ["Affordable", "Speed", "Simplicity", "Strength"],
     )
-    joined = p4m._content_words(" ".join(out))
-    assert not (joined & p4m._NEGATIVE_WORDS)
-
-
-def test_finalize_poles_four_distinct():
-    out = p4m.finalize_poles(["", "", "", ""], ["Alpha", "Beta", "Gamma", "Delta"])
-    assert len(out) == 4 and len(set(out)) == 4
+    assert not (p4m._content_words(" ".join(negatives)) & p4m._NEGATIVE_WORDS)
+    # ...and the result is always four distinct labels, even from an empty model
+    # response (the loading-derived fallback path).
+    empty = p4m.finalize_poles(["", "", "", ""], ["Alpha", "Beta", "Gamma", "Delta"])
+    assert len(empty) == 4 and len(set(empty)) == 4
 
 
 def test_deacronym_expands_and_drops():
@@ -281,7 +282,8 @@ def test_detect_language():
 
 
 # --------------------------------------------------------------------------- #
-# hand-authored SVG + full export (render is deterministic via resvg_py)
+# hand-authored SVG (render is deterministic; full rasterised export is
+# needs_model, below, since it goes through the real deliverable pipeline)
 # --------------------------------------------------------------------------- #
 def test_to_svg_structure(result):
     roles = p4m.assign_roles(result)
@@ -296,49 +298,16 @@ def test_to_svg_structure(result):
     assert 'width="' in svg and 'viewBox="0 0' in svg
 
 
-@pytest.mark.needs_model
-def test_export_all_writes_three_fold(tmp_path, df, result, roles):
-    poles = p4m.axis_poles(result)
-    names = p4m._poles_to_names(poles)
-    colors = p4m.gradient_colors(result, roles)
-    stem = str(tmp_path / "map")
-    written = p4m.export_all(df, result, roles, poles, names, colors, stem)
-    # transparent png+svg, white png+svg, then md + yaml
-    assert len(written) == 6
-    assert Path(f"{stem}.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
-    assert Path(f"{stem}.white.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
-    assert "<svg" in Path(f"{stem}.svg").read_text()
-    assert "<svg" in Path(f"{stem}.white.svg").read_text()
-    doc = yaml.safe_load(Path(f"{stem}.yaml").read_text())
-    assert doc["meta"]["reference"] == "Python"
-    assert len(doc["approaches"]) == 12
-    assert f"# {result.reference}" in Path(f"{stem}.md").read_text()
-
-
-@pytest.mark.needs_model
-def test_markdown_is_focused(result, roles):
-    # The analysis ends at the highlighted approaches: no leaderboard coordinate
-    # dump and no PCA-units footer (dropped as noise).
-    poles = p4m.axis_poles(result)
-    md = p4m.analysis_markdown(result, roles, poles)
-    assert "## Highlighted approaches" in md
-    assert "Leaderboard" not in md
-    assert "Coordinates are PCA" not in md
-
-
 # --------------------------------------------------------------------------- #
 # validation & convenience API
 # --------------------------------------------------------------------------- #
-def test_validate_table_rejects_degenerate_input():
+def test_validate_table_rejects_degenerate_and_duplicate_input():
     with pytest.raises(ValueError):
         p4m.validate_table(pd.DataFrame({"x": [1.0]}))  # 1 row
     with pytest.raises(ValueError):
         p4m.validate_table(pd.DataFrame({"x": [1.0, 2.0]}))  # 1 column
     with pytest.raises(ValueError):
         p4m.validate_table(pd.DataFrame({"x": [1.0, 2.0], "y": [np.nan, np.nan]}))
-
-
-def test_validate_table_rejects_duplicate_rows_and_columns():
     # Two options with identical ratings would coincide on the map.
     dup_rows = pd.DataFrame(
         {"x": [1.0, 2.0, 1.0], "y": [3.0, 4.0, 3.0]}, index=["a", "b", "a_twin"]
@@ -367,7 +336,7 @@ def test_resolve_reference_errors(df):
 # --------------------------------------------------------------------------- #
 # per-column polarity (lower-is-better)
 # --------------------------------------------------------------------------- #
-def test_resolve_polarity_marker_and_explicit():
+def test_polarity_marker_is_parsed_and_flips_the_axis():
     marked = pd.DataFrame({"Price (↓)": [1, 2], "Speed": [3, 4]}, index=["a", "b"])
     clean, lower = p4m.resolve_polarity(marked)
     assert "Price" in clean.columns and "Price (↓)" not in clean.columns
@@ -376,8 +345,6 @@ def test_resolve_polarity_marker_and_explicit():
     _, lower2 = p4m.resolve_polarity(plain, ["Latency"])
     assert lower2 == frozenset({"Latency"})
 
-
-def test_lower_is_better_flips_the_axis():
     data = pd.DataFrame(
         {"Price": [1, 5, 3], "Quality": [3, 3, 3]}, index=["cheap", "pricey", "mid"]
     )
@@ -391,18 +358,48 @@ def test_lower_is_better_flips_the_axis():
     assert hi.x_std[ci, j] < hi.x_std[pi, j]  # opposite without it
 
 
+# --------------------------------------------------------------------------- #
+# model-backed (the local model is a hard prerequisite; see tests/conftest.py)
+# --------------------------------------------------------------------------- #
 @pytest.mark.needs_model
-def test_positioning_lower_marker_cleaned():
-    marked = pd.DataFrame(
-        {"Price (↓)": [1, 5, 3, 2], "Quality": [3, 2, 4, 5]}, index=["a", "b", "c", "d"]
-    )
-    pos = p4m.positioning(marked)
-    assert "Price" in pos.result.lower
-    assert "Price" in pos.df.columns  # marker stripped
+def test_axis_poles_llm_quality(poles):
+    assert len(poles) == 4 and len(set(poles)) == 4
+    joined = p4m._content_words(" ".join(poles))
+    assert not (joined & p4m._NEGATIVE_WORDS)  # only positive qualities
 
 
 @pytest.mark.needs_model
-def test_positioning_api(df):
+def test_export_all_writes_complete_and_focused_deliverable(tmp_path, df, result, roles, poles):
+    names = p4m._poles_to_names(poles)
+    colors = p4m.gradient_colors(result, roles)
+    stem = str(tmp_path / "map")
+    written = p4m.export_all(df, result, roles, poles, names, colors, stem)
+    # transparent png+svg, white png+svg, then md + yaml
+    assert len(written) == 6
+    assert Path(f"{stem}.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+    assert Path(f"{stem}.white.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+    assert "<svg" in Path(f"{stem}.svg").read_text()
+    assert "<svg" in Path(f"{stem}.white.svg").read_text()
+    doc = yaml.safe_load(Path(f"{stem}.yaml").read_text())
+    assert doc["meta"]["reference"] == "Python"
+    assert len(doc["approaches"]) == 12
+    # The analysis ends at the highlighted approaches: no leaderboard coordinate
+    # dump and no PCA-units footer (dropped as noise).
+    md_text = Path(f"{stem}.md").read_text()
+    assert f"# {result.reference}" in md_text
+    assert "## Highlighted approaches" in md_text
+    assert "Leaderboard" not in md_text
+    assert "Coordinates are PCA" not in md_text
+
+
+@pytest.mark.needs_model
+def test_positioning_end_to_end(tmp_path, df):
+    # One call through the whole facade: the object's shape/API, then its own
+    # export -- the marker-cleaning and path/string-vs-DataFrame dispatch that used
+    # to get their own full (expensive) positioning() call are already covered
+    # deterministically by test_polarity_marker_is_parsed_and_flips_the_axis and
+    # test_parse_table_reads_csv_and_markdown, since positioning() only wraps
+    # resolve_polarity()/parse_table() around this same pipeline.
     pos = p4m.positioning(df)
     assert isinstance(pos, p4m.Positioning)
     assert pos.role_of[pos.result.reference] == "best"
@@ -411,10 +408,6 @@ def test_positioning_api(df):
     assert pos.to_svg().startswith("<svg")
     assert yaml.safe_load(pos.to_yaml())["meta"]["reference"] == "Python"
 
-
-@pytest.mark.needs_model
-def test_positioning_export(tmp_path, df):
-    pos = p4m.positioning(df)
     written = pos.export(str(tmp_path), stem="demo")
     assert {Path(w).name for w in written} == {
         "demo.png",
@@ -424,23 +417,6 @@ def test_positioning_export(tmp_path, df):
         "demo.md",
         "demo.yaml",
     }
-
-
-@pytest.mark.needs_model
-def test_positioning_accepts_path_and_string(df):
-    from_path = p4m.positioning(str(EXAMPLE))
-    assert from_path.df.shape == df.shape
-
-
-# --------------------------------------------------------------------------- #
-# model-backed (the local model is a hard prerequisite; see tests/conftest.py)
-# --------------------------------------------------------------------------- #
-@pytest.mark.needs_model
-def test_axis_poles_llm_quality(result):
-    poles = p4m.axis_poles(result)
-    assert len(poles) == 4 and len(set(poles)) == 4
-    joined = p4m._content_words(" ".join(poles))
-    assert not (joined & p4m._NEGATIVE_WORDS)  # only positive qualities
 
 
 @pytest.mark.needs_model
