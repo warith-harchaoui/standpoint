@@ -476,3 +476,31 @@ def test_vlm_assessment_of_rendered_figure(result):
     # The four italic pole labels at the edges are always drawn; the per-dot legend is
     # now shown only when crowding drops a label, so the check looks at the poles.
     assert verdict.get("axis_labels_visible") is True
+
+
+@pytest.mark.needs_model
+def test_main_argv_writes_deliverable(tmp_path):
+    # `main` is the `standpoint` console script's argv wiring around `run`; nothing
+    # else in the suite calls it, so a broken flag name here would only surface at
+    # install time.
+    p4m.main([str(EXAMPLE), "--outdir", str(tmp_path), "--stem", "argv_demo"])
+    written = {p.name for p in tmp_path.iterdir()}
+    assert "argv_demo.png" in written
+    assert "argv_demo.yaml" in written
+
+
+@pytest.mark.needs_model
+def test_main_click_writes_deliverable(tmp_path):
+    # `main_click` is the `standpoint-click` console script's argv wiring; same
+    # rationale as test_main_argv_writes_deliverable above, for the click CLI.
+    from click.testing import CliRunner
+
+    from standpoint.click_cli import main_click
+
+    result = CliRunner().invoke(
+        main_click, [str(EXAMPLE), "--outdir", str(tmp_path), "--stem", "click_demo"]
+    )
+    assert result.exit_code == 0, result.output
+    written = {p.name for p in tmp_path.iterdir()}
+    assert "click_demo.png" in written
+    assert "click_demo.yaml" in written

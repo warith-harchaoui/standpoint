@@ -247,7 +247,7 @@ Choisissez un autre modèle local pour les noms d'axes et l'analyse :
 standpoint mon_tableau.csv --model qwen3:8b
 ```
 
-Plus d'exemples dans [EXAMPLES.md](https://github.com/warith-harchaoui/standpoint/blob/main/EXAMPLES.md).
+Plus d'exemples dans [EXEMPLES.md](https://github.com/warith-harchaoui/standpoint/blob/main/EXEMPLES.md).
 
 ## En service : GUI, API, MCP, Docker
 

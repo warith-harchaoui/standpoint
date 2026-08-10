@@ -5,7 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.8.0] - 2026-08-10
+## [0.8.1] - 2026-08-10
+
+### Added
+
+- **French `EXEMPLES.md`**, matching the suite-wide `EXAMPLES.md`/`EXEMPLES.md`
+  convention; `LISEZMOI.md` now links to it instead of the English file.
+- **Test coverage for the packaged CLI entry points.** `test_main_argv_writes_deliverable`
+  and `test_main_click_writes_deliverable` exercise `main`/`main_click`, the argv
+  wiring behind the `standpoint` and `standpoint-click` console scripts — previously
+  nothing in the suite called them directly, so a broken flag name would only have
+  surfaced at install time.
+- **`laptops.csv` example**, illustrating the inline `(↓)` notation for
+  lower-is-better columns without the `--lower` flag.
+
+### Fixed
+
+- **`EXAMPLES.md`/`EXEMPLES.md` still described a `.vl.json` Vega spec** among the
+  files each run writes; `to_svg()` has been hand-authored SVG (no Vega) since an
+  earlier release. Both docs now list six output files instead of seven.
+
+### Changed
+
+- Docstrings added to `to_svg()`'s internal `x_px`/`y_px`/`pole_label` helpers.
 
 ### Fixed
 

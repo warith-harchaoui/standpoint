@@ -2,10 +2,10 @@
 
 Every example uses a table from
 [`examples/`](https://github.com/warith-harchaoui/standpoint/tree/main/examples).
-Each run writes seven files: the transparent figure `<name>.png` / `<name>.svg`, a
+Each run writes six files: the transparent figure `<name>.png` / `<name>.svg`, a
 white-background `<name>.white.png` / `<name>.white.svg` (for dark surfaces where the
-dark labels would vanish on transparency), the `<name>.vl.json` spec, the `<name>.md`
-analysis, and the `<name>.yaml` data.
+dark labels would vanish on transparency), the `<name>.md` analysis, and the
+`<name>.yaml` data.
 
 ## As a library
 
@@ -17,7 +17,7 @@ pos.axes            # {'x': 'Scalability ↔ Versatility', 'y': 'Flexibility ↔
 pos.coords          # DataFrame: axis-1 / axis-2 per option
 pos.loadings        # DataFrame: criterion weights per axis
 pos.role_of         # {'Python': 'best', 'Rust': 'worst', ...}
-pos.export("out")   # writes out/python.{png,svg,white.png,white.svg,vl.json,md,yaml}
+pos.export("out")   # writes out/python.{png,svg,white.png,white.svg,md,yaml}
 ```
 
 Pass a DataFrame if you already have one, and name the reference:
@@ -39,6 +39,7 @@ sp.positioning(df, model="qwen2.5vl:7b").export("out")
 ```bash
 standpoint examples/cloud_providers.csv --reference AWS --outdir out
 standpoint examples/programming_languages.csv --lower "Ease of Learning" --outdir out
+standpoint examples/laptops.csv --outdir out
 standpoint examples/voitures_electriques.csv --model qwen2.5vl:7b --check --outdir out
 ```
 
@@ -55,6 +56,13 @@ Leader: Python. The axis names come from the loadings.
 Leader: AWS.
 
 ![Cloud providers positioning map](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/cloud_providers.png)
+
+### Laptops (English)
+
+Leader: MacBook Air. `Price (↓)` and `Weight (↓)` show the inline notation for a
+column where lower is better — no `--lower` flag needed.
+
+![Laptops positioning map](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/laptops.png)
 
 ### Voitures électriques (French)
 

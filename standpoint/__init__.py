@@ -35,7 +35,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 
 import argparse
 import logging
@@ -739,7 +739,12 @@ def label_placements(
                     if anchor == "start"
                     else (lx_px - w_px, ly_px - half_h_px, lx_px, ly_px + half_h_px)
                     if anchor == "end"
-                    else (lx_px - half_w_px, ly_px - half_h_px, lx_px + half_w_px, ly_px + half_h_px)
+                    else (
+                        lx_px - half_w_px,
+                        ly_px - half_h_px,
+                        lx_px + half_w_px,
+                        ly_px + half_h_px,
+                    )
                 )
                 # Never let a label cross to the other side of an axis from its own
                 # dot (a dot just below the x-axis must not get a label that reads
@@ -1318,9 +1323,34 @@ def to_svg(
     sy = fig_h / (2 * view_y)
 
     def x_px(dx: float) -> float:
+        """Map a data-space horizontal offset to an SVG pixel x coordinate.
+
+        Parameters
+        ----------
+        dx : float
+            Horizontal offset from the plot centre, in data units.
+
+        Returns
+        -------
+        float
+            Pixel x coordinate on the SVG canvas.
+        """
         return plot_x0 + fig_w / 2 + dx * sx
 
     def y_px(dy: float) -> float:
+        """Map a data-space vertical offset to an SVG pixel y coordinate.
+
+        Parameters
+        ----------
+        dy : float
+            Vertical offset from the plot centre, in data units. Positive
+            is up in data space, so it is subtracted (SVG y grows downward).
+
+        Returns
+        -------
+        float
+            Pixel y coordinate on the SVG canvas.
+        """
         return plot_y0 + fig_h / 2 - dy * sy  # data y is up; SVG y is down
 
     if title is None:  # direct callers get the English default; localized via i18n
@@ -1330,7 +1360,7 @@ def to_svg(
         f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
         f'width="{canvas_w:.0f}" height="{canvas_h:.0f}" viewBox="0 0 {canvas_w:.0f} {canvas_h:.0f}" '
         f'role="img" aria-labelledby="sp-title sp-desc" font-family="{FONT}">',
-        f"<title id=\"sp-title\">{_esc(title)}</title>",
+        f'<title id="sp-title">{_esc(title)}</title>',
         f'<desc id="sp-desc">A 2D positioning map of {n} {_esc(noun_plural.lower())}, '
         f"{_esc(left)} to {_esc(right)} on the horizontal axis, "
         f"{_esc(bottom)} to {_esc(top)} on the vertical axis.</desc>",
@@ -1371,6 +1401,30 @@ def to_svg(
     )
 
     def pole_label(dx: float, dy: float, text: str, anchor: str, y_nudge: float, which: str) -> str:
+        """Render one axis pole word as an SVG ``<text>`` element.
+
+        Parameters
+        ----------
+        dx : float
+            Horizontal offset from the plot centre, in data units.
+        dy : float
+            Vertical offset from the plot centre, in data units.
+        text : str
+            Pole word to display (e.g. the axis's "left" or "top" label).
+        anchor : str
+            SVG ``text-anchor`` value (``"start"``, ``"middle"`` or ``"end"``).
+        y_nudge : float
+            Extra pixel offset added to the baseline for vertical centring.
+        which : str
+            Pole identity (``"left"``, ``"right"``, ``"top"`` or ``"bottom"``),
+            written to the ``data-pole`` attribute so the GUI can target this
+            exact node when a pole is renamed client-side.
+
+        Returns
+        -------
+        str
+            The ``<text>`` element markup for this pole word.
+        """
         # `data-pole` names this text node for the GUI: renaming a pole edits this
         # exact element's textContent client-side, no re-render round trip.
         return (
@@ -1381,8 +1435,12 @@ def to_svg(
 
     parts.append(pole_label(pole_x, 0.0, right, "end", mid_dy, "right"))
     parts.append(pole_label(-pole_x, 0.0, left, "start", mid_dy, "left"))
-    parts.append(pole_label(0.0, pole_y, top, "middle", -0.21 * pole_font, "top"))  # "bottom" baseline
-    parts.append(pole_label(0.0, -pole_y, bottom, "middle", 0.8 * pole_font, "bottom"))  # "top" baseline
+    parts.append(
+        pole_label(0.0, pole_y, top, "middle", -0.21 * pole_font, "top")
+    )  # "bottom" baseline
+    parts.append(
+        pole_label(0.0, -pole_y, bottom, "middle", 0.8 * pole_font, "bottom")
+    )  # "top" baseline
 
     # -- dots (every approach coloured by position) ------------------------- #
     label_dy = 0.35 * label_font

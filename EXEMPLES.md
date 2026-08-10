@@ -2,10 +2,10 @@
 
 Chaque exemple part d'un tableau du dossier
 [`examples/`](https://github.com/warith-harchaoui/standpoint/tree/main/examples).
-Chaque exécution écrit sept fichiers : la figure transparente `<nom>.png` / `<nom>.svg`,
+Chaque exécution écrit six fichiers : la figure transparente `<nom>.png` / `<nom>.svg`,
 une version fond blanc `<nom>.white.png` / `<nom>.white.svg` (pour les surfaces sombres,
-où les libellés foncés disparaîtraient sur fond transparent), la spécification
-`<nom>.vl.json`, l'analyse `<nom>.md` et les données `<nom>.yaml`.
+où les libellés foncés disparaîtraient sur fond transparent), l'analyse `<nom>.md` et
+les données `<nom>.yaml`.
 
 ## En bibliothèque
 
@@ -17,7 +17,7 @@ pos.axes            # {'x': 'Scalability ↔ Versatility', 'y': 'Flexibility ↔
 pos.coords          # DataFrame : coordonnées axe 1 / axe 2 par option
 pos.loadings        # DataFrame : poids de chaque critère par axe
 pos.role_of         # {'Python': 'best', 'Rust': 'worst', ...}
-pos.export("out")   # écrit out/python.{png,svg,white.png,white.svg,vl.json,md,yaml}
+pos.export("out")   # écrit out/python.{png,svg,white.png,white.svg,md,yaml}
 ```
 
 Passez un DataFrame si vous en avez déjà un et nommez la référence :
@@ -39,6 +39,7 @@ sp.positioning(df, model="qwen2.5vl:7b").export("out")
 ```bash
 standpoint examples/cloud_providers.csv --reference AWS --outdir out
 standpoint examples/programming_languages.csv --lower "Ease of Learning" --outdir out
+standpoint examples/laptops.csv --outdir out
 standpoint examples/voitures_electriques.csv --model qwen2.5vl:7b --check --outdir out
 ```
 
@@ -55,6 +56,13 @@ Leader : Python. Le nom des axes vient directement des poids calculés (loadings
 Leader : AWS.
 
 ![Carte de positionnement des fournisseurs cloud](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/cloud_providers.png)
+
+### Ordinateurs portables (anglais)
+
+Leader : MacBook Air. `Price (↓)` et `Weight (↓)` montrent la notation en ligne pour
+une colonne où une valeur plus basse est meilleure, sans besoin de l'option `--lower`.
+
+![Carte de positionnement des ordinateurs portables](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/laptops.png)
 
 ### Voitures électriques (français)
 
