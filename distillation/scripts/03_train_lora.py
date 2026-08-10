@@ -33,6 +33,13 @@ SEED = 0
 
 
 def load_combined() -> list[dict]:
+    """One record per example, with a `task` label carried through for Phase 3.
+
+    `mlx_vlm.lora`'s `transform_dataset_to_messages` only reads `question`/
+    `answer`/`image` by name (see `mlx_vlm/lora.py`), so the extra `task` and
+    `lang` columns ride along untouched -- ignored during training, read back by
+    `04_evaluate.py` to score each held-out example against its own task.
+    """
     examples = []
     for task in TASKS:
         path = DATASET_DIR / f"{task}.jsonl"
@@ -47,6 +54,8 @@ def load_combined() -> list[dict]:
                         "question": ex["question"],
                         "answer": ex["answer"],
                         "image": ex.get("image"),  # explicit null for text-only tasks
+                        "task": task,
+                        "lang": ex.get("lang"),
                     }
                 )
     return examples
