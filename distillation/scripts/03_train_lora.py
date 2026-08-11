@@ -37,7 +37,10 @@ from pathlib import Path
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 DATASET_DIR = DATA_DIR / "dataset"
 CHECKPOINTS_DIR = Path(__file__).resolve().parents[1] / "checkpoints"
-BASE_MODEL = CHECKPOINTS_DIR / "smolvlm2-500m-mlx"
+BASE_MODEL = CHECKPOINTS_DIR / "smolvlm2-500m-mlx-bf16"  # not the float16 conversion:
+# training on it went to nan by iteration 10-20 even with grad-clip + a lower LR --
+# float16's narrow dynamic range is a known instability source for training
+# (as opposed to inference, where the Phase 0 float16 checkpoint works fine)
 ADAPTER_OUT = CHECKPOINTS_DIR / "distilled-adapter"
 
 TASKS = ["pole_naming", "noun_forms", "narrative", "vlm_assess"]
