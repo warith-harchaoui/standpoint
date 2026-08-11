@@ -8,6 +8,7 @@
 # Apple Silicon only (mlx). Not published, not part of the standpoint package.
 mlx>=0.20
 mlx-vlm[train]>=0.1
+scikit-learn>=1.3   # train/val split (03_train_lora.py)
 torch>=2.2          # mlx-vlm's HF interop pulls this in regardless of backend
 torchvision>=0.17   # SmolVLM's HF image processor backend needs this explicitly
 huggingface_hub>=0.25
