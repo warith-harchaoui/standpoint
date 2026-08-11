@@ -1,9 +1,42 @@
 # Distilling Standpoint's local VLM to a 500M engine
 
-Status: **Phase 0 and Phase 1 (dataset generation) done.** Working on Phase 2
-(LoRA training). Not yet usable — the current production engine (resolved via
-`best-engine-ai-helper`, per `standpoint/llm.brief.yaml`) remains the default and
-the only supported path until this produces real evaluation numbers (Phase 3).
+Status: **Phase 0 and Phase 1 done. Phase 2 (LoRA training) running, stable.** Not
+yet usable — the current production engine (resolved via `best-engine-ai-helper`,
+per `standpoint/llm.brief.yaml`) remains the default and the only supported path
+until this produces real evaluation numbers (Phase 3).
+
+## Phase 2 findings (2026-08-11)
+
+Three real, distinct bugs before training actually ran cleanly -- each confirmed
+by direct evidence, not guessed:
+
+1. **Batch-size-2 collation crash**: `mlx_vlm.trainer.sft_trainer.iterate_batches`
+   forms batches from *contiguous* dataset slices (its shuffle only reorders which
+   batch runs next, never batch composition), and its `pixel_values` collation
+   only inspects `items[0]` -- a batch mixing one text-only and one image example
+   crashes `mx.stack()`. Fixed in `03_train_lora.py`: the combined dataset is
+   grouped into modality-homogeneous contiguous blocks (all-text, then
+   all-image) before writing `train.jsonl`/`validation.jsonl`, each block trimmed
+   to a multiple of the batch size.
+2. **Still crashed within one modality at batch-size 2**: logits came back with
+   batch dimension 1 against targets with batch dimension 2 on a text-only batch
+   -- something in the SmolLM2/idefics3 layer stack doesn't reliably preserve
+   batch size 2 through the forward pass. Sidestepped by dropping to
+   `--batch-size 1` with `--gradient-accumulation-steps 2` for the same effective
+   optimizer batch size.
+3. **Loss went to `nan` by iteration 10-20**, even after adding `--grad-clip 1.0`
+   and lowering the learning rate to `3e-5` -- ruling out plain gradient
+   explosion. Root cause: the base checkpoint was converted with
+   `--dtype float16` (fine for inference, confirmed in Phase 0), but float16's
+   narrow dynamic range is a known instability source once you're actually
+   *training* (backprop through `--train-vision`'s unfrozen encoder especially).
+   Reconverted the base model with `--dtype bfloat16`
+   (`checkpoints/smolvlm2-500m-mlx-bf16/`) and loss dropped smoothly from the
+   first iteration (3.74 -> 1.52 over 110 steps, no more nan).
+
+At ~1.3-1.9 it/sec (batch 1, grad-accum 2, `--train-vision` on, M2 Max), the full
+5,600-iteration run (~2 epochs over ~2,700 train examples) takes roughly 60-90
+minutes.
 
 **Phase 1 final numbers**: 560 tables generated, 528 (94%) successfully processed
 into training examples -- **3,252 examples total**: 557 pole_naming, 1,114
