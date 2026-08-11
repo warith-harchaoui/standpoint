@@ -7,11 +7,13 @@ rather than reaching for a plotting library out of convenience).
 
 `extract_loss_curve.py` already computes Q(theta) := 1 - CE(theta)/ln(K) per row
 -- see that script's docstring for why ("What Likelihood Means",
-harchaoui.org/warith/LIKELIHOOD-en.pdf, Section 5). This draws both the dense
-training-loss line and the sparse (every half epoch) validation-loss line, with
-two reference lines the paper's own bounds name directly -- Q = 1 (oracle) and
-Q = 0 (uniform-guessing floor) -- plus vertical epoch-boundary markers and a
-legend. Colors are the Okabe-Ito colorblind-safe "academic" palette
+harchaoui.org/warith/LIKELIHOOD-en.pdf, Section 5). This draws the raw (noisy,
+every-10-iteration) training curve at low opacity, a 100-iteration centered
+moving average of it on top (the trend it's easy to lose in the noise otherwise),
+and the sparse (every half epoch) validation-loss line, with two reference lines
+the paper's own bounds name directly -- Q = 1 (oracle) and Q = 0 (uniform-
+guessing floor) -- plus vertical epoch-boundary markers and a legend. Colors are
+the Okabe-Ito colorblind-safe "academic" palette
 (harchaoui.org/warith/colors/academic), fetched and hardcoded here since it's a
 small fixed set of hex values, not a runtime dependency.
 """
@@ -27,6 +29,8 @@ OUT_SVG = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("data/training_loss.s
 VOCAB_SIZE = 49280
 TRAIN_EXAMPLES = 2763  # from the current run's own "N train / M val examples" log line
 TOTAL_ITERS = 8289  # scripts/03_train_lora.py: EPOCHS * len(train)
+MA_WINDOW_ITERS = 100  # centered moving average window on the training curve
+STEPS_PER_REPORT = 10  # extract_loss_curve.py: training rows are 10 iterations apart
 
 # harchaoui.org/warith/colors/academic -- Okabe-Ito, colorblind-safe.
 RED = "#D55E00"
@@ -48,6 +52,24 @@ def load_rows() -> tuple[list[tuple[int, float]], list[tuple[int, float]]]:
             pt = (int(r["iteration"]), float(r["q"]))
             (train if r["split"] == "train" else val).append(pt)
     return train, val
+
+
+def centered_moving_average(points: list[tuple[int, float]], window_iters: int) -> list[tuple[int, float]]:
+    """Centered moving average over `points`' q values, window in iteration units.
+
+    Rows are `STEPS_PER_REPORT` iterations apart, so a `window_iters`-wide window
+    spans `window_iters // STEPS_PER_REPORT` rows on each side of center. Edges use
+    a shrinking (not padded) window, same as pandas' `rolling(center=True,
+    min_periods=1)`, so the smoothed line still covers the full x-range instead of
+    losing `window_iters/2` at each end.
+    """
+    half = max(1, window_iters // STEPS_PER_REPORT // 2)
+    qs = [q for _, q in points]
+    out = []
+    for i, (it, _) in enumerate(points):
+        lo, hi = max(0, i - half), min(len(qs), i + half + 1)
+        out.append((it, sum(qs[lo:hi]) / (hi - lo)))
+    return out
 
 
 def epoch_boundaries() -> list[int]:
@@ -81,6 +103,8 @@ def main() -> None:
         return PAD_T + (1 - (q - y_min) / (y_max - y_min)) * PLOT_H
 
     train_pts = " ".join(f"{x_px(it):.1f},{y_px(q):.1f}" for it, q in train)
+    train_ma = centered_moving_average(train, MA_WINDOW_ITERS)
+    train_ma_pts = " ".join(f"{x_px(it):.1f},{y_px(q):.1f}" for it, q in train_ma)
 
     last_it = train[-1][0]
     last_val = f", last val Q={val[-1][1]:.3f}" if val else ""
@@ -175,9 +199,15 @@ def main() -> None:
         "worst case (Q=0, uniform guessing over the vocabulary)</text>"
     )
 
-    # -- the data itself, drawn after the reference lines so it sits above them -- #
+    # -- the data itself, drawn after the reference lines so it sits above them.
+    #    Raw training curve at low opacity (the noise is real signal too, just not
+    #    the trend), the 100-iteration centered moving average bold on top. ------- #
     parts.append(
-        f'<polyline points="{train_pts}" fill="none" stroke="{GREEN}" stroke-width="1.5"/>'
+        f'<polyline points="{train_pts}" fill="none" stroke="{GREEN}" stroke-width="1" '
+        f'opacity="0.35"/>'
+    )
+    parts.append(
+        f'<polyline points="{train_ma_pts}" fill="none" stroke="{GREEN}" stroke-width="2.5"/>'
     )
     if val:
         val_pts = " ".join(f"{x_px(it):.1f},{y_px(q):.1f}" for it, q in val)
@@ -190,7 +220,7 @@ def main() -> None:
     # -- legend: a boxed panel in the bottom-right of the plot area, the one
     #    region the data (which climbs toward Q~1) and the epoch/oracle labels
     #    (top and top-left) don't reach ---------------------------------------- #
-    leg_w, leg_h = 168, 54
+    leg_w, leg_h = 190, 72
     leg_x = x_px(x_max) - leg_w - 8
     leg_y = y_px(0.02) - leg_h
     parts.append(
@@ -198,20 +228,28 @@ def main() -> None:
         f'fill="#FFFFFF" stroke="{GRAY}" stroke-width="0.75" rx="6"/>'
     )
     parts.append(
-        f'<line x1="{leg_x + 12:.1f}" y1="{leg_y + 18:.1f}" x2="{leg_x + 34:.1f}" '
-        f'y2="{leg_y + 18:.1f}" stroke="{GREEN}" stroke-width="1.5"/>'
+        f'<line x1="{leg_x + 12:.1f}" y1="{leg_y + 16:.1f}" x2="{leg_x + 34:.1f}" '
+        f'y2="{leg_y + 16:.1f}" stroke="{GREEN}" stroke-width="1" opacity="0.35"/>'
     )
     parts.append(
-        f'<text x="{leg_x + 40:.1f}" y="{leg_y + 21:.1f}" font-size="10" fill="{INK}">'
-        "training (every 10 iters)</text>"
+        f'<text x="{leg_x + 40:.1f}" y="{leg_y + 19:.1f}" font-size="10" fill="{INK}">'
+        "training, raw (every 10 iters)</text>"
     )
     parts.append(
-        f'<line x1="{leg_x + 12:.1f}" y1="{leg_y + 38:.1f}" x2="{leg_x + 34:.1f}" '
-        f'y2="{leg_y + 38:.1f}" stroke="{BLUE}" stroke-width="2.5"/>'
+        f'<line x1="{leg_x + 12:.1f}" y1="{leg_y + 34:.1f}" x2="{leg_x + 34:.1f}" '
+        f'y2="{leg_y + 34:.1f}" stroke="{GREEN}" stroke-width="2.5"/>'
     )
-    parts.append(f'<circle cx="{leg_x + 23:.1f}" cy="{leg_y + 38:.1f}" r="3.5" fill="{BLUE}"/>')
     parts.append(
-        f'<text x="{leg_x + 40:.1f}" y="{leg_y + 41:.1f}" font-size="10" fill="{INK}">'
+        f'<text x="{leg_x + 40:.1f}" y="{leg_y + 37:.1f}" font-size="10" fill="{INK}">'
+        f"training, {MA_WINDOW_ITERS}-iter moving avg</text>"
+    )
+    parts.append(
+        f'<line x1="{leg_x + 12:.1f}" y1="{leg_y + 52:.1f}" x2="{leg_x + 34:.1f}" '
+        f'y2="{leg_y + 52:.1f}" stroke="{BLUE}" stroke-width="2.5"/>'
+    )
+    parts.append(f'<circle cx="{leg_x + 23:.1f}" cy="{leg_y + 52:.1f}" r="3.5" fill="{BLUE}"/>')
+    parts.append(
+        f'<text x="{leg_x + 40:.1f}" y="{leg_y + 55:.1f}" font-size="10" fill="{INK}">'
         "validation (every half epoch)</text>"
     )
 
