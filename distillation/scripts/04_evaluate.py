@@ -39,8 +39,10 @@ import standpoint as sp
 DIST_DIR = Path(__file__).resolve().parents[1]
 BASE_MODEL = DIST_DIR / "checkpoints" / "smolvlm2-500m-mlx-bf16"  # matches 03_train_lora.py
 # select_best_checkpoint.py picks the half-epoch snapshot with the lowest Val loss
-# (not necessarily the last one -- see that script's docstring) and copies it here.
-ADAPTER = DIST_DIR / "checkpoints" / "distilled-adapter" / "best-adapter.safetensors"
+# (not necessarily the last one -- see that script's docstring) and copies it here
+# as a directory (adapter_config.json + adapters.safetensors), the layout
+# mlx_vlm.trainer.utils.apply_lora_layers requires.
+ADAPTER = DIST_DIR / "checkpoints" / "distilled-adapter" / "best-adapter"
 VAL_PATH = DIST_DIR / "data" / "dataset" / "combined" / "validation.jsonl"
 REPORT_PATH = DIST_DIR / "data" / "eval_report.json"
 
