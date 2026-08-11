@@ -8,8 +8,14 @@ back up in the last stretch of training (overfitting), the final/"latest"
 checkpoint is silently worse than an earlier one. Since checkpoints are saved on
 the same half-epoch cadence validation runs on (`03_train_lora.py`), every
 snapshot has a matching Val loss to compare -- this reads them from the log,
-finds the minimum, and copies that snapshot to `best-adapter.safetensors`
-(`checkpoints/distilled-adapter/`), the file `04_evaluate.py` should load.
+finds the minimum, and copies that snapshot into `best-adapter/` (`checkpoints/
+distilled-adapter/`), the directory `04_evaluate.py` should load.
+
+`mlx_vlm.trainer.utils.apply_lora_layers` requires `adapter_path` to be a
+*directory* containing `adapter_config.json` plus a fixed-name `adapters.
+safetensors` (confirmed by reading it directly) -- not an arbitrary file path --
+so the best snapshot is copied under that fixed name alongside a copy of the
+run's `adapter_config.json`, rather than left as a bare renamed file.
 """
 
 from __future__ import annotations
@@ -54,9 +60,11 @@ def main() -> None:
         snapshot = min(candidates, key=lambda p: abs(int(p.stem.split("_")[0]) - best_it))
         print(f"(no exact snapshot at iter {best_it}; using nearest: {snapshot.name})")
 
-    dest = ADAPTER_DIR / "best-adapter.safetensors"
-    shutil.copy2(snapshot, dest)
-    print(f"copied {snapshot.name} -> {dest}")
+    dest_dir = ADAPTER_DIR / "best-adapter"
+    dest_dir.mkdir(exist_ok=True)
+    shutil.copy2(snapshot, dest_dir / "adapters.safetensors")
+    shutil.copy2(ADAPTER_DIR / "adapter_config.json", dest_dir / "adapter_config.json")
+    print(f"copied {snapshot.name} -> {dest_dir}/adapters.safetensors (+ adapter_config.json)")
 
 
 if __name__ == "__main__":
