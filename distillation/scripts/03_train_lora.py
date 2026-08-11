@@ -7,6 +7,19 @@ JSONL from `02_generate_dataset.py` exactly -- no reshaping needed beyond
 concatenating the four files into one, with `image: null` on the text-only tasks so
 the combined file has a consistent schema, then a train/val split.
 
+**Batches must be modality-homogeneous.** `mlx_vlm.trainer.sft_trainer.
+iterate_batches` forms each batch from a *contiguous* slice of the dataset
+(`indices[i:i+batch_size]`) before any shuffling -- shuffling only reorders which
+batch comes next, never which items land in the same batch. Its collation
+(`pixel_values_batch = ... if "pixel_values" in items[0] ...`) only checks the
+FIRST item of a batch, so a batch mixing one text-only example (no `pixel_values`)
+with one image example crashes `mx.stack()` on the mismatched list. A fully random
+per-example shuffle (the obvious approach) produces exactly such mixed batches by
+chance. The fix: shuffle *within* the text-only and image-bearing groups
+separately, then concatenate them as two contiguous blocks (each trimmed to a
+multiple of `--batch-size` so no batch straddles the boundary either) -- every
+batch mlx-vlm actually forms is then guaranteed to be all-text or all-image.
+
 One LoRA adapter is trained across all four tasks together (matches
 `llm.brief.yaml`'s own framing: "one model for all... jobs"), so the model learns to
 route its behaviour from the prompt's own content, exactly as the teacher already
@@ -30,6 +43,12 @@ ADAPTER_OUT = CHECKPOINTS_DIR / "distilled-adapter"
 TASKS = ["pole_naming", "noun_forms", "narrative", "vlm_assess"]
 VAL_FRACTION = 0.15
 SEED = 0
+# --batch-size 1 below: mlx-vlm's SFT trainer hit two separate real batch-collation
+# bugs at batch-size 2 on this architecture (see README's Phase 2 findings) -- a
+# batch of 1 sidesteps the whole class of cross-example collation code entirely.
+# Kept as a named constant since BATCH_SIZE=1 also makes the modality-grouping
+# split below a no-op in practice, not because grouping stops mattering.
+BATCH_SIZE = 1
 
 
 def load_combined() -> list[dict]:
@@ -61,6 +80,20 @@ def load_combined() -> list[dict]:
     return examples
 
 
+def _split_modality_block(
+    examples: list[dict], rng: random.Random
+) -> tuple[list[dict], list[dict]]:
+    """Shuffle one modality group and split it train/val, each a multiple of BATCH_SIZE."""
+    examples = list(examples)
+    rng.shuffle(examples)
+    n_val = (max(1, int(len(examples) * VAL_FRACTION)) // BATCH_SIZE) * BATCH_SIZE
+    n_val = max(n_val, BATCH_SIZE) if len(examples) >= 2 * BATCH_SIZE else 0
+    val = examples[:n_val]
+    train = examples[n_val:]
+    n_train = (len(train) // BATCH_SIZE) * BATCH_SIZE
+    return train[:n_train], val  # drop the < BATCH_SIZE train remainder, not worth padding
+
+
 def main() -> None:
     examples = load_combined()
     if not examples:
@@ -68,9 +101,15 @@ def main() -> None:
         sys.exit(1)
 
     rng = random.Random(SEED)
-    rng.shuffle(examples)
-    n_val = max(1, int(len(examples) * VAL_FRACTION))
-    val, train = examples[:n_val], examples[n_val:]
+    # Modality-homogeneous blocks (see module docstring): text-only and image-bearing
+    # examples are shuffled and split independently, then concatenated as two
+    # contiguous runs so every batch mlx-vlm forms stays single-modality.
+    text_examples = [e for e in examples if e["image"] is None]
+    image_examples = [e for e in examples if e["image"] is not None]
+    text_train, text_val = _split_modality_block(text_examples, rng)
+    image_train, image_val = _split_modality_block(image_examples, rng)
+    train = text_train + image_train
+    val = text_val + image_val
 
     # A dedicated, clean subdirectory: `load_dataset(dir)` auto-discovers every
     # json/jsonl file in the given directory, so the per-task files and the
@@ -101,12 +140,19 @@ def main() -> None:
         str(combined_dir),
         "--train-vision",  # vlm_assess needs the vision stack to actually learn, not just the LM
         "--iters",
-        "2800",  # ~2 epochs over the real 2764-example train split (batch 2); 600 was
-        # sized before Phase 1 finished and would have covered under half the data
+        "5600",  # ~2 epochs over the ~2700-example train split at batch-size 1
         "--batch-size",
-        "2",
+        "1",
+        "--gradient-accumulation-steps",
+        "2",  # effective batch size 2 for the optimizer step, without ever
+        # forward-passing more than 1 example at once (see BATCH_SIZE comment above)
         "--learning-rate",
-        "1e-4",
+        "3e-5",  # loss went to nan by iter 20 at 1e-4 with --train-vision unfrozen
+        # (full vision-encoder fine-tuning is far more unstable than LoRA-only);
+        # lowered alongside --grad-clip below rather than dropping --train-vision,
+        # since vlm_assess needs real vision-side adaptation to improve at all
+        "--grad-clip",
+        "1.0",
         "--lora-rank",
         "16",
         "--lora-alpha",
