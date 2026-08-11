@@ -27,8 +27,8 @@ from pathlib import Path
 CSV_PATH = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data/training_loss.csv")
 OUT_SVG = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("data/training_loss.svg")
 VOCAB_SIZE = 49280
-TRAIN_EXAMPLES = 2763  # from the current run's own "N train / M val examples" log line
-TOTAL_ITERS = 8289  # scripts/03_train_lora.py: EPOCHS * len(train)
+TRAIN_EXAMPLES = 3709  # from the current run's own "N train / M val examples" log line
+TOTAL_ITERS = 11127  # scripts/03_train_lora.py: EPOCHS * len(train)
 MA_WINDOW_ITERS = 100  # centered moving average window on the training curve
 STEPS_PER_REPORT = 10  # extract_loss_curve.py: training rows are 10 iterations apart
 
