@@ -24,15 +24,20 @@ One LoRA adapter is trained across all four tasks together (matches
 `llm.brief.yaml`'s own framing: "one model for all... jobs"), so the model learns to
 route its behaviour from the prompt's own content, exactly as the teacher already
 does with a single model.
+
+Trained via `run_lora_with_val.py`, not `mlx_vlm.lora`'s own CLI directly: that CLI
+hardcodes `val_dataset=None` regardless of `--val-batches`/`--steps-per-eval`, so no
+validation ever runs through it -- see that script's module docstring.
 """
 
 from __future__ import annotations
 
 import json
-import random
 import subprocess
 import sys
 from pathlib import Path
+
+from sklearn.model_selection import train_test_split
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 DATASET_DIR = DATA_DIR / "dataset"
@@ -45,7 +50,8 @@ ADAPTER_OUT = CHECKPOINTS_DIR / "distilled-adapter"
 
 TASKS = ["pole_naming", "noun_forms", "narrative", "vlm_assess"]
 VAL_FRACTION = 0.15
-SEED = 0
+SEED = 42
+EPOCHS = 3
 # --batch-size 1 below: mlx-vlm's SFT trainer hit two separate real batch-collation
 # bugs at batch-size 2 on this architecture (see README's Phase 2 findings) -- a
 # batch of 1 sidesteps the whole class of cross-example collation code entirely.
@@ -83,18 +89,14 @@ def load_combined() -> list[dict]:
     return examples
 
 
-def _split_modality_block(
-    examples: list[dict], rng: random.Random
-) -> tuple[list[dict], list[dict]]:
-    """Shuffle one modality group and split it train/val, each a multiple of BATCH_SIZE."""
-    examples = list(examples)
-    rng.shuffle(examples)
-    n_val = (max(1, int(len(examples) * VAL_FRACTION)) // BATCH_SIZE) * BATCH_SIZE
-    n_val = max(n_val, BATCH_SIZE) if len(examples) >= 2 * BATCH_SIZE else 0
-    val = examples[:n_val]
-    train = examples[n_val:]
+def _split_modality_block(examples: list[dict]) -> tuple[list[dict], list[dict]]:
+    """`train_test_split` one modality group, each half a multiple of BATCH_SIZE."""
+    if len(examples) < 2:
+        return list(examples), []
+    train, val = train_test_split(examples, test_size=VAL_FRACTION, random_state=SEED, shuffle=True)
     n_train = (len(train) // BATCH_SIZE) * BATCH_SIZE
-    return train[:n_train], val  # drop the < BATCH_SIZE train remainder, not worth padding
+    n_val = (len(val) // BATCH_SIZE) * BATCH_SIZE
+    return train[:n_train], val[:n_val]  # drop the < BATCH_SIZE remainder, not worth padding
 
 
 def main() -> None:
@@ -103,14 +105,14 @@ def main() -> None:
         print("No examples found; run 02_generate_dataset.py first.", file=sys.stderr)
         sys.exit(1)
 
-    rng = random.Random(SEED)
     # Modality-homogeneous blocks (see module docstring): text-only and image-bearing
-    # examples are shuffled and split independently, then concatenated as two
-    # contiguous runs so every batch mlx-vlm forms stays single-modality.
+    # examples are split independently via sklearn's train_test_split (seed=42), then
+    # concatenated as two contiguous runs so every batch mlx-vlm forms stays
+    # single-modality.
     text_examples = [e for e in examples if e["image"] is None]
     image_examples = [e for e in examples if e["image"] is not None]
-    text_train, text_val = _split_modality_block(text_examples, rng)
-    image_train, image_val = _split_modality_block(image_examples, rng)
+    text_train, text_val = _split_modality_block(text_examples)
+    image_train, image_val = _split_modality_block(image_examples)
     train = text_train + image_train
     val = text_val + image_val
 
@@ -134,16 +136,22 @@ def main() -> None:
         )
         sys.exit(1)
 
+    iters = EPOCHS * len(train)  # batch-size 1: iteration count == examples seen
+    half_epoch = len(train) // 2
+
     cmd = [
         sys.executable,
-        str(Path(__file__).parent / "run_lora.py"),
+        str(Path(__file__).parent / "run_lora_with_val.py"),  # not run_lora.py: that
+        # wraps mlx_vlm.lora's CLI directly, which hardcodes val_dataset=None (see
+        # run_lora_with_val.py's module docstring) -- this wraps the trainer with
+        # validation actually wired in.
         "--model-path",
         str(BASE_MODEL),
         "--dataset",
         str(combined_dir),
         "--train-vision",  # vlm_assess needs the vision stack to actually learn, not just the LM
         "--iters",
-        "5600",  # ~2 epochs over the ~2700-example train split at batch-size 1
+        str(iters),  # EPOCHS full passes over the train split at batch-size 1
         "--batch-size",
         "1",
         "--gradient-accumulation-steps",
@@ -163,7 +171,14 @@ def main() -> None:
         "--steps-per-report",
         "10",
         "--steps-per-save",
-        "100",
+        str(half_epoch),  # checkpoint every half epoch, as requested
+        "--steps-per-eval",
+        str(half_epoch),  # validate on the same cadence
+        "--val-batches",
+        str(len(val)),  # the whole validation split each time; NOT -1 -- confirmed by
+        # reading sft_trainer.evaluate() directly that num_batches=-1 zips two
+        # genuinely infinite generators (tqdm's total= there is display-only, not a
+        # real bound), which would hang validation forever
         "--output-path",
         str(ADAPTER_OUT),
     ]
