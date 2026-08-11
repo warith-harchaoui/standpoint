@@ -1,0 +1,44 @@
+# Deliberately light (coding standard, Rule 18: shift expensive validation left) --
+# mirrors .github/workflows/ci.yml exactly (same Python version, same extras, same
+# ruff pin, same commands), so the two remotes give an identical result. CI is the
+# reproducible final gate: one Python, lint + the deterministic tests that need no
+# local model. The genuinely heavy checks still self-skip here and run locally
+# before pushing (see CONTRIBUTING.md): the Playwright end-to-end test, the MCP
+# tools ([mcp] extra), the DeepEval eval, and every @needs_model test (skipped when
+# no Ollama is reachable).
+#
+# GitLab sets CI=true automatically, same as GitHub Actions -- tests/conftest.py's
+# guard skips @needs_model tests under either without any extra configuration here.
+#
+# To actually block a merge on this pipeline (this repo's GitHub side already has
+# branch protection requiring "lint + core tests" to pass): Settings > Merge
+# requests > "Pipelines must succeed" on the GitLab project once one exists. That's
+# a project setting, not expressible in this file.
+
+image: python:3.12-slim
+
+stages:
+  - test
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  RUFF_VERSION: "0.15.21" # pinned so the lint result is reproducible across releases
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/pip
+
+lint_and_test:
+  stage: test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -e ".[dev,gui]"
+    - pip install "ruff==$RUFF_VERSION"
+    # Lint (Python only; formatting is enforced locally).
+    - ruff check standpoint tests
+    # Tests (model-free; failures block the merge).
+    - pytest -q -m "not needs_model"
