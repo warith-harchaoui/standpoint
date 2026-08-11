@@ -67,6 +67,15 @@ for i, (subject, lang) in enumerate(_gen_tables_final.SUBJECTS):
     idx = _gen_tables_final.START_INDEX + i
     SUBJECT_LANG[idx], SUBJECT_NAME[idx] = lang, subject
 
+# 01e_generate_tables_translated.py's subjects aren't a module-level constant (they
+# depend on which EN tables its main() picked+translated at run time, seeded-random
+# -- see that script's docstring), so they're read from its persisted manifest
+# instead of imported.
+_translated_manifest = TABLES_DIR / "translated_manifest.json"
+if _translated_manifest.exists():
+    for idx_str, (subject, lang) in json.loads(_translated_manifest.read_text()).items():
+        SUBJECT_LANG[int(idx_str)], SUBJECT_NAME[int(idx_str)] = lang, subject
+
 PROCESSED_LOG = OUT_DIR / ".processed"
 
 # The one hardcoded prompt vlm_assess() sends (not in i18n.yaml -- it describes

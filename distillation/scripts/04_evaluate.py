@@ -54,15 +54,37 @@ QUALITATIVE_TASKS = {"narrative", "vlm_assess"}
 # local-engine judge (same pattern as tests/test_eval.py's LocalEngineJudge)
 # --------------------------------------------------------------------------- #
 class LocalEngineJudge(DeepEvalBaseLLM):
-    """DeepEval judge backed by the current teacher engine, not OpenAI."""
+    """DeepEval judge backed by the current teacher engine, not OpenAI.
+
+    `GEval.measure()` calls `generate_with_schema`, whose default (inherited)
+    implementation forwards a pydantic `schema` kwarg straight into `generate()`
+    (see `deepeval.models.base_model.DeepEvalBaseLLM.generate_with_schema`). Left
+    unhandled, `generate()` would fall back to free-text JSON, which the teacher
+    model (a 7B local model, not GPT-4-class) occasionally malforms -- confirmed
+    live: it crashed the whole eval run around example 109/489 on an unparsable
+    JSON string. Passing `schema.model_json_schema()` as `llm.chat`'s
+    `json_schema=` instead makes Ollama grammar-constrain the output to that exact
+    shape (the same mechanism `standpoint`'s own calling contract already relies
+    on), so the result is schema-valid every time; it's then parsed straight into
+    the pydantic instance DeepEval's extractor already knows how to unwrap.
+    """
 
     def load_model(self) -> dict:
         return sp.engine()
 
-    def generate(self, prompt: str, **kwargs: object) -> str:
+    def generate(self, prompt: str, schema: type | None = None, **kwargs: object) -> object:
+        if schema is not None:
+            data = llm.chat(
+                prompt,
+                engine=self.model,
+                kind="vlm",
+                temperature=0.0,
+                json_schema=schema.model_json_schema(),
+            )
+            return schema(**data)
         return llm.chat(prompt, engine=self.model, kind="vlm", temperature=0.0)
 
-    async def a_generate(self, prompt: str, **kwargs: object) -> str:
+    async def a_generate(self, prompt: str, **kwargs: object) -> object:
         return self.generate(prompt, **kwargs)
 
     def get_model_name(self) -> str:
