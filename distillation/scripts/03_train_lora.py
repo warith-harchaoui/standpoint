@@ -101,7 +101,8 @@ def main() -> None:
         str(combined_dir),
         "--train-vision",  # vlm_assess needs the vision stack to actually learn, not just the LM
         "--iters",
-        "600",
+        "2800",  # ~2 epochs over the real 2764-example train split (batch 2); 600 was
+        # sized before Phase 1 finished and would have covered under half the data
         "--batch-size",
         "2",
         "--learning-rate",

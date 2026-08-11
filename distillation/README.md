@@ -1,10 +1,17 @@
 # Distilling Standpoint's local VLM to a 500M engine
 
-Status: **Phase 0 (feasibility spike) passed.** Working on Phase 1 (dataset
-generation), target ~500-570 tables. Not yet usable — the current production
-engine (resolved via `best-engine-ai-helper`, per `standpoint/llm.brief.yaml`)
-remains the default and the only supported path until this produces real
-evaluation numbers (Phase 3).
+Status: **Phase 0 and Phase 1 (dataset generation) done.** Working on Phase 2
+(LoRA training). Not yet usable — the current production engine (resolved via
+`best-engine-ai-helper`, per `standpoint/llm.brief.yaml`) remains the default and
+the only supported path until this produces real evaluation numbers (Phase 3).
+
+**Phase 1 final numbers**: 560 tables generated, 528 (94%) successfully processed
+into training examples -- **3,252 examples total**: 557 pole_naming, 1,114
+noun_forms, 527 narrative, 1,054 vlm_assess (positive + deterministic-negative
+pairs). Phase 1b's remaining ~440 tables were processed via 5 parallel shards
+(`--shard-id`/`--num-shards`, `merge_shards.py`) after empirically measuring this
+machine's actual Ollama concurrency (~1.5x from 5 concurrent requests, not 5x --
+compute-bound, not embarrassingly parallel) rather than assuming a speedup.
 
 **On the table count**: asked whether 1000 tables was reachable, I measured actual
 throughput rather than guess -- combined Phase 1a+1b cost is ~90s/table on this
