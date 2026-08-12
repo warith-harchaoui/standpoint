@@ -60,7 +60,7 @@ Leader: AWS.
 ### Laptops (English)
 
 Leader: MacBook Air. `Price (↓)` and `Weight (↓)` show the inline notation for a
-column where lower is better — no `--lower` flag needed.
+column where lower is better, no `--lower` flag needed.
 
 ![Laptops positioning map](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/laptops.png)
 
@@ -74,7 +74,7 @@ French. Leader: Tesla Model 3.
 ## The output files
 
 - `.png` and `.svg`: the figure on a **transparent** background, so it drops onto any
-  page. The SVG is hand-authored and interactive (hover tooltips, no Vega) — edit or
+  page. The SVG is hand-authored and interactive (hover tooltips, no Vega): edit or
   embed it anywhere.
 - `.white.png` and `.white.svg`: the same figure on a **white** background, for dark
   surfaces (e.g. GitHub dark mode) where the near-black labels would otherwise vanish.

@@ -25,7 +25,7 @@ of your columns), colours and labels the points, and writes everything out.
 
 Everything runs on your machine: parsing, PCA, orientation, colouring, and rendering
 the figure as hand-authored SVG, rasterised to PNG by
-[`resvg`](https://github.com/RazrFalcon/resvg) — no Vega, no chart-rendering runtime.
+[`resvg`](https://github.com/RazrFalcon/resvg): no Vega, no chart-rendering runtime.
 Your table is never uploaded, and there is no telemetry, no account, and nothing to
 sign up for.
 
@@ -113,8 +113,8 @@ one thing to remember, not two. Add an extra for the browser GUI / API
 instead keeps it isolated from every other Python project: `pipx install
 standpoint` the first time, `pipx upgrade standpoint` after.
 
-Everything below is the fuller walkthrough — prerequisites, a virtual
-environment, troubleshooting — for a machine that doesn't have Python set up
+Everything below is the fuller walkthrough (prerequisites, a virtual
+environment, troubleshooting) for a machine that doesn't have Python set up
 yet, or for anyone who wants more control.
 
 **Prerequisites:** **Python 3.10–3.13** and **git**, cross-platform:

@@ -47,7 +47,7 @@ Two families sit opposite each other:
   data, nothing is reproducible, and the axes mean whatever you decide they mean.
 - **Gartner's Magic Quadrant** sits at the written-analysis pole: it ships a labelled
   quadrant with a genuine narrative around it, but the placements are hand-curated by
-  analysts — not derived from a matrix, not reproducible, and not something you can
+  analysts: not derived from a matrix, not reproducible, and not something you can
   run yourself.
 
 Standpoint's pitch is the corner none of them occupies: the **derived** map of a

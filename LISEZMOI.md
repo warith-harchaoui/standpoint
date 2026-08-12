@@ -46,7 +46,6 @@ puis tout fonctionne hors ligne.
 
 [📋 Exemples](https://github.com/warith-harchaoui/standpoint/blob/main/EXEMPLES.md)
 
-
 Entrée : un tableau d'options et de leurs notes.
 
 | Language | Performance | Ease of Learning | Ecosystem | Concurrency | Type Safety | Job Market | Tooling |
@@ -122,7 +121,7 @@ Python : `pipx install standpoint` la première fois, `pipx upgrade standpoint`
 ensuite.
 
 Tout ce qui suit est le mode d'emploi complet, prérequis, environnement
-virtuel, dépannage, pour une machine sans Python déjà en place, ou pour qui
+virtuel, dépannage, pour une machine sans Python déjà en place ou pour qui
 veut plus de contrôle.
 
 **Prérequis :** **Python 3.10–3.13** et **git**, multiplateforme :
@@ -207,7 +206,7 @@ standpoint --help                                               # confirme que l
   Ollama depuis le menu Démarrer, puis vérifiez avec
   `Invoke-WebRequest http://localhost:11434`.
 - 🍎🐧🪟 **GUI : « The model '...' is not installed »** : `ollama pull <tag>` avec le
-  tag de l'erreur (celui résolu dans `standpoint/llm.engine.yaml`, ou le `--model`
+  tag de l'erreur (celui résolu dans `standpoint/llm.engine.yaml` ou celui du `--model`
   que vous avez passé) ; supprimez ce fichier pour forcer une nouvelle résolution
   après un changement de matériel.
 - 🍎🐧 **`Address already in use` sur `standpoint-gui`** : le port 8000 est déjà pris,
