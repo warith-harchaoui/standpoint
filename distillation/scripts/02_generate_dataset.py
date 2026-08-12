@@ -27,6 +27,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import ModuleType
 
 import best_engine_ai_helper.llm as llm_module
 
@@ -39,7 +40,7 @@ OUT_DIR = DATA_DIR / "dataset"
 IMAGES_DIR = OUT_DIR / "images"
 
 
-def _load_module(name: str, filename: str):
+def _load_module(name: str, filename: str) -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, SCRIPTS_DIR / filename)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -98,7 +99,13 @@ _real_chat = llm_module.chat
 _captured: list[dict] = []
 
 
-def _capturing_chat(prompt, *, images=None, json_schema=None, **kwargs):
+def _capturing_chat(
+    prompt: str,
+    *,
+    images: list[bytes] | None = None,
+    json_schema: dict | None = None,
+    **kwargs: object,
+) -> str | dict:
     response = _real_chat(prompt, images=images, json_schema=json_schema, **kwargs)
     _captured.append(
         {"prompt": prompt, "images": images, "json_schema": json_schema, "response": response}
