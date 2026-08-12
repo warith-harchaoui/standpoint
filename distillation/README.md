@@ -1,10 +1,61 @@
 # Distilling Standpoint's local VLM to a 500M engine
 
-Status: **Phase 0, 1, and 2 done (including a full retrain for exact EN/FR
-parity). Phase 3 (evaluation) running.** Not yet usable — the current production
-engine (resolved via `best-engine-ai-helper`, per `standpoint/llm.brief.yaml`)
-remains the default and the only supported path until Phase 3 produces real,
-reported numbers.
+Status: **Phases 0-3 done.** Real, reported numbers below -- mixed result, not a
+clean win. The current production engine (resolved via `best-engine-ai-helper`,
+per `standpoint/llm.brief.yaml`) remains the default; per the plan's own go/no-go
+rule, this distilled model would only be trustable as an opt-in override for the
+tasks/languages it actually passed on, not as a blanket replacement (see below).
+
+## Phase 3 findings (2026-08-12)
+
+Scored on 655 held-out examples (`data/dataset/combined/validation.jsonl`) against
+the retrained, parity-balanced `best-adapter` (iter 7416, see the checkpoint table
+below). Full numbers: `data/eval_report.json`.
+
+| task | en | fr | verdict |
+|---|---|---|---|
+| `noun_forms` | 100% (113/113) | 100% (109/109) | **GO**, both languages |
+| `vlm_assess` | 96.3% (210/218) -- no language dimension | | **GO** |
+| `pole_naming` | 63.2% (36/57) | 32.0% (16/50) | **GO (en, with a caveat) / NO-GO (fr)** |
+| `narrative` | 100% (50/50) | **0.0% (0/58)** | **GO (en) / NO-GO (fr)** |
+
+**`pole_naming`'s en number is itself partly an eval-methodology artifact, not a
+pure quality signal.** The check reuses production's own `finalize_poles`
+invariants, including `_NEGATIVE_WORDS` (`standpoint/__init__.py:935`), which
+flags "high"/"low" as drawback markers so labels like "High Cost" get rejected --
+but that same heuristic can't distinguish "High Cost" from "High-Quality", so it
+also incorrectly rejects genuinely good pole words. Manually classifying every
+failure (both languages, all 107 held-out `pole_naming` examples) found:
+
+| lang | pass | overlap (two poles share a word) | `high`/`low` false-positive | other negative-word (genuine) |
+|---|---|---|---|---|
+| en | 36 | 9 | 10 | 2 |
+| fr | 16 | **34** | 0 | 0 |
+
+Since it's faithfully reusing production's real check, the en number (63.2%) is
+what production would actually do with this model's output today -- but roughly
+half of its failures (10/21) are this one heuristic's false positives, not
+genuinely bad word choices. **The fr number is not an artifact.** 68% of fr
+examples fail specifically because the model repeats the same word across two
+different pole labels (`overlap`), a rate 4x en's (15.8%) -- a real, distinct
+French-specific weakness in this model, not a quirk of the check.
+
+**`narrative/fr`'s 0/58 was checked by hand before being trusted**, since a
+perfectly uniform 0% across 58 varied examples smelled more like a harness bug
+than organic quality variance. It isn't: manually inspecting several candidate
+outputs and running the judge directly on one showed genuinely incoherent,
+repetitive French (e.g. inventing a non-concept like "économie de capacité" and
+looping the same clause) scored 0.1/1.0 with a specific, well-grounded reason --
+not a crash, not an empty response, not a judge/language mismatch. Despite
+`narrative`'s French training examples being exactly parity-balanced with
+English (349/349, see the parity pass below), the model's French narrative
+generation is measurably, badly worse than its English narrative generation.
+
+**Conclusion**: this model is not ready to replace the teacher wholesale. If
+integrated at all (Phase 5, not started), it should be scoped to `noun_forms`
+(en+fr) and `vlm_assess` only, with `pole_naming`/`narrative` staying on the
+teacher for French and reconsidered for English -- exactly the per-task,
+per-language opt-in the plan called for rather than a uniform swap.
 
 ## Phase 2 findings (2026-08-11 -> 2026-08-12)
 
