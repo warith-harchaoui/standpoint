@@ -26,9 +26,9 @@ def _patched_call(
     input_ids: mx.array,
     pixel_values: mx.array,
     attention_mask: mx.array | None = None,  # noqa: ARG001 (accepted, unused: training-only forward pass needs no KV cache)
-    cache=None,
-    **kwargs,
-):
+    cache: object | None = None,
+    **kwargs: object,
+) -> mx.array:
     input_embeddings_features = self.get_input_embeddings(input_ids, pixel_values, **kwargs)
     logits = self.language_model(
         inputs=input_ids,
