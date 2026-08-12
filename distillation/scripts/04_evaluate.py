@@ -11,7 +11,12 @@ through the fine-tuned adapter via mlx-vlm, then scored per task:
   engine via the same `LocalEngineJudge` pattern as `tests/test_eval.py`, comparing
   the distilled model's answer against the recorded teacher answer for the *same*
   input -- a relative quality comparison, not a pass/fail on the distilled output
-  alone.
+  alone. `LocalEngineJudge.generate()` accepts DeepEval's optional `schema` kwarg
+  and, when present, constrains the teacher's own output via `llm.chat`'s
+  `json_schema=` rather than parsing free-text JSON -- a first full run without
+  this crashed partway through on a malformed judge response (see the README's
+  Phase 2 findings), since a 7B local model asked for free-text JSON occasionally
+  gets it wrong and DeepEval has no retry for that.
 
 Prints per-task, per-language pass rates and writes them to
 `distillation/data/eval_report.json`. This is the go/no-go report for Phase 4: a
