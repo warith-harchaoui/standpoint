@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   convention; `LISEZMOI.md` now links to it instead of the English file.
 - **Test coverage for the packaged CLI entry points.** `test_main_argv_writes_deliverable`
   and `test_main_click_writes_deliverable` exercise `main`/`main_click`, the argv
-  wiring behind the `standpoint` and `standpoint-click` console scripts — previously
+  wiring behind the `standpoint` and `standpoint-click` console scripts; previously
   nothing in the suite called them directly, so a broken flag name would only have
   surfaced at install time.
 - **`laptops.csv` example**, illustrating the inline `(↓)` notation for

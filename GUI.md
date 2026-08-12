@@ -19,7 +19,7 @@ Crucially, the figure is a **self-contained, interactive SVG** straight from the
 library (`to_svg`, no Vega, no chart-rendering runtime): the browser drops it
 straight into the page with `innerHTML`, no server-side image round-trip for
 display, and gets hover tooltips for free (a native `<title>` per dot). Renaming a
-pole edits that exact `<text data-pole="…">` node's `textContent` directly — no
+pole edits that exact `<text data-pole="…">` node's `textContent` directly: no
 spec to rebuild, no re-render. That makes the GUI unusually cheap to build on top
 of the existing library.
 
@@ -40,7 +40,7 @@ Run it (`standpoint-gui`) and, entirely on `localhost`:
 4. **See the quadrant**: the returned SVG is dropped straight into the page (scaled
    to fit its card), with a **Transparent background** toggle and explicit
    **PNG / SVG** export buttons (PNG rasterises the live SVG client-side through an
-   offscreen canvas — no server round trip). Exports are named after the table's
+   offscreen canvas, no server round trip). Exports are named after the table's
    subject (e.g. `programming-languages.png`).
 5. **Read the analysis**: the Markdown interpretation is rendered below the map and
    **colour-coded**: each highlighted option is tinted by its role (leader red,
@@ -139,6 +139,6 @@ machine (the LLM, when enabled, is the same local Ollama the CLI uses).
 
 The GUI is cheap and natural on top of the existing engine: most of the work is done
 by `positioning()` and `to_svg`, so the browser layer is two files plus one optional
-extra — no chart-rendering runtime to load or version. It widens the audience
+extra, no chart-rendering runtime to load or version. It widens the audience
 (marketers, analysts, PMs) without touching the core's dependency path, which is
 exactly why it ships behind the `gui` extra rather than in the base install.

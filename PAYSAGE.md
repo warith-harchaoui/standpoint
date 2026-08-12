@@ -55,7 +55,7 @@ Deux familles se font face :
   veulent dire ce que vous décidez.
 - **Le Magic Quadrant de Gartner** occupe le pôle de l'analyse rédigée : il livre un
   quadrant étiqueté accompagné d'un véritable texte, mais les placements sont
-  arbitrés à la main par des analystes — non dérivés d'une matrice, non
+  arbitrés à la main par des analystes, non dérivés d'une matrice, non
   reproductibles et impossibles à exécuter soi-même.
 
 Standpoint occupe le coin qu'aucun d'eux ne couvre : la
@@ -84,4 +84,6 @@ Le tableau d'entrée est dans [`assets/paysage.csv`](assets/paysage.csv) ; l'ex�
 écrit aussi l'interprétation Markdown et le YAML des coordonnées à côté de la figure.
 
 Voir le [LISEZMOI](https://github.com/warith-harchaoui/standpoint/blob/main/LISEZMOI.md)
-pour ce que fait Standpoint et comment l'installer.
+pour ce que fait Standpoint et comment l'installer ; voir
+[EXEMPLES.md](https://github.com/warith-harchaoui/standpoint/blob/main/EXEMPLES.md)
+pour d'autres exemples travaillés.
