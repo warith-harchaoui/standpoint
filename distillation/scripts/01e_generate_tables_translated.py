@@ -69,8 +69,9 @@ SUBJECTS: list[tuple[str, str]] = []
 def _en_csv_paths() -> list[Path]:
     """EN-tagged table CSVs on disk, identified via the four upstream subject lists."""
     import importlib.util
+    from types import ModuleType
 
-    def load(name: str, filename: str):
+    def load(name: str, filename: str) -> ModuleType:
         spec = importlib.util.spec_from_file_location(name, Path(__file__).parent / filename)
         m = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(m)
