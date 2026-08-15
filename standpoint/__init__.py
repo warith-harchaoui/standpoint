@@ -35,7 +35,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.8.2"
+__version__ = "0.8.3"
 
 import argparse
 import logging

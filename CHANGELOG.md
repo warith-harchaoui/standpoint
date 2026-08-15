@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.3] - 2026-08-15
+
+### Fixed
+
+- **CLI**: a library exception on either console-script entry point
+  (`standpoint`, `standpoint-click`) propagated as a raw Python traceback
+  instead of a clean error. `standpoint`'s argparse `main()` had no
+  try/except around `run()`; click's own `main()` only special-cases
+  `ClickException`/`Abort`. Both now print `Error: ...` to stderr and exit
+  1. `standpoint-click`'s console-script entry point moves to a new
+  `click_cli.main()` wrapper (was the bare `main_click` command).
+
 ## [0.8.2] - 2026-08-10
 
 ### Fixed
