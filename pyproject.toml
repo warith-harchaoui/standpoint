@@ -58,7 +58,7 @@ Author = "https://www.linkedin.com/in/warith-harchaoui"
 
 [project.scripts]
 standpoint = "standpoint:main"
-standpoint-click = "standpoint.click_cli:main_click"
+standpoint-click = "standpoint.click_cli:main"
 standpoint-gui = "standpoint.api:main_gui"
 standpoint-mcp = "standpoint.mcp:main"
 

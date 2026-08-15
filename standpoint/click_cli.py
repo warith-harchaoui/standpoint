@@ -5,6 +5,8 @@ A friendlier CLI that mirrors the argparse one; both share `standpoint.run`.
 
 from __future__ import annotations
 
+import sys
+
 import click
 
 from standpoint import run
@@ -55,5 +57,24 @@ def main_click(
     run(table, reference, outdir, stem, top, right, lower, model, check)
 
 
+def main() -> None:
+    """Console entry point (``standpoint-click``).
+
+    click's own ``main()`` only special-cases ``ClickException``/``Abort``
+    (and a broken pipe); a plain library exception from ``standpoint.run``
+    would otherwise propagate as a raw Python traceback instead of a clean
+    CLI error. This wraps the whole invocation and translates that last
+    case into a one-line stderr message + exit 1 — click's own control flow
+    (usage errors, ``--help``, an explicit ``sys.exit`` in a subcommand)
+    already raises ``SystemExit``, a ``BaseException`` this does not catch,
+    so it passes through untouched.
+    """
+    try:
+        main_click()
+    except Exception as err:  # noqa: BLE001 — last resort: see docstring
+        click.echo(f"Error: {err}", err=True)
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-    main_click()
+    main()

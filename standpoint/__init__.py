@@ -42,6 +42,7 @@ import logging
 import math
 import os
 import re
+import sys
 from dataclasses import dataclass
 
 import best_engine_ai_helper as beh
@@ -2152,7 +2153,11 @@ def main(argv: list[str] | None = None) -> None:
         help="ask the vision model to sanity-check the rendered figure",
     )
     a = ap.parse_args(argv)
-    run(a.table, a.reference, a.outdir, a.stem, a.top, a.right, a.lower, a.model, a.check)
+    try:
+        run(a.table, a.reference, a.outdir, a.stem, a.top, a.right, a.lower, a.model, a.check)
+    except Exception as err:  # noqa: BLE001 — last resort: a clean CLI error, not a traceback
+        print(f"Error: {err}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
