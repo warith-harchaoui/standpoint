@@ -71,6 +71,16 @@ version = { attr = "standpoint.__version__" }
 [tool.setuptools.package-data]
 standpoint = ["llm.brief.yaml", "locales/*.yaml", "static/*"]
 
+[tool.pytest.ini_options]
+# Without this, a bare `pytest` (or CI's `pytest -q -m "not needs_model"`) collects
+# from the repo root and, on any machine that has done the distillation/ setup,
+# walks into the vendored `distillation/checkpoints/llama.cpp/` checkout and tries
+# to collect *its* test suites too -- those fail at import time on unrelated deps
+# (appium, wget) that have nothing to do with standpoint. Scoping collection to
+# tests/ makes every invocation safe by construction instead of relying on
+# CONTRIBUTING.md's documented `pytest tests/ -q` being typed correctly every time.
+testpaths = ["tests"]
+
 [tool.ruff]
 # One source of truth for lint + format (Rule 17). 100 cols matches the prose-heavy
 # docstrings; target the oldest supported interpreter so no newer syntax slips in.

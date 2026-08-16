@@ -18,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `vlm_assess()`'s returned schema key is `axis_labels_visible`, but the
   printed summary looked up `legend_visible`, which never exists in the
   dict — always printing `None` instead of the model's actual verdict.
+- **Test collection could wander into `distillation/checkpoints/llama.cpp/`'s
+  vendored test suites** on a machine that has done the `distillation/`
+  setup, failing at import time on unrelated deps (`appium`, `wget`). Scoped
+  `[tool.pytest.ini_options] testpaths = ["tests"]` so every invocation is
+  safe by construction.
+
+### Added
+
+- **`tests/test_docstrings.py`**: an AST-walker guard over every
+  `standpoint/*.py` module — fails with the exact missing names if any
+  function or class ever ships without a docstring. The project has had
+  100% coverage so far, but only by discipline; nothing in the lint gate
+  actually enforced it.
 
 ## [0.8.3] - 2026-08-15
 
