@@ -1880,7 +1880,13 @@ def export_all(
     list of paths written.
     """
     svg = to_svg(
-        result, roles=roles, poles=poles, colors=colors, noun_plural=noun_plural, title=title
+        result,
+        roles=roles,
+        poles=poles,
+        colors=colors,
+        noun_plural=noun_plural,
+        title=title,
+        attributes=df,
     )
     written = render_figures(svg, stem)
     for path, text in [
@@ -2101,7 +2107,7 @@ def run(
         verdict = vlm_assess(png_on_white(pos.to_svg()), model=model)
         if verdict:
             print("\nVision self-check:")
-            for key in ("leader_top_right", "readable", "legend_visible"):
+            for key in ("leader_top_right", "readable", "axis_labels_visible"):
                 print(f"  {key:16s}: {verdict.get(key)}")
             if verdict.get("notes"):
                 print(f"  notes           : {verdict['notes']}")

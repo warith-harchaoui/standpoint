@@ -298,6 +298,38 @@ def test_to_svg_structure(result):
     assert 'width="' in svg and 'viewBox="0 0' in svg
 
 
+def test_to_svg_tooltip_prefers_attribute_values_over_coordinate_fallback(df, result):
+    roles = p4m.assign_roles(result)
+    with_attrs = p4m.to_svg(
+        result, roles=roles, poles=["Left", "Right", "Bottom", "Top"], attributes=df
+    )
+    without_attrs = p4m.to_svg(result, roles=roles, poles=["Left", "Right", "Bottom", "Top"])
+    # With attributes, the tooltip lists the raw criterion values (what the user
+    # typed), not the abstract axis coordinates.
+    assert "Performance: " in with_attrs
+    assert "axis1:" not in with_attrs
+    # Without attributes, it falls back to role + coordinates.
+    assert "Performance: " not in without_attrs
+    assert "axis1:" in without_attrs
+
+
+def test_export_all_forwards_attributes_so_the_deliverable_gets_the_rich_tooltip(
+    tmp_path, df, result, roles
+):
+    # export_all receives df but used to build the SVG without passing it on as
+    # `attributes`, so every actually-exported figure (the CLI/GUI deliverable)
+    # silently got the degraded role+coordinates tooltip instead of the intended
+    # per-criterion one, even though Positioning.to_svg() (a separate convenience
+    # method) already did this correctly.
+    poles = ["Left", "Right", "Bottom", "Top"]
+    colors = p4m.gradient_colors(result, roles)
+    stem = str(tmp_path / "map")
+    p4m.export_all(df, result, roles, poles, poles, colors, stem)
+    svg_text = Path(f"{stem}.svg").read_text()
+    assert "Performance: " in svg_text
+    assert "axis1:" not in svg_text
+
+
 # --------------------------------------------------------------------------- #
 # validation & convenience API
 # --------------------------------------------------------------------------- #

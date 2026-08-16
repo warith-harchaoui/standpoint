@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **`export_all()` never forwarded `attributes` to `to_svg()`**, so every
+  actually-exported figure (the CLI/GUI deliverable) got the degraded
+  role+coordinates hover tooltip instead of the intended per-criterion one —
+  `Positioning.to_svg()` (a separate convenience method) already did this
+  correctly, `export_all()` did not.
+- **`run()`'s vision self-check printed the wrong verdict key**:
+  `vlm_assess()`'s returned schema key is `axis_labels_visible`, but the
+  printed summary looked up `legend_visible`, which never exists in the
+  dict — always printing `None` instead of the model's actual verdict.
+
 ## [0.8.3] - 2026-08-15
 
 ### Fixed
