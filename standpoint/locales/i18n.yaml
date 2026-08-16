@@ -54,6 +54,16 @@ en:
     Reply as JSON only, an object mapping each exact option name to an object mapping
     each exact criterion name to its integer, e.g.
     {{"OptionA": {{"Crit1": 4, "Crit2": 2}}, "OptionB": {{"Crit1": 3, "Crit2": 5}}}}.
+  vlm_assess_prompt: >-
+    This image is a 2D competitor positioning map. The single RED dot is the
+    leader and should sit in the TOP-RIGHT QUADRANT (anywhere in the
+    upper-right quarter of the map, above the horizontal axis and right of the
+    vertical axis; it does NOT need to touch the extreme corner). The four
+    axis poles are named in italic text at the top, bottom, left, and right
+    edges. Assess three things: (1) is the red leader dot anywhere in the
+    top-right quadrant? (2) are the point labels readable and not badly
+    overlapping? (3) are the four italic axis pole labels at the edges present
+    and legible? Reply as JSON.
   gui:
     lang_name: English
     baseline: Where do you stand?
@@ -175,6 +185,17 @@ fr:
     Répondez uniquement en JSON, un objet associant chaque nom exact d'option à un
     objet associant chaque nom exact de critère à son entier, p. ex.
     {{"OptionA": {{"Crit1": 4, "Crit2": 2}}, "OptionB": {{"Crit1": 3, "Crit2": 5}}}}.
+  vlm_assess_prompt: >-
+    Cette image est une carte de positionnement concurrentiel en 2D. Le point
+    ROUGE unique est le leader et devrait se situer dans le QUADRANT
+    HAUT-DROIT (n'importe où dans le quart supérieur droit de la carte,
+    au-dessus de l'axe horizontal et à droite de l'axe vertical ; il n'a PAS
+    besoin de toucher le coin extrême). Les quatre pôles d'axe sont nommés en
+    italique aux bords haut, bas, gauche et droit. Évaluez trois choses :
+    (1) le point rouge du leader est-il quelque part dans le quadrant haut-droit ?
+    (2) les étiquettes des points sont-elles lisibles et ne se chevauchent-elles
+    pas trop ? (3) les quatre étiquettes de pôle en italique sont-elles
+    présentes et lisibles aux bords ? Répondez en JSON.
   gui:
     lang_name: Français
     baseline: Sachez où vous en êtes
@@ -295,6 +316,17 @@ es:
     Responde solo en JSON, un objeto que asocia cada nombre exacto de opción a un
     objeto que asocia cada nombre exacto de criterio a su entero, p. ej.
     {{"OpcionA": {{"Crit1": 4, "Crit2": 2}}, "OpcionB": {{"Crit1": 3, "Crit2": 5}}}}.
+  vlm_assess_prompt: >-
+    Esta imagen es un mapa de posicionamiento competitivo en 2D. El único punto
+    ROJO es el líder y debería situarse en el CUADRANTE SUPERIOR DERECHO (en
+    cualquier lugar del cuarto superior derecho del mapa, por encima del eje
+    horizontal y a la derecha del eje vertical; NO necesita tocar la esquina
+    extrema). Los cuatro polos del eje están nombrados en cursiva en los bordes
+    superior, inferior, izquierdo y derecho. Evalúa tres cosas: (1) ¿está el
+    punto rojo del líder en algún lugar del cuadrante superior derecho? (2)
+    ¿son legibles las etiquetas de los puntos y no se solapan demasiado? (3)
+    ¿están presentes y son legibles las cuatro etiquetas de polo en cursiva en
+    los bordes? Responde en JSON.
   gui:
     lang_name: Español
     baseline: ¿Dónde te sitúas?

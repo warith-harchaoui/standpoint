@@ -1576,14 +1576,17 @@ def png_on_white(svg: str) -> bytes:
     return _svg_to_png(_white_variant(svg))
 
 
-def vlm_assess(image: str | bytes, model: str | None = None) -> dict:
+def vlm_assess(image: str | bytes, model: str | None = None, lang: str | None = None) -> dict:
     """Ask the qwen vision-LLM to sanity-check a rendered positioning map.
 
     `image` is a PNG path or raw PNG bytes (bytes let the caller assess a
-    white-composited render without touching the transparent file on disk). Returns
-    a verdict dict: whether the red leader dot sits top-right, whether the point
-    labels are readable, and whether the four axis pole labels are visible, plus
-    free-text notes. Empty dict if the model or a rendered image is unavailable.
+    white-composited render without touching the transparent file on disk). `lang`
+    picks the prompt's language from `i18n.yaml` (falls back to English when None,
+    like `i18n()` itself) -- there is no image text to auto-detect a language from,
+    unlike `axis_poles`/`noun_forms`. Returns a verdict dict: whether the red leader
+    dot sits top-right, whether the point labels are readable, and whether the four
+    axis pole labels are visible, plus free-text notes (in `lang`). Empty dict if
+    the model or a rendered image is unavailable.
     """
     schema = {
         "type": "object",
@@ -1595,16 +1598,7 @@ def vlm_assess(image: str | bytes, model: str | None = None) -> dict:
         },
         "required": ["leader_top_right", "readable", "axis_labels_visible", "notes"],
     }
-    prompt = (
-        "This image is a 2D competitor positioning map. The single RED dot is the "
-        "leader and should sit in the TOP-RIGHT QUADRANT (anywhere in the upper-right "
-        "quarter of the map, above the horizontal axis and right of the vertical axis; "
-        "it does NOT need to touch the extreme corner). The four axis poles are named "
-        "in italic text at the top, bottom, left, and right edges. Assess three "
-        "things: (1) is the red leader dot anywhere in the top-right quadrant? "
-        "(2) are the point labels readable and not badly overlapping? (3) are the "
-        "four italic axis pole labels at the edges present and legible? Reply as JSON."
-    )
+    prompt = i18n(lang or "en")["vlm_assess_prompt"]
     try:
         # `llm.chat` wants raw image bytes; read the file when handed a path.
         if isinstance(image, bytes):
@@ -1818,6 +1812,7 @@ class Positioning:
     noun_singular: str = "Approach"
     noun_plural: str = "Approaches"
     title: str = "Approaches in the Quadrant"  # fully-localized figure title
+    lang: str = "en"  # the language every naming call above was localized to
 
     @property
     def coords(self) -> pd.DataFrame:
@@ -1928,6 +1923,7 @@ def positioning(
         singular,
         plural,
         title,
+        lang,
     )
 
 
@@ -1997,7 +1993,7 @@ def run(
         # Assess a white-composited render, not the transparent PNG on disk: the
         # vision model's backend would otherwise flatten transparency onto black and
         # wrongly report the dark legend as cut off (see `png_on_white`).
-        verdict = vlm_assess(png_on_white(pos.to_svg()), model=model)
+        verdict = vlm_assess(png_on_white(pos.to_svg()), model=model, lang=pos.lang)
         if verdict:
             print("\nVision self-check:")
             for key in ("leader_top_right", "readable", "axis_labels_visible"):
