@@ -17,11 +17,14 @@ colonnes, des nombres dans les cellules) et produit une carte de positionnement 
 une courte analyse rédigée et un fichier YAML avec toutes les coordonnées et tous
 les coefficients. Une seule commande suffit.
 
-La méthode est une analyse en composantes principales (ACP) ordinaire, utilisée de
-longue date pour les cartes perceptuelles. Standpoint y ajoute le travail que vous feriez sinon à la
-main : il oriente la carte autour d'une option de référence, nomme les axes en mots
-simples (dans la langue de vos colonnes), colore et étiquette les points et écrit
-tout le résultat.
+La méthode est une analyse en composantes principales (ACP) ordinaire : à partir de
+plusieurs colonnes de notes, elle trouve les quelques directions nouvelles où les
+options se distinguent le plus, si bien qu'une ligne entière de notes se ramène à
+deux nombres qui portent l'essentiel de ce qui la distingue des autres. On s'en sert
+de longue date pour les cartes perceptuelles. Standpoint y ajoute le travail que
+vous feriez sinon à la main : il oriente la carte autour d'une option de référence,
+nomme les axes en mots simples (dans la langue de vos colonnes), colore et étiquette
+les points et écrit tout le résultat.
 
 ## Tout en local
 

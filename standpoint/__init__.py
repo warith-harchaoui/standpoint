@@ -1,6 +1,8 @@
 """Standpoint: know where each option actually stands.
 
-Explainable 2D PCA positioning map from any comparison table.
+Explainable 2D Principal Component Analysis (PCA) positioning map from any
+comparison table: PCA finds the few directions along which the rows differ the
+most, so a table of many criteria collapses into a readable two-axis map.
 
 Turn a table of *approaches x criteria* (CSV or Markdown, numeric ratings on any
 scale) into a competitive positioning map, plus a written interpretation and a
