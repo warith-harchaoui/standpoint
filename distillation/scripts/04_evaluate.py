@@ -7,7 +7,7 @@ through the fine-tuned adapter via mlx-vlm, then scored per task:
 - **pole_naming / noun_forms**: structural checks reusing standpoint's own
   `finalize_poles` invariants (JSON-valid, distinct, positive, no acronym) -- the
   hard invariants production already enforces regardless of which model answers.
-- **narrative / vlm_assess**: DeepEval's `GEval`, judged by the CURRENT (teacher)
+- **vlm_assess**: DeepEval's `GEval`, judged by the CURRENT (teacher)
   engine via the same `LocalEngineJudge` pattern as `tests/test_eval.py`, comparing
   the distilled model's answer against the recorded teacher answer for the *same*
   input -- a relative quality comparison, not a pass/fail on the distilled output
@@ -52,7 +52,8 @@ VAL_PATH = DIST_DIR / "data" / "dataset" / "combined" / "validation.jsonl"
 REPORT_PATH = DIST_DIR / "data" / "eval_report.json"
 
 JSON_TASKS = {"pole_naming", "noun_forms"}
-QUALITATIVE_TASKS = {"narrative", "vlm_assess"}
+QUALITATIVE_TASKS = {"vlm_assess"}  # narrative excluded: out of scope, the feature
+# is being removed from standpoint itself
 
 
 # --------------------------------------------------------------------------- #

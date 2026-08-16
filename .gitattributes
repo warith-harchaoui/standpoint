@@ -1,0 +1,2 @@
+distillation/checkpoints/distilled-adapter/best-adapter/** filter=lfs diff=lfs merge=lfs -text
+distillation/checkpoints/distilled-adapter-fr/best-adapter/** filter=lfs diff=lfs merge=lfs -text

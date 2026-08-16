@@ -1,10 +1,166 @@
 # Distilling Standpoint's local VLM to a 500M engine
 
-Status: **Phases 0-3 done.** Real, reported numbers below -- mixed result, not a
-clean win. The current production engine (resolved via `best-engine-ai-helper`,
-per `standpoint/llm.brief.yaml`) remains the default; per the plan's own go/no-go
-rule, this distilled model would only be trustable as an opt-in override for the
-tasks/languages it actually passed on, not as a blanket replacement (see below).
+Status: **English/vision engine (SmolVLM2-500M) and French engine
+(`kurakurai/Luth-0.6B-Instruct` superseded by `Qwen3-VL-2B-Instruct`, see
+below) both retrained and evaluated as of 2026-08-16.** `narrative` is
+dropped from both tracks (the feature is being removed from `standpoint`
+itself; see the `remove-narrative-feature` branch). Real, reported numbers
+below -- mixed results, not a clean win, but each with real strengths on
+specific tasks. The current production engine (resolved via
+`best-engine-ai-helper`, per `standpoint/llm.brief.yaml`) remains the default;
+per the plan's own go/no-go rule, either distilled model would only be
+trustable as an opt-in override for the tasks/languages it actually passed
+on, not as a blanket replacement (see below).
+
+## Retrain stabilization: warmup, a NaN/Inf guard, and the epoch-reshuffle bug (2026-08-15 -> 08-16)
+
+The `narrative` task was dropped from both tracks' `TASKS` lists this session
+(scope change, not a bug fix) -- but relaunching both tracks with that one-line
+change, otherwise the exact same config that had trained cleanly before,
+produced a full retrain that went stable-then-`nan` partway through for
+**both** models (EN: iter 210 onward; FR: iter 380 onward). Dropping a task
+changing the combined dataset's composition enough to shift the loss
+landscape was the initial hypothesis, but it didn't survive investigation:
+comparing the raw examples at the exact divergence point found nothing
+pathological (no outlier lengths, no malformed JSON), and re-reading
+`mlx_vlm.trainer.sft_trainer` directly surfaced two real, pre-existing bugs in
+the upstream trainer that this repo's own config happened to be exposing for
+the first time:
+
+1. **`TrainingArgs.warmup_steps`/`min_learning_rate` are dead fields.** They're
+   declared in the dataclass (with sane-looking defaults: `warmup_steps=100`,
+   `min_learning_rate=1e-6`) but grepping the whole trainer module shows
+   nothing else ever reads them back -- `optim.Adam(learning_rate=args.
+   learning_rate)` runs at that flat value from step 1, no ramp, no decay.
+   Every prior run on this repo (including the ones that trained cleanly) was
+   silently running with zero warmup despite the config schema implying
+   otherwise.
+2. **`--grad-clip` is per-element `mx.clip(g, -c, c)`, not a global-norm
+   clip** (`sft_trainer.step()`). This bounds each gradient element's raw
+   magnitude but does nothing to sanitize a `nan` -- `mx.clip(nan, -1, 1)` is
+   still `nan` -- so one unlucky step with a non-finite gradient survives
+   "clipping" untouched, gets applied to Adam's `m`/`v` moving averages, and
+   poisons every step after it. This is the actual mechanism behind "stable
+   for hundreds of iterations, then `nan` forever from one point on."
+
+**Fix, in `run_lora_with_val.py`** (shared by both tracks): a real
+`--warmup-steps` flag backed by `mlx.optimizers.linear_schedule(0, lr,
+warmup_steps)` passed directly as the optimizer's `learning_rate` (mlx
+schedules step once per `optimizer.update()` call -- i.e. once per
+grad-accumulated step, not once per raw iter -- since `linear_schedule` holds
+at its end value for every step past `steps`, this also doubles as "warmup
+then flat" with no separate decay schedule needed); and a NaN/Inf guard wrapping
+`optimizer.update()` that checks every gradient array with `mx.isfinite`
+before the real update runs and skips (not applies) that one optimizer step
+if any is non-finite, instead of letting it poison the optimizer state.
+
+**Validated with several-hundred-iteration smoke tests** (20 iterations, used
+earlier this session, was not long enough to catch either divergence -- EN's
+was at iter 210): EN (LR 3e-5, unchanged) came back clean, val loss
+2.75 -> 2.08 -> 1.69 over 400 iterations. FR at the same LR 3e-5 (just
+copied from the English config, never independently validated) no longer went
+outright `nan` but still climbed to val loss 12.2 by iteration 500 -- warmup
+alone wasn't sufficient, the LR itself was too high for Qwen3-VL-2B (~4x
+larger than SmolVLM2-500M, different architecture). At **LR 1e-5**, FR
+converged cleanly: val loss 2.67 -> 2.15 -> 1.99.
+
+**A third failure mode surfaced only in the real full-length runs, not the
+smoke tests**: `sft_trainer.iterate_batches` reshuffles with an *unseeded*
+`np.random.permutation` at every epoch boundary. FR's first full retrain
+(warmup + LR 1e-5, before the NaN/Inf guard existed) ran epoch 1 (940
+examples) clean -- val loss 6.5 -> 4.3 -- then went to `nan` at iteration 950,
+ten iterations into epoch 2's freshly-shuffled order. EN's first full retrain
+crashed even harder, with a non-gradient `OverflowError` deep in `idefics3`'s
+vision patch-position reshape (`Shape dimension 109504888832 is outside the
+supported range`) partway through its own epoch 2 -- a forward-pass crash the
+gradient guard cannot catch, since it only wraps the optimizer step. Neither
+smoke test could have caught this: a smoke test shorter than one epoch
+structurally cannot exercise the epoch-2+ reshuffle, and each run's ordering
+is a fresh, unreproducible random draw. Given both models already had clean,
+usable checkpoints from end-of-epoch-1 at this point, the choice was between
+capping training at one epoch (sidesteps the bug by construction) or
+relaunching the full 3-epoch run and accepting the risk (the original
+Aug-11/12 EN run *did* survive multiple epochs, so it isn't a certain
+failure) -- the latter was chosen, and the third attempt (FR) / second
+attempt (EN) both completed cleanly with the NaN/Inf guard in place (FR's
+guard caught and skipped 1 bad step along the way; EN needed zero skips).
+
+**Final training numbers**: EN val loss 4.571 -> 0.220 -> 0.195 -> 0.184 ->
+0.177 -> 0.173 -> **0.170** (monotonic, iter 11262/11265). FR val loss 2.746
+-> 1.325 -> 1.441 -> 1.324 -> 1.246 -> **1.176** (best, iter 2350) -> 1.321
+(some late-epoch noise, but no divergence; `select_best_checkpoint.py` picked
+iter 2350, not the final snapshot).
+
+## Qwen3-VL-2B pivot: the French track's second model (2026-08-14 -> 08-15)
+
+Superseding the Luth-0.6B track below (kept for history), the French engine
+moved to **`mlx-community/Qwen3-VL-2B-Instruct-bf16`** for better multilingual
+quality at a comparable size (SmolVLM2-2.2B scores 53.07 on French MMBench vs
+Qwen3-VL-2B's 72.47 -- see
+[artificialanalysis.ai](https://artificialanalysis.ai/models/multilingual/french)),
+text-only, `pole_naming`+`noun_forms` only. `vlm_assess_fr` was attempted and
+dropped after a real crash: `mlx_vlm`'s Qwen3-VL LoRA path throws `ValueError:
+Image features and image tokens do not match` on every image-bearing batch,
+reproduced on `mlx-vlm` 0.6.10 and 0.6.13, a known unresolved upstream bug
+([QwenLM/Qwen3-VL#556](https://github.com/QwenLM/Qwen3-VL/issues/556)).
+`vlm_assess` stays served by the English adapter for every language -- it's a
+geometric check on a rendered image, not really language-dependent, so it
+never needed a French-specific variant. 753 `vlm_assess_fr` examples were
+generated anyway (`fr_vlm_assess.py`, kept on disk unused, in case the
+upstream bug is fixed later). The pivot also made `fr_run_lora_with_clip.py`
+(a hand-rolled `mlx_lm` trainer fork with real grad-clip added, needed because
+`mlx_lm.lora` has none) unnecessary, so it was deleted entirely -- `mlx_vlm`'s
+trainer has its own `--grad-clip`, so the French track now shares
+`run_lora_with_val.py` with the English track, no French-specific trainer
+code at all.
+
+**Evaluation** (best checkpoint, iter 2350, val loss 1.176; scored on 167
+held-out French examples, `data/eval_report_fr.json`):
+
+| task | Qwen3-VL-2B (fr, this session) | Luth-0.6B (fr, 2026-08-13) |
+|---|---|---|
+| `noun_forms` | **100% (114/114)** | 100% (121/121) |
+| `pole_naming` | **83% (44/53)** | 94% (47/50) |
+
+Qwen3-VL-2B's `pole_naming` (83%) is lower than Luth's (94%) on the same task
+-- not a clean win over the prior track on this one number. The pivot's actual
+motivation (a stronger general multilingual base, not a `pole_naming`-specific
+target) still holds, but this number is a real, honest regression on this one
+task, not something to explain away. `narrative` is out of scope for this eval
+entirely now (dropped from both tracks, see above), so Luth's 35.4%
+`narrative` number has no Qwen3-VL-2B counterpart to compare
+against.
+
+**English track, same session** (best checkpoint, iter 11262, val loss 0.170,
+`pole_naming`+`noun_forms`+`vlm_assess`, `narrative` dropped; scored on 664
+held-out examples, `data/eval_report.json`):
+
+| task | this session (`narrative` dropped) | Phase 3 baseline (2026-08-12, incl. `narrative`) |
+|---|---|---|
+| `noun_forms` en | **100% (103/103)** | 100% (113/113) |
+| `noun_forms` fr | **100% (109/109)** | 100% (109/109) |
+| `pole_naming` en | **93.3% (56/60)** | 63.2% (36/57) |
+| `pole_naming` fr | **42.6% (26/61)** | 32.0% (16/50) |
+| `vlm_assess` (English-prompted) | **95.3% (202/212)** | 96.3% (210/218) |
+| `vlm_assess` (French-prompted) | **75.6% (90/119)** | n/a -- `vlm_assess` had no `lang` dimension yet |
+
+`pole_naming` improved substantially on both languages (en 63.2% -> 93.3%,
+fr 32.0% -> 42.6%) -- consistent with Phase 3's own finding that roughly half
+of the old en failures were a `finalize_poles` heuristic false-positive
+(`high`/`low` flagged as a drawback marker even in "High-Quality"), not
+genuinely bad output; dropping `narrative` from the task mix may also have
+freed capacity for the remaining three tasks, though that's not isolated
+here. `vlm_assess` (English-prompted) held steady within noise (96.3% ->
+95.3%). **`vlm_assess` (French-prompted) at 75.6% is a real, expected gap, not
+a regression**: this adapter was never trained on French `vlm_assess`
+examples (`vlm_assess_fr` was generated but dropped, see the pivot section
+above) -- it's being asked a French-language prompt about English-trained
+visual judgment. 75.6% on an unsupported input is informative (the visual
+task itself partially transfers cross-lingually even without training data
+for it) but doesn't change the design: `vlm_assess` stays scoped to English
+in the production go/no-go sense, French callers get the same English-quality
+answer today only because production hasn't wired language-specific routing
+for this task at all yet (see "Not yet done" above).
 
 ## Phase 3 findings (2026-08-12)
 
@@ -56,6 +212,158 @@ integrated at all (Phase 5, not started), it should be scoped to `noun_forms`
 (en+fr) and `vlm_assess` only, with `pole_naming`/`narrative` staying on the
 teacher for French and reconsidered for English -- exactly the per-task,
 per-language opt-in the plan called for rather than a uniform swap.
+
+## French track: a second, French-only engine (2026-08-12 -> 2026-08-13)
+
+### The pivot
+
+Phase 3's `narrative/fr` result (0/58, see above) was investigated further: the
+**base** SmolVLM2-500M model, zero-shot, with no fine-tuning at all, was already
+producing broken French (repetition loops -- "Zotero Zotero Zotero...",
+"...pour verifier les connexions... pour verifier les conseils... pour verifier
+les connexions...") on the identical prompt. This is a **backbone weakness**,
+not a training-data or EN/FR-mixing problem -- no amount of LoRA fine-tuning on
+top of a French-illiterate base model was going to fix it.
+
+**Decision**: two engines instead of one bilingual VLM, routed by `langdetect`
+(already used in `standpoint`'s own pipeline).
+- **English engine**: keep SmolVLM2-500M as-is (Phase 0-3 above). Handles
+  `vlm_assess` too, since that task is language-agnostic and needs vision.
+- **French engine**: **`kurakurai/Luth-0.6B-Instruct`** (Qwen3-0.6B fine-tuned
+  for French, Apache-2.0), text-only. `vlm_assess` never needs a French-specific
+  answer, so a text-only French model is sufficient.
+
+### Feasibility spike
+
+1. Converted to MLX (`checkpoints/luth-0.6b-mlx/`, bfloat16, ~1.2GB) via
+   `mlx_lm.convert`. Hit `IncompleteSnapshotError`: `mlx_lm.convert`'s internal
+   `load()` step only fetches the files it needs to run (skips README/logo/etc),
+   but its `save()` step demands a *fully complete* local HF snapshot
+   (`local_files_only=True`). Fixed by pre-fetching the whole repo once via
+   `huggingface_hub.snapshot_download('kurakurai/Luth-0.6B-Instruct')` (no
+   pattern restriction) before converting. Not Luth-specific -- will recur for
+   any `mlx_lm.convert` target.
+2. Zero-shot French inference: coherent, fluent, on-topic -- a completely
+   different quality tier from SmolVLM2's broken output on the same prompt.
+3. A tiny 4-example toy LoRA spike trained cleanly (loss 5.01 -> 2.18 train,
+   3.83 -> 1.23 val over 6 iterations), confirming `mlx_lm.lora`'s trainer runs
+   on this model without the vision-model-specific bugs Phase 0/2 hit.
+
+**Go/no-go: GO.**
+
+### Training: four configurations, three real divergences
+
+Building the training set was straightforward: the `lang == "fr"` rows already
+existed in `data/dataset/{pole_naming,noun_forms,narrative}.jsonl` (`vlm_assess`
+excluded -- stays English-only). Reshaped to `mlx_lm`'s `{"messages": [...]}`
+chat format and split 85/15 (`fr_train_lora.py`, same `train_test_split`
+seed=42 discipline as `03_train_lora.py`) -- 1237 train / 219 val examples, no
+new generation needed.
+
+Getting a *stable* training run took real iteration, not a single script run.
+Each configuration below was checked against the real 927-iteration training
+set (a short smoke test was not sufficient evidence on its own -- see #2 and #3):
+
+1. **`mlx_lm.lora`'s own defaults (LR 1e-5, LoRA scale 20.0, plain Adam, no grad
+   clip)**: diverged immediately, train loss 2.6 -> 12.7 within 50 iterations.
+   Reading `mlx_lm/lora.py` and `mlx_lm/tuner/trainer.py` directly confirmed
+   `mlx_lm.lora` has **no gradient-clipping path at all** -- no `--grad-clip`
+   flag, no field on `TrainingArgs`, the raw gradient goes straight to
+   `optimizer.update()`. Unlike `mlx_vlm`'s trainer (which `03_train_lora.py`
+   relies on via `--grad-clip`), this is a real gap for this model/data
+   combination. Wrote `fr_run_lora_with_clip.py`, a faithful copy of `mlx_lm`'s
+   trainer with `mlx.optimizers.clip_grad_norm` inserted before the optimizer
+   step (confirmed present in the installed `mlx`); everything else (validation
+   cadence, checkpoint naming, log line formats) kept byte-identical so
+   `select_best_checkpoint.py` needs no changes -- confirmed by reading both
+   trainers side by side, not assumed.
+2. **Grad-clip 1.0, LoRA scale 2.0** (matching `03_train_lora.py`'s validated
+   rank=16/alpha=32 = scale 2.0, ten times more conservative than `mlx_lm`'s
+   default of 20.0), still plain Adam: a 60-iteration smoke test looked healthy
+   (val loss 2.556 -> 2.294 -> 2.236) but the **real** 927-iteration run's val
+   loss more than doubled by iteration 154 (2.556 -> 5.549) -- a clean signal
+   from the full held-out set, not batch noise. The smoke test was too short to
+   catch a slower-onset divergence.
+3. **Same, plus AdamW** (`weight_decay=0.01`, standard LoRA practice for
+   bounding parameter-norm growth over long runs): a 200-iteration smoke test
+   looked healthy (val loss oscillating 2.34-2.77, nothing like #2's blowup),
+   but the real run diverged anyway -- train loss reached 7.4 by iteration 120.
+   Metal GPU non-determinism plus this regime's very large pre-clip gradient
+   norms (tens of millions, confirmed by instrumenting the clipped trainer to
+   print them) means even matching hyperparameters and seed do not reproduce
+   the same trajectory between two runs.
+4. **LR 2e-6 (5x lower), grad-clip 0.5 (2x tighter), LoRA scale 2.0, AdamW**:
+   a 460-iteration smoke test -- long enough to span a full epoch over the
+   1237-example train set -- showed a perfectly monotonic, oscillation-free val
+   loss decrease at every one of its checkpoints (2.556 -> 2.446 -> 2.370 ->
+   2.300 -> 2.247 -> 2.201 -> 2.170 -> 2.147 -> 2.104 -> 2.070 -> 2.063),
+   including through and past every iteration range where #2 and #3 broke
+   down. The real 927-iteration run confirmed it: seven checkpoints, every one
+   an improvement, zero oscillation (2.556 -> 2.287 -> 2.221 -> 2.086 -> 1.957
+   -> 1.931 -> 1.774 -> **1.770 final**, a 30.7% reduction from baseline).
+   **This is the configuration used for the reported checkpoint.**
+
+Before trusting this diagnosis, an unrelated hypothesis was ruled out directly:
+a forward-only loss sweep of all 1237 training examples against the
+*untrained* model found nothing pathological in the data (max loss 3.36, mean
+2.74, stdev 0.31 -- a tight distribution), so the divergences above are a real
+optimizer/hyperparameter-sensitivity story for this model, not a data-quality
+one.
+
+### Evaluation
+
+Scored on the 219 held-out French examples (`data/dataset/combined_fr/valid.jsonl`)
+against the best checkpoint (iteration 924, nearest saved snapshot to the true
+best at 927; val loss 1.774 vs 1.770, negligible difference). Full numbers:
+`data/eval_report_fr.json`.
+
+| task | this session (Luth, fr) | Phase 3 baseline (SmolVLM2, fr) | Phase 3 baseline (SmolVLM2, en) |
+|---|---|---|---|
+| `noun_forms` | **100% (121/121)** | 100% | 100% |
+| `pole_naming` | **94% (47/50)** | 32.0% | 63.2% |
+| `narrative` | **35.4% (17/48)** | 0.0% | 100% |
+
+A French-specific text model is a dramatically better fit for these French text
+tasks than the bilingual VLM was: `pole_naming` jumped from 32.0% to 94% --
+better than the VLM's own **English** number -- and `narrative` went from a
+complete 0% failure to 35.4%.
+
+**`narrative/fr`'s 35.4% was checked by hand** (same discipline as Phase 3's
+`narrative/fr` 0% finding above -- a suspicious rate gets inspected, not
+reported blind). Regenerating three of the FAIL examples directly: two were
+coherent, fluent, grammatically correct French analysis, on-topic and readable
+-- but more generic and less information-dense than the teacher's answer (the
+prompt asks for four specific points: the main takeaway, where the leader wins,
+the sharpest tradeoff, any over/under-performer; the candidate's prose covers
+similar ground without hitting each point as precisely, which is enough for
+`GEval`'s relative-quality judge to score it below the pass threshold even
+though nothing is *wrong* with the French itself). The third showed genuine
+phrase-level repetition ("elle est la plus rapide a reagir, elle est la plus
+economique, elle est la plus securisee, elle est la plus fiable" looping) --
+a real degeneration, but qualitatively different from the base SmolVLM2's
+character/token-level gibberish looping in French. **Conclusion**: 35.4% is a
+real signal, not a harness artifact -- the French engine is genuinely capable
+of French narrative prose (unlike the VLM, which cannot produce usable French
+narrative at all), but not yet reliable enough at matching the teacher's
+specific structure to pass `GO` on this task.
+
+**Per-task verdict for the French engine**: `noun_forms` **GO**, `pole_naming`
+**GO** (94%, a real, usable rate), `narrative` **NO-GO** (35.4%, real
+improvement over the VLM but not production-ready) -- same per-task,
+per-language opt-in discipline as Phase 3's conclusion, not a blanket claim.
+
+### Not yet done
+
+- Phase 5 (the actual `langdetect`-routing integration deciding which engine
+  handles which task/language) is still not designed -- deliberately deferred
+  until both engines had real evaluation numbers, which is now the case for
+  both.
+- Phase 4 (GGUF/MLX export) for the English SmolVLM2 engine was never started;
+  worth revisiting given the two-engine split before investing in export
+  tooling for a model that may only cover `noun_forms`+`vlm_assess` in
+  practice.
+- `checkpoints/toy-luth-adapter/`, `data/toy_luth/`: throwaway spike artifacts,
+  gitignored, harmless to leave.
 
 ## Phase 2 findings (2026-08-11 -> 2026-08-12)
 
@@ -318,6 +626,19 @@ distillation/
     make_loss_figure.py         # CSV -> data/training_loss.svg (pure hand-authored
                                  # SVG; see that script's own docstring for why)
     04_evaluate.py               # Phase 3: distilled vs teacher, per task/language
+
+    # French track (Qwen3-VL-2B, text-only) -- see "Qwen3-VL-2B pivot" section
+    # above; supersedes the earlier Luth-0.6B track. Not part of the numbered
+    # English-track sequence: 05/06 are earmarked for Phase 4 (export) and
+    # Phase 5 (langdetect routing) in the existing plan.
+    fr_train_lora.py            # builds the French dataset + launches training
+                                 # via run_lora_with_val.py (shared with English --
+                                 # fr_run_lora_with_clip.py, the mlx_lm-era clipped
+                                 # trainer this pivot made unnecessary, is removed)
+    fr_vlm_assess.py             # backfills French vlm_assess examples for the
+                                 # record; generated but unused (see that script's
+                                 # own docstring for why -- upstream mlx_vlm bug)
+    fr_evaluate.py               # French-track equivalent of 04_evaluate.py
   data/                      # generated datasets (gitignored; regenerable)
   checkpoints/               # LoRA adapters + merged/converted models (gitignored)
 ```

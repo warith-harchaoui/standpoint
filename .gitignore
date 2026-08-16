@@ -4,19 +4,31 @@
 # data/      = private / working input tables
 # out/       = generated deliverables (the tracked showcase lives in examples/)
 # .deepeval/ = deepeval telemetry / cache
+# logs/      = raw training-run stdout/stderr (regenerable by rerunning the
+#              launcher scripts; extract_loss_curve.py reads these)
 # llm.engine.yaml = machine-specific engine descriptor resolved from the committed
 #                   llm.brief.yaml by best-engine-ai-helper; never committed.
 .private/
 data/
 out/
+logs/
 .deepeval/
 standpoint/llm.engine.yaml
 
 # distillation/ — model weights, adapters, and generated datasets are large and
-# fully regenerable from the scripts; never committed. distillation/.venv/ and
-# distillation/data/ are already covered by the generic .venv/ and data/ patterns
-# above.
-distillation/checkpoints/
+# fully regenerable from the scripts; never committed, EXCEPT the final LoRA
+# adapters (best-adapter/, tracked via Git LFS -- see .gitattributes) once a run
+# is validated. Everything else under checkpoints/ (base models, intermediate
+# training snapshots, toy/experimental runs) stays regenerable and ignored.
+# distillation/.venv/ and distillation/data/ are already covered by the generic
+# .venv/ and data/ patterns above.
+distillation/checkpoints/*
+!distillation/checkpoints/distilled-adapter/
+distillation/checkpoints/distilled-adapter/*
+!distillation/checkpoints/distilled-adapter/best-adapter/
+!distillation/checkpoints/distilled-adapter-fr/
+distillation/checkpoints/distilled-adapter-fr/*
+!distillation/checkpoints/distilled-adapter-fr/best-adapter/
 
 # --- Python bytecode & caches ---
 __pycache__/

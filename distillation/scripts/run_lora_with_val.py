@@ -14,6 +14,37 @@ loads BOTH the `train` and `validation` splits explicitly, and calls `train()` w
 the real `val_dataset` wired in. Also applies the Idefics3/SmolVLM2 positional-
 argument patch (`_mlx_vlm_idefics3_patch.py`) first, same as `run_lora.py`.
 
+**LR warmup is real here, unlike upstream**: `sft_trainer.TrainingArgs` declares
+`warmup_steps`/`min_learning_rate` fields, but grepping the whole trainer module
+shows nothing ever reads them back -- `optim.Adam(learning_rate=args.learning_rate)`
+runs at that flat value from optimizer-update 1. Combined with `grad_clip` being
+per-element `mx.clip(g, -c, c)` (not a global gradient-norm clip -- see
+`sft_trainer.step()`), a NaN produced by one unlucky early step survives that clip
+untouched and permanently poisons Adam's `m`/`v` moving averages, which is
+consistent with a retrain that ran clean through iter 200 then went to NaN from
+iter 210 on and stayed there. `--warmup-steps` below builds a real ramp via
+`mlx.optimizers.linear_schedule(0, lr, warmup_steps)` passed directly as the
+optimizer's `learning_rate` (mlx schedules are plain callables the optimizer steps
+once per `optimizer.update()` call, i.e. once per grad-accumulated step, not once
+per raw iter) -- it does not fix the weak elementwise clip, but keeps the
+optimizer's adaptive moment estimates small while the model is least stable.
+
+**A NaN/Inf guard wraps `optimizer.update()` below, applied after warmup was
+already validated and still not sufficient**: a full French-track retrain (LR
+1e-5, warmup 100, both already validated over a 500-iteration smoke test) ran
+epoch 1 (iters 1-940) clean -- val loss 6.5 -> 4.3 -- then went to NaN at iter
+950, ten iterations into epoch 2. Root cause: `sft_trainer.iterate_batches`
+reshuffles with an *unseeded* `np.random.permutation` at every epoch boundary
+(confirmed by reading the installed package), so a smoke test shorter than one
+epoch structurally cannot catch an epoch-2-only bad shuffle, and the ordering
+that broke it is not reproducible run to run. Rather than chase a specific LR
+low enough to survive every possible shuffle, `optimizer.update` is wrapped to
+check every gradient array for NaN/Inf right before the real update would run
+and skip that one optimizer step (leaving weights and Adam's `m`/`v` moving
+averages untouched) if any is found, instead of applying it and poisoning the
+optimizer state for the rest of the run -- a single dropped step out of
+thousands is a non-event; a permanently NaN adapter is not.
+
 Usage mirrors the subset of `mlx_vlm.lora`'s flags this project actually uses;
 see `--help`.
 """
@@ -26,13 +57,41 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _mlx_vlm_idefics3_patch  # noqa: F401  (patches Idefics3.__call__ on import)
+import mlx.core as mx
 import mlx.optimizers as optim
 from datasets import load_dataset
+from mlx.utils import tree_flatten
 from mlx_vlm.lora import setup_model_for_training, transform_dataset_to_messages
 from mlx_vlm.trainer.datasets import VisionDataset
 from mlx_vlm.trainer.sft_trainer import TrainingArgs, train
 from mlx_vlm.trainer.utils import print_trainable_parameters
 from mlx_vlm.utils import load
+
+
+def _guard_against_nan_updates(optimizer: optim.Optimizer) -> None:
+    """Skip (not crash, not silently poison) any optimizer step with a non-finite
+    gradient -- see module docstring's NaN/Inf guard section for why this exists.
+    """
+    real_update = optimizer.update
+    skipped = 0
+
+    def guarded_update(model, gradients: dict) -> None:
+        nonlocal skipped
+        is_finite = all(
+            bool(mx.all(mx.isfinite(g))) for _, g in tree_flatten(gradients)
+        )
+        if not is_finite:
+            skipped += 1
+            print(
+                f"WARNING: non-finite gradient at optimizer step "
+                f"{optimizer.state.get('step', '?')}, skipping this update "
+                f"({skipped} skipped so far)",
+                file=sys.stderr,
+            )
+            return
+        real_update(model, gradients)
+
+    optimizer.update = guarded_update
 
 
 def parse_args() -> argparse.Namespace:
@@ -44,6 +103,13 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--batch-size", type=int, default=1)
     ap.add_argument("--gradient-accumulation-steps", type=int, default=1)
     ap.add_argument("--learning-rate", type=float, default=1e-4)
+    ap.add_argument(
+        "--warmup-steps",
+        type=int,
+        default=0,
+        help="Linear LR ramp from 0 to --learning-rate over this many optimizer "
+        "updates (not raw iters -- see module docstring). 0 disables warmup.",
+    )
     ap.add_argument("--grad-clip", type=float, default=None)
     ap.add_argument("--lora-rank", type=int, default=16)
     ap.add_argument("--lora-alpha", type=float, default=32)
@@ -88,7 +154,15 @@ def main() -> None:
     model = setup_model_for_training(model, args, adapter_path=None)
     print_trainable_parameters(model)
 
-    optimizer = optim.Adam(learning_rate=args.learning_rate)
+    # linear_schedule holds at `end` for every step past `steps` (see mlx docs), so
+    # this doubles as "warmup then flat" with no separate decay schedule needed.
+    lr = (
+        optim.linear_schedule(0.0, args.learning_rate, args.warmup_steps)
+        if args.warmup_steps > 0
+        else args.learning_rate
+    )
+    optimizer = optim.Adam(learning_rate=lr)
+    _guard_against_nan_updates(optimizer)  # see module docstring's NaN/Inf guard section
 
     training_args = TrainingArgs(
         batch_size=args.batch_size,

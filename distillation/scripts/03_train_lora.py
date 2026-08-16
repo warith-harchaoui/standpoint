@@ -48,7 +48,7 @@ BASE_MODEL = CHECKPOINTS_DIR / "smolvlm2-500m-mlx-bf16"  # not the float16 conve
 # (as opposed to inference, where the Phase 0 float16 checkpoint works fine)
 ADAPTER_OUT = CHECKPOINTS_DIR / "distilled-adapter"
 
-TASKS = ["pole_naming", "noun_forms", "narrative", "vlm_assess"]
+TASKS = ["pole_naming", "noun_forms", "vlm_assess"]
 VAL_FRACTION = 0.15
 SEED = 42
 EPOCHS = 3
@@ -162,6 +162,13 @@ def main() -> None:
         # (full vision-encoder fine-tuning is far more unstable than LoRA-only);
         # lowered alongside --grad-clip below rather than dropping --train-vision,
         # since vlm_assess needs real vision-side adaptation to improve at all
+        "--warmup-steps",
+        "100",  # optimizer-update units, i.e. ~200 raw iters at
+        # --gradient-accumulation-steps 2 below -- mlx_vlm's own TrainingArgs
+        # schema defaults to warmup_steps=100 but the trainer never actually reads
+        # it (dead field, confirmed by grep); run_lora_with_val.py builds a real
+        # ramp from this flag. Added after a full retrain at this exact LR/clip
+        # went stable-then-NaN from iter 210 on with no warmup active.
         "--grad-clip",
         "1.0",
         "--lora-rank",

@@ -79,18 +79,13 @@ if _translated_manifest.exists():
 
 PROCESSED_LOG = OUT_DIR / ".processed"
 
-# The one hardcoded prompt vlm_assess() sends (not in i18n.yaml -- it describes
-# chart conventions, not table content, so it's language-independent). Copied here
-# because vlm_assess() doesn't expose it; must be kept in sync with
-# standpoint/__init__.py's vlm_assess() if that prompt ever changes.
-VLM_ASSESS_PROMPT = (
-    "This image is a 2D competitor positioning map. The single RED dot is the "
-    "leader and should sit in the TOP-RIGHT area. The four axis poles are named "
-    "in italic text at the top, bottom, left, and right edges. Assess three "
-    "things: (1) is the red leader dot in the top-right? (2) are the point "
-    "labels readable and not badly overlapping? (3) are the four italic axis "
-    "pole labels at the edges present and legible? Reply as JSON."
-)
+# `vlm_assess()`'s per-language ground-truth notes for the deterministic negative
+# example (see `vlm_assess_negative_example` -- the verdict is known by construction,
+# not asked of the teacher, so the notes text is written by hand, one per language).
+VLM_ASSESS_NEGATIVE_NOTES = {
+    "en": "The red-highlighted dot is not in the top-right area of the map.",
+    "fr": "Le point rouge en surbrillance n'est pas dans la zone haut-droite de la carte.",
+}
 
 # --------------------------------------------------------------------------- #
 # capture: monkeypatch the one call boundary every standpoint LLM/VLM job uses
@@ -179,23 +174,24 @@ def narrative_example(result: sp.PCAResult, roles: list[str], poles: list[str], 
 
 
 def vlm_assess_positive_example(
-    result: sp.PCAResult, roles: list[str], poles: list[str], image_path: Path
+    result: sp.PCAResult, roles: list[str], poles: list[str], image_path: Path, lang: str
 ) -> dict:
     svg = sp.to_svg(result, roles=roles, poles=poles)
     png = sp.png_on_white(svg)
     image_path.write_bytes(png)
     _captured.clear()
-    sp.vlm_assess(png)
+    sp.vlm_assess(png, lang=lang)
     call = _harvest_one()
     return {
-        "question": VLM_ASSESS_PROMPT,
+        "lang": lang,
+        "question": call["prompt"],
         "image": str(image_path),
         "answer": json.dumps(call["response"], ensure_ascii=False),
     }
 
 
 def vlm_assess_negative_example(
-    result: sp.PCAResult, roles: list[str], poles: list[str], image_path: Path
+    result: sp.PCAResult, roles: list[str], poles: list[str], image_path: Path, lang: str
 ) -> dict | None:
     """Swap best/worst roles so the red dot moves off the top-right, deterministically.
 
@@ -215,9 +211,15 @@ def vlm_assess_negative_example(
         "leader_top_right": False,
         "readable": True,
         "axis_labels_visible": True,
-        "notes": "The red-highlighted dot is not in the top-right area of the map.",
+        "notes": VLM_ASSESS_NEGATIVE_NOTES[lang],
     }
-    return {"question": VLM_ASSESS_PROMPT, "image": str(image_path), "answer": json.dumps(verdict)}
+    question = sp.i18n(lang)["vlm_assess_prompt"]
+    return {
+        "lang": lang,
+        "question": question,
+        "image": str(image_path),
+        "answer": json.dumps(verdict, ensure_ascii=False),
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -297,12 +299,12 @@ def main() -> None:
             counts["narrative"] += 1
 
             pos_path = IMAGES_DIR / f"{csv_path.stem}_pos.png"
-            ex = vlm_assess_positive_example(result, roles, poles, pos_path)
+            ex = vlm_assess_positive_example(result, roles, poles, pos_path, lang)
             sinks["vlm_assess"].write(json.dumps(ex, ensure_ascii=False) + "\n")
             counts["vlm_assess"] += 1
 
             neg_path = IMAGES_DIR / f"{csv_path.stem}_neg.png"
-            ex = vlm_assess_negative_example(result, roles, poles, neg_path)
+            ex = vlm_assess_negative_example(result, roles, poles, neg_path, lang)
             if ex is not None:
                 sinks["vlm_assess"].write(json.dumps(ex, ensure_ascii=False) + "\n")
                 counts["vlm_assess"] += 1
