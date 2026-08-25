@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.5] - 2026-08-25
+
+### Fixed
+
+- **`render_figures()`/`export_all()` wrote SVG/PNG/export files
+  non-atomically** (plain `open(path, "w")`), so a crash or a concurrent
+  reader (e.g. a dev-server auto-reloader watching the output directory)
+  could observe or persist a truncated file. Both now write via a new
+  `_atomic_write()` helper (temp file + `os.replace`).
+
+### Added
+
+- **Pre-push git hook** (`.githooks/pre-push`, `git config core.hooksPath
+  .githooks`) delegating to the repo's own `scripts/check.sh`, so
+  `ruff check`/`ruff format --check`/`pytest` failures are caught before
+  reaching `origin/main` instead of only in CI. `scripts/check.sh` now
+  invokes `python3 -m ruff`/`python3 -m pytest` explicitly (a stray
+  Homebrew `pytest` on some machines shadows the project's own
+  environment). Documented in `CONTRIBUTING.md`.
+
 ## [0.8.4] - 2026-08-17
 
 ### Documentation

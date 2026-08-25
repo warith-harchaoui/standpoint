@@ -52,6 +52,10 @@ Notes:
   skip cleanly otherwise. The GUI / MCP endpoint tests need the `[gui]` / `[mcp]`
   extras; the Playwright end-to-end test needs Chromium. All skip when absent, so CI
   (which installs none of them) stays green.
+- A git `pre-push` hook runs `scripts/check.sh` automatically and blocks the push
+  outright on failure, so this gate can't be skipped by accident. One-time setup per
+  clone: `git config core.hooksPath .githooks`. Bypass only when you really mean it:
+  `git push --no-verify`.
 
 ## Code expectations
 

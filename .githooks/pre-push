@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Pre-push gate: block the push entirely on a lint or test failure, so a red
+# local state never even reaches CI. One-time setup per clone:
+#   git config core.hooksPath .githooks
+# Bypass (rare, deliberate only): git push --no-verify
+#
+# Delegates to scripts/check.sh, the same full local gate CONTRIBUTING.md
+# already documents (ruff check, ruff format --check, the full pytest suite)
+# so the two never drift apart.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+scripts/check.sh

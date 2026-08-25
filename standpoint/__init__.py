@@ -37,14 +37,16 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.8.4"
+__version__ = "0.8.5"
 
 import argparse
+import contextlib
 import logging
 import math
 import os
 import re
 import sys
+import tempfile
 from dataclasses import dataclass
 
 import best_engine_ai_helper as beh
@@ -1521,6 +1523,29 @@ def _svg_to_png(svg: str, scale: float = 2.0) -> bytes:
     return resvg_py.svg_to_bytes(svg_string=svg, zoom=scale)
 
 
+def _atomic_write(path: str, data: str | bytes) -> None:
+    """Write `data` to `path` atomically: no reader ever sees a partial write.
+
+    Writes to a sibling temp file in the same directory (so the final
+    `os.replace` is a same-filesystem rename, not a cross-filesystem copy)
+    then renames it over the destination. A crash or a concurrent read
+    mid-write sees either the old file (or nothing) or the fully-written
+    new one, never a truncated deliverable.
+    """
+    directory = os.path.dirname(path) or "."
+    mode = "wb" if isinstance(data, bytes) else "w"
+    encoding = None if isinstance(data, bytes) else "utf-8"
+    fd, tmp_name = tempfile.mkstemp(dir=directory, prefix=f".{os.path.basename(path)}.")
+    try:
+        with os.fdopen(fd, mode, encoding=encoding) as fh:
+            fh.write(data)
+        os.replace(tmp_name, path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp_name)
+        raise
+
+
 def render_figures(svg: str, stem: str) -> list[str]:
     """Write an SVG figure (and its raster companion) as transparent and white pairs.
 
@@ -1534,10 +1559,8 @@ def render_figures(svg: str, stem: str) -> list[str]:
     written: list[str] = []
     for suffix, variant in ((".", svg), (".white.", _white_variant(svg))):
         png_path, svg_path = f"{stem}{suffix}png", f"{stem}{suffix}svg"
-        with open(svg_path, "w", encoding="utf-8") as fh:
-            fh.write(variant)
-        with open(png_path, "wb") as fh:
-            fh.write(_svg_to_png(variant))
+        _atomic_write(svg_path, variant)
+        _atomic_write(png_path, _svg_to_png(variant))
         written += [png_path, svg_path]
     return written
 
@@ -1895,8 +1918,7 @@ def export_all(
         (f"{stem}.md", analysis_markdown(result, roles, poles, model)),
         (f"{stem}.yaml", results_yaml(df, result, roles, poles, axis_names, colors)),
     ]:
-        with open(path, "w", encoding="utf-8") as fh:
-            fh.write(text)
+        _atomic_write(path, text)
         written.append(path)
     return written
 
