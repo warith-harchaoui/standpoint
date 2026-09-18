@@ -281,9 +281,10 @@ docker run --rm -p 8000:8000 standpoint
 Sans serveur du tout ? `python webapp/build.py` compose la même GUI en **dossier
 statique** : le moteur tourne dans le navigateur du visiteur via Pyodide, les
 axes sont nommés par défaut par un petit modèle d'embeddings dans la page, et
-l'auto-remplissage délègue à l'IA de l'utilisateur via un panneau « copier le
-prompt ». Il suffit d'uploader `webapp/dist/` dans un dossier web statique et
-tout fonctionne. Détails dans [GUI.md](GUI.md) § Static build.
+un clic sur l'auto-remplissage fait remplir les cases vides par un LLM dans le
+navigateur (WebLLM, chargé paresseusement) — sans serveur, sans clé. Il suffit
+d'uploader `webapp/dist/` dans un dossier web statique et tout fonctionne.
+Détails dans [GUI.md](GUI.md) § Static build.
 
 Pour travailler la bibliothèque en local, un environnement conda minimal enveloppe le
 même `requirements.txt` :

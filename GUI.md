@@ -119,11 +119,11 @@ the local-first promise gets even stronger, since there is no server at all.
 
 Blue nodes run in the **browser page**; purple nodes are the **in-browser
 engines** (WebAssembly) that replace the green server nodes of the diagram
-above. The AI strategy follows
-[harchaoui.org's in-page RAG](https://harchaoui.org/warith/livre-elephant/rag.html):
-a small embedding model plus curated static data for what runs in the page,
-and copy-the-prompt delegation for real generation, never a big generative
-model download.
+above. The AI strategy keeps every model lazy and local: the always-on path
+(axis naming) uses the same small embedding model + curated static data as
+[harchaoui.org's in-page RAG](https://harchaoui.org/warith/livre-elephant/rag.html),
+and the heavier generative model loads only when its one feature ("Laziness"
+auto-fill) is explicitly clicked.
 
 ```mermaid
 flowchart LR
@@ -132,14 +132,14 @@ flowchart LR
     lib -->|"SVG string"| embed["🖥️ innerHTML<br/>live quadrant"]
     glue -.->|"pending naming call<br/>(memoized replay)"| emb["transformers.js MiniLM<br/>+ vocab/&lt;lang&gt;.json"]
     emb -.->|"nearest quality word<br/>per pole"| glue
-    glue -.->|"pending ratings call"| user["📋 copy prompt →<br/>the user's own AI"]
-    user -.->|"pasted JSON"| glue
+    grid -.->|"😴 Paresse: one LLM call"| llm["WebLLM (WebGPU)<br/>Qwen2.5-1.5B, lazy"]
+    llm -.->|"schema-valid ratings<br/>fill the empty cells"| grid
 
     %% "Good Colors" palette: https://harchaoui.org/warith/colors/
     classDef browser fill:#CCE4FF,stroke:#007AFF,color:#000000,stroke-width:2px;
     classDef wasm fill:#EAD6FF,stroke:#AF52DE,color:#000000,stroke-width:2px;
-    class grid,embed,user browser;
-    class glue,lib,emb wasm;
+    class grid,embed browser;
+    class glue,lib,emb,llm wasm;
 ```
 
 - **Same engine, byte for byte.** The bundle vendors the `standpoint` wheel
@@ -159,11 +159,14 @@ flowchart LR
   curated vocabulary of positive qualities (`webapp/vocab/<lang>.json`;
   confusable entries carry a disambiguating gloss that is what actually gets
   embedded). The engine's `finalize_poles` still validates and dedupes.
-- **"Laziness" auto-fill is delegated, rag.html-style.** The button opens a
-  copy-the-prompt / paste-the-JSON panel around the engine's own localized
-  `ratings_prompt`: the user's favorite AI (ChatGPT, Claude, a local model…)
-  does the rating, and the pasted JSON is seeded back through the replay. No
-  key, no account, no model download.
+- **"Laziness" auto-fill is one direct in-browser LLM call.** The click loads
+  a small instruct model once (WebLLM over WebGPU, `Qwen2.5-1.5B`, ~1 GB,
+  then browser-cached), sends the engine's own localized `ratings_prompt`
+  with schema-constrained JSON output, and fills ONLY the still-empty cells —
+  no panel, no copy-paste, no key, nothing leaves the machine. A full table
+  gets a clear "nothing to fill" message; a browser without WebGPU gets told
+  so. This heavier model never loads unless Paresse is clicked; axis naming
+  stays on the lightweight embedding model.
 
 ```bash
 python webapp/build.py            # writes webapp/dist/ (~4 MB + CDN runtime)

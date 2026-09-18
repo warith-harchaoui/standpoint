@@ -94,15 +94,9 @@ en:
     # The server GUI never shows these keys.
     naming_loading: "Naming the axes… (first-time model load, a few seconds)"
     naming_offline: "Naming model unavailable; axes named from the criteria."
-    delegate_title: Fill with your own AI
-    delegate_intro: "1. Copy this prompt and paste it into your favorite AI (ChatGPT, Claude, a local model…). 2. Paste its JSON answer below."
-    delegate_copy: 📋 Copy the prompt
-    delegate_copied: Prompt copied!
-    delegate_paste: Paste the AI's JSON answer here
-    delegate_apply: Apply
-    delegate_cancel: Cancel
-    delegate_bad_json: "That doesn't parse as JSON: "
-    delegate_cancelled: cancelled
+    flemme_none: "no empty cells to fill — add an option, a criterion, or clear a cell first."
+    flemme_model: "Loading the AI model (about 1 GB, downloaded once then cached)… "
+    flemme_nogpu: "this browser can't run the in-page AI model (WebGPU missing); try a recent Chrome, Edge or Safari."
     new_option: New
     new_criterion: Criterion
     aria_options_col: Name of the options column
@@ -215,15 +209,9 @@ fr:
     # (webapp/backend-pyodide.js). Le GUI serveur ne montre jamais ces clés.
     naming_loading: "Nommage des axes… (premier chargement du modèle, quelques secondes)"
     naming_offline: "Modèle de nommage indisponible ; axes nommés depuis les critères."
-    delegate_title: Remplir avec votre propre IA
-    delegate_intro: "1. Copiez ce prompt et collez-le dans votre IA préférée (ChatGPT, Claude, un modèle local…). 2. Collez sa réponse JSON ci-dessous."
-    delegate_copy: 📋 Copier le prompt
-    delegate_copied: Prompt copié !
-    delegate_paste: Collez ici la réponse JSON de l'IA
-    delegate_apply: Appliquer
-    delegate_cancel: Annuler
-    delegate_bad_json: "Impossible de lire ce JSON : "
-    delegate_cancelled: annulé
+    flemme_none: "aucune cellule vide à remplir — ajoutez une option, un critère, ou videz une cellule d'abord."
+    flemme_model: "Chargement du modèle IA (environ 1 Go, téléchargé une seule fois puis en cache)… "
+    flemme_nogpu: "ce navigateur ne peut pas exécuter le modèle IA dans la page (WebGPU absent) ; essayez un Chrome, Edge ou Safari récent."
     new_option: Nouvelle
     new_criterion: Critère
     aria_options_col: Nom de la colonne des options
@@ -335,15 +323,9 @@ es:
     # (webapp/backend-pyodide.js). La GUI del servidor nunca muestra estas claves.
     naming_loading: "Nombrando los ejes… (primera carga del modelo, unos segundos)"
     naming_offline: "Modelo de nombrado no disponible; ejes nombrados desde los criterios."
-    delegate_title: Rellenar con tu propia IA
-    delegate_intro: "1. Copia este prompt y pégalo en tu IA favorita (ChatGPT, Claude, un modelo local…). 2. Pega su respuesta JSON abajo."
-    delegate_copy: 📋 Copiar el prompt
-    delegate_copied: ¡Prompt copiado!
-    delegate_paste: Pega aquí la respuesta JSON de la IA
-    delegate_apply: Aplicar
-    delegate_cancel: Cancelar
-    delegate_bad_json: "No se puede leer ese JSON: "
-    delegate_cancelled: cancelado
+    flemme_none: "no hay celdas vacías que rellenar — añade una opción, un criterio, o vacía una celda primero."
+    flemme_model: "Cargando el modelo de IA (aprox. 1 GB, descargado una sola vez y luego en caché)… "
+    flemme_nogpu: "este navegador no puede ejecutar el modelo de IA en la página (falta WebGPU); prueba un Chrome, Edge o Safari reciente."
     new_option: Nueva
     new_criterion: Criterio
     aria_options_col: Nombre de la columna de opciones

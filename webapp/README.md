@@ -3,9 +3,10 @@
 The same single-page GUI the server serves at `/gui`, composed into a folder
 any static host can serve: the engine runs in the visitor's browser (Pyodide /
 WebAssembly), axes are named by default by a small in-page embedding model
-(transformers.js MiniLM + curated vocabularies), and "Laziness" auto-fill
-delegates to the user's own AI via a copy-the-prompt panel. Full architecture,
-diagram and limitations: [GUI.md § Static build](../GUI.md).
+(transformers.js MiniLM + curated vocabularies), and one click on "Laziness"
+has an in-browser LLM (WebLLM, lazy ~1 GB download, then cached) fill the
+empty cells. Full architecture, diagram and limitations:
+[GUI.md § Static build](../GUI.md).
 
 ## Build and deploy
 

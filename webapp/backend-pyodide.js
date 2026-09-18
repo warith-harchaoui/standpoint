@@ -12,9 +12,8 @@
  *
  * Model calls use the memoized-replay contract of `beh_shim.py`: a run either
  * returns a result or reports the one LLM call it is blocked on; we answer it,
- * seed the cache, and run again (see glue.py). The answers follow the approach
- * of harchaoui.org/warith/livre-elephant/rag.html — no big generative model in
- * the page:
+ * seed the cache, and run again (see glue.py). Two model tiers, each loaded
+ * only when its feature is first used:
  *
  *   - AXIS NAMING (default, automatic): a small multilingual embedding model
  *     (transformers.js MiniLM, a few dozen MB, loaded on first Generate and
@@ -22,10 +21,10 @@
  *     of positive qualities (vocab/<lang>.json) and picks the nearest word;
  *     the engine's own `finalize_poles` still validates/dedupes, with the
  *     loading-derived words as the offline fallback.
- *   - "LAZINESS" AUTO-FILL (delegated): the engine's own localized ratings
- *     prompt is offered in a copy-the-prompt / paste-the-JSON panel, so the
- *     user's favorite AI (ChatGPT, Claude, a local model…) does the rating and
- *     the pasted answer is seeded back through the same replay mechanism.
+ *   - "LAZINESS" AUTO-FILL (one direct LLM call): a small instruct model
+ *     (WebLLM over WebGPU, ~1 GB, downloaded on the first Paresse click then
+ *     cached) answers the engine's own localized ratings prompt with
+ *     schema-constrained JSON and the blanks fill in — no panel, no copy-paste.
  */
 (() => {
   "use strict";
@@ -229,73 +228,6 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
   }
 
   // --- "Laziness" delegation panel --------------------------------------------------
-  // The pending auto-fill call carries the engine's own localized ratings prompt;
-  // this panel hands it to the user's AI and takes the JSON answer back. Injected
-  // nodes carry data-i18n so the page's localizer follows the language toggle.
-  let panelOpen = false;
-  function delegatePanel(pending) {
-    if (panelOpen) return Promise.reject(new Error(t("delegate_cancelled", "cancelled")));
-    panelOpen = true;
-    return new Promise((resolve, reject) => {
-      const overlay = document.createElement("div");
-      overlay.id = "delegateOverlay";
-      overlay.className =
-        "fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4";
-      overlay.innerHTML = `
-        <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl max-w-2xl w-full p-5 flex flex-col gap-3">
-          <h3 class="font-semibold text-lg" data-i18n="delegate_title"></h3>
-          <p class="text-sm text-neutral-600 dark:text-neutral-300" data-i18n="delegate_intro"></p>
-          <textarea id="dlgPrompt" readonly rows="6"
-            class="w-full border rounded-lg p-2 text-xs font-mono bg-neutral-50 dark:bg-neutral-800"></textarea>
-          <button id="dlgCopy" class="self-start px-3 py-1.5 rounded-lg border text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800" data-i18n="delegate_copy"></button>
-          <textarea id="dlgPaste" rows="6"
-            class="w-full border rounded-lg p-2 text-xs font-mono"></textarea>
-          <p id="dlgError" class="text-sm text-red-600 hidden"></p>
-          <div class="flex gap-2 justify-end">
-            <button id="dlgCancel" class="px-3 py-1.5 rounded-lg border text-sm" data-i18n="delegate_cancel"></button>
-            <button id="dlgApply" class="px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-sm dark:bg-neutral-100 dark:text-neutral-900" data-i18n="delegate_apply"></button>
-          </div>
-        </div>`;
-      document.body.appendChild(overlay);
-      const $id = (id) => overlay.querySelector("#" + id);
-      // Localize the injected nodes now; the page's applyI18n takes over on toggle.
-      overlay.querySelectorAll("[data-i18n]").forEach((el) => {
-        const k = el.getAttribute("data-i18n");
-        el.textContent = t(k, k);
-      });
-      $id("dlgPrompt").value = pending.prompt;
-      $id("dlgPaste").placeholder = t("delegate_paste", "Paste the AI's JSON answer here");
-      $id("dlgCopy").onclick = () => {
-        navigator.clipboard.writeText(pending.prompt);
-        $id("dlgCopy").textContent = t("delegate_copied", "Prompt copied!");
-      };
-      const close = () => {
-        panelOpen = false;
-        overlay.remove();
-      };
-      $id("dlgCancel").onclick = () => {
-        close();
-        reject(new Error(t("delegate_cancelled", "cancelled")));
-      };
-      $id("dlgApply").onclick = () => {
-        // Tolerate the common wrappers models add around JSON (``` fences, prose).
-        const raw = $id("dlgPaste").value.trim();
-        const body = raw.replace(/^```[a-z]*\s*/i, "").replace(/```\s*$/, "");
-        try {
-          const start = body.indexOf("{");
-          const end = body.lastIndexOf("}");
-          const obj = JSON.parse(start >= 0 ? body.slice(start, end + 1) : body);
-          close();
-          resolve(obj);
-        } catch (err) {
-          const e = $id("dlgError");
-          e.textContent = t("delegate_bad_json", "That doesn't parse as JSON: ") + err.message;
-          e.classList.remove("hidden");
-        }
-      };
-    });
-  }
-
   // --- model answers -----------------------------------------------------------------
   // Schema-shaped neutral defaults: empty strings push finalize_poles / noun_forms
   // onto their built-in fallbacks (loading-derived pole words, naive plural); the
@@ -311,8 +243,8 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
 
   // One pending model call -> one answer object matching its JSON schema. The
   // schema's shape says which engine call this is: the four pole keys -> embedding
-  // naming (default-on); a matrix of objects -> the delegation panel; anything
-  // else (noun forms) -> neutral, i.e. the engine's built-in fallback.
+  // naming (default-on); anything else (noun forms) -> neutral, i.e. the engine's
+  // built-in fallback. Auto-fill never reaches here: it is fully client-side.
   async function answerLLM(pending) {
     const props = (pending.schema || {}).properties || {};
     const keys = Object.keys(props);
@@ -327,10 +259,105 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
         return neutralAnswer(pending.schema);
       }
     }
-    if (keys.length && Object.values(props).every((p) => p.type === "object")) {
-      return delegatePanel(pending); // rejects on cancel -> surfaces as err_flemme
-    }
     return neutralAnswer(pending.schema); // noun forms and anything unforeseen
+  }
+
+  // --- "Laziness": ONE in-browser LLM call fills the empty cells, nothing else ----
+  // A small instruct model (WebLLM over WebGPU, ~1 GB, downloaded on the FIRST
+  // Paresse click then cached by the browser) answers the engine's own localized
+  // ratings prompt with schema-constrained JSON. No panel, no copy-paste: click,
+  // wait, the blanks fill in. The page then writes ONLY the still-empty cells, so
+  // nothing the user typed is ever overwritten. The pole naming stays on the
+  // lightweight embedding model — this heavier model loads only for Paresse.
+  const WEBLLM_URL = "https://esm.run/@mlc-ai/web-llm@0.2.85";
+  const WEBLLM_MODEL = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
+  let llmPromise = null; // single-flight engine load
+
+  // `window.__webllm` is a test seam: headless CI has no WebGPU, so the flow is
+  // exercised against a canned engine instead of the real download.
+  function ensureLLM() {
+    if (llmPromise) return llmPromise;
+    llmPromise = (async () => {
+      if (!window.__webllm && !navigator.gpu) {
+        throw new Error(t("flemme_nogpu", "this browser can't run the in-page AI model (WebGPU missing)."));
+      }
+      const webllm = window.__webllm || (await import(WEBLLM_URL));
+      const engine = await webllm.CreateMLCEngine(WEBLLM_MODEL, {
+        initProgressCallback: (report) =>
+          badge(t("flemme_model", "Loading the AI model… ") + (report.text || "")),
+      });
+      badge("", true);
+      return engine;
+    })().catch((err) => {
+      llmPromise = null; // transient network / GPU hiccups may recover on retry
+      badge("", true);
+      throw err;
+    });
+    return llmPromise;
+  }
+
+  function buildRatingsPrompt(req) {
+    const tpl = strings.ratings_prompt || "";
+    return tpl
+      .replace("{noun}", req.noun || "Option")
+      .replace("{options}", (req.options || []).join(", "))
+      .replace("{criteria}", (req.criteria || []).join(", "))
+      .replace(/\{\{/g, "{")
+      .replace(/\}\}/g, "}"); // {{ }} are literal braces in the template's example
+  }
+
+  function gridHasEmptyCell() {
+    // The grid's value inputs (not the name/criterion header inputs): one per
+    // rating cell, exactly what "Laziness" is allowed to fill.
+    return [...document.querySelectorAll("#grid td input:not(.cell-name)")].some(
+      (i) => !i.value.trim()
+    );
+  }
+
+  // 1..5 integer, neutral 3 on anything odd — mirrors the engine's _clamp_rating.
+  const clampRating = (v) => {
+    const n = Math.round(Number(v));
+    return Number.isFinite(n) ? Math.max(1, Math.min(5, n)) : 3;
+  };
+
+  async function llmAutofill(req) {
+    if (!gridHasEmptyCell()) {
+      throw new Error(
+        t("flemme_none", "no empty cells to fill — add an option, a criterion, or clear a cell first.")
+      );
+    }
+    // Same shape the server engine constrains its model with: every option maps
+    // to an object of its criteria, each an integer.
+    const schema = {
+      type: "object",
+      properties: Object.fromEntries(
+        (req.options || []).map((o) => [
+          o,
+          {
+            type: "object",
+            properties: Object.fromEntries(
+              (req.criteria || []).map((c) => [c, { type: "integer" }])
+            ),
+            required: req.criteria || [],
+          },
+        ])
+      ),
+      required: req.options || [],
+    };
+    const engine = await ensureLLM();
+    const reply = await engine.chat.completions.create({
+      messages: [{ role: "user", content: buildRatingsPrompt(req) }],
+      temperature: 0,
+      response_format: { type: "json_object", schema: JSON.stringify(schema) },
+    });
+    const data = JSON.parse(reply.choices[0].message.content);
+    // Clamp every rating and backfill gaps, so the grid always gets a full matrix.
+    const out = {};
+    for (const o of req.options || []) {
+      const row = data[o] || {};
+      out[o] = Object.fromEntries((req.criteria || []).map((c) => [c, clampRating(row[c])]));
+    }
+    return out;
   }
 
   // --- the replay driver ----------------------------------------------------------
@@ -386,7 +413,7 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
         await call("xlsx", { table: csv }),
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       ),
-    autofill: async (req) => call("autofill", req),
+    autofill: llmAutofill, // one in-browser LLM call fills the blanks, nothing else
     // A position run first fetches its per-pole criteria (deterministic, never
     // pending), so the embedding namer can answer the pole call it will trigger.
     position: async (req) => {

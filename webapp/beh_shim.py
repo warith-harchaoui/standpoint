@@ -51,6 +51,7 @@ class PendingLLM(BaseException):
     """
 
     def __init__(self, key: str, prompt: str, schema: dict) -> None:
+        """Capture one blocked call: its cache key, prompt and answer schema."""
         super().__init__(f"pending LLM call {key[:12]}")
         self.key = key
         self.prompt = prompt

@@ -25,17 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   visitor's browser via Pyodide, XLSX import/export runs on a vendored
   `openpyxl`, and figures stay the same hand-authored SVG. LLM calls go
   through a memoized-replay shim of `best-engine-ai-helper`
-  (`webapp/beh_shim.py`), answered rag.html-style (no big generative model in
-  the page): **axis naming runs by default** on a small multilingual embedding
-  model (transformers.js MiniLM, lazily loaded, browser-cached) matched
-  against a curated vocabulary of positive qualities
+  (`webapp/beh_shim.py`): **axis naming runs by default** on a small
+  multilingual embedding model (transformers.js MiniLM, lazily loaded,
+  browser-cached) matched against a curated vocabulary of positive qualities
   (`webapp/vocab/<lang>.json`, confusable entries glossed), and **"Laziness"
-  auto-fill delegates to the user's own AI** via a copy-the-prompt /
-  paste-the-JSON panel built around the engine's own localized
-  `ratings_prompt`. Offline or on any failure, schema-shaped neutral answers
-  push the engine onto its built-in fallbacks so Generate always completes.
-  Verified headless (Playwright), with an embedding seam for determinism plus
-  a real-model spot check on an English and a French table.
+  auto-fill is one direct in-browser LLM call** (WebLLM over WebGPU,
+  Qwen2.5-1.5B, ~1 GB downloaded on first click then cached) answering the
+  engine's own localized `ratings_prompt` with schema-constrained JSON — it
+  fills only the still-empty cells, tells you when there is nothing to fill,
+  and tells you when the browser lacks WebGPU. Offline or on any failure,
+  schema-shaped neutral answers push the engine onto its built-in fallbacks
+  so Generate always completes. Verified headless (Playwright), with
+  embedding/WebLLM seams for determinism plus a real-model spot check on an
+  English and a French table.
 - **`webgui.py`: an injectable `backend` layer.** The page's six data
   operations (`example`, `i18n`, `upload`, `downloadXlsx`, `autofill`,
   `position`) now route through one `window.backend`-overridable object whose

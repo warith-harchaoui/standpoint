@@ -18,8 +18,14 @@ from pathlib import Path
 
 import pytest
 
-_STANDPOINT_DIR = Path(__file__).resolve().parents[1] / "standpoint"
-_MODULE_PATHS = sorted(_STANDPOINT_DIR.glob("*.py"))
+_REPO = Path(__file__).resolve().parents[1]
+# The core package plus the static-build sources (webapp/*.py runs in Pyodide,
+# webapp/seo/*.py at build time); dist/ is generated output, never linted.
+_MODULE_PATHS = sorted(
+    p
+    for pattern in ("standpoint/*.py", "webapp/*.py", "webapp/seo/*.py")
+    for p in _REPO.glob(pattern)
+)
 
 
 def _undocumented(path: Path) -> list[str]:

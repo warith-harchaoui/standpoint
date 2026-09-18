@@ -130,7 +130,11 @@ def export_i18n() -> None:
     out = DIST / "i18n"
     out.mkdir(parents=True, exist_ok=True)
     for lang in sorted(sp.SUPPORTED_LANGS):
-        strings = sp.i18n(lang).get("gui") or sp.i18n("en")["gui"]
+        strings = dict(sp.i18n(lang).get("gui") or sp.i18n("en")["gui"])
+        # The static build's "Laziness" panel formats the engine's own ratings
+        # prompt client-side (no Pyodide wait), so ship the template alongside
+        # the GUI strings.
+        strings["ratings_prompt"] = sp.i18n(lang)["ratings_prompt"]
         (out / f"{lang}.json").write_text(
             json.dumps(strings, ensure_ascii=False, indent=1), encoding="utf-8"
         )
