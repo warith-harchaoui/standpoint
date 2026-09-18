@@ -1,0 +1,46 @@
+<!-- SEO / GEO block, injected by build.py into the STATIC build only (the
+     localhost server GUI must not claim the deraison.ai canonical). {BASE}
+     is replaced with the deployment URL at build time. Single URL, bilingual
+     app: og:locale declares EN with FR/ES alternates; the language toggle is
+     client-side, so there are no per-language URLs to hreflang to. -->
+<link rel="canonical" href="{BASE}/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Standpoint" />
+<meta property="og:title" content="Standpoint — Where do you stand?" />
+<meta property="og:description" content="Paste or edit a comparison table and get a labelled 2D positioning map, computed entirely in your browser. Nothing is uploaded, no account, free and open source." />
+<meta property="og:url" content="{BASE}/" />
+<meta property="og:image" content="{BASE}/static/og-card.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Standpoint: an old-map logo next to the baseline 'Where do you stand?' / 'Sachez où vous en êtes'." />
+<meta property="og:locale" content="en_US" />
+<meta property="og:locale:alternate" content="fr_FR" />
+<meta property="og:locale:alternate" content="es_ES" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Standpoint — Where do you stand?" />
+<meta name="twitter:description" content="A comparison table in, a labelled 2D positioning map out. Runs entirely in your browser." />
+<meta name="twitter:image" content="{BASE}/static/og-card.png" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Standpoint",
+  "alternateName": "Sachez où vous en êtes",
+  "url": "{BASE}/",
+  "description": "Standpoint turns a comparison table (options as rows, criteria as columns) into a labelled 2D positioning map. The PCA engine, the figure and the exports all run in the visitor's browser via WebAssembly; no data leaves the machine.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any (web browser)",
+  "browserRequirements": "Requires JavaScript and WebAssembly",
+  "inLanguage": ["en", "fr", "es"],
+  "image": "{BASE}/static/og-card.png",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "license": "https://opensource.org/license/bsd-3-clause",
+  "isAccessibleForFree": true,
+  "author": {
+    "@type": "Person",
+    "name": "Warith Harchaoui",
+    "url": "https://deraison.ai"
+  },
+  "sameAs": ["https://github.com/warith-harchaoui/standpoint"]
+}
+</script>

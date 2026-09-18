@@ -45,6 +45,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`i18n.yaml`: `gui.naming_*` and `gui.delegate_*` keys** (en/fr/es), the
   strings for the static build's axis-naming badge and delegation panel; the
   server GUI never shows them.
+- **SEO/GEO for the static deployment (sprezzature-publish).** The build now
+  injects a deployment head block into `dist/index.html` (canonical URL, Open
+  Graph + Twitter card pointing at a generated 1200×630 `og-card.png`,
+  Schema.org `WebApplication` JSON-LD crediting Warith Harchaoui /
+  deraison.ai), overlays a full favicon/PWA icon set generated from
+  `assets/logo.png`, and emits `robots.txt`, `sitemap.xml`, `llms.txt`,
+  `llms-full.txt` and `humans.txt` plus the raw Markdown corpus they cite
+  (README/LISEZMOI/GUI/EXAMPLES/EXEMPLES served as-is for generative
+  engines). `webapp/build.py --base-url` overrides the default
+  https://deraison.ai/standpoint target.
 
 ### Removed
 
