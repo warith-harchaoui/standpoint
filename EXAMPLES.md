@@ -2,10 +2,9 @@
 
 Every example uses a table from
 [`examples/`](https://github.com/warith-harchaoui/standpoint/tree/main/examples).
-Each run writes six files: the transparent figure `<name>.png` / `<name>.svg`, a
+Each run writes five files: the transparent figure `<name>.png` / `<name>.svg`, a
 white-background `<name>.white.png` / `<name>.white.svg` (for dark surfaces where the
-dark labels would vanish on transparency), the `<name>.md` analysis, and the
-`<name>.yaml` data.
+dark labels would vanish on transparency), and the `<name>.yaml` data.
 
 ## As a library
 
@@ -17,7 +16,7 @@ pos.axes            # {'x': 'Scalability ↔ Versatility', 'y': 'Flexibility ↔
 pos.coords          # DataFrame: axis-1 / axis-2 per option
 pos.loadings        # DataFrame: criterion weights per axis
 pos.role_of         # {'Python': 'best', 'Rust': 'worst', ...}
-pos.export("out")   # writes out/python.{png,svg,white.png,white.svg,md,yaml}
+pos.export("out")   # writes out/python.{png,svg,white.png,white.svg,yaml}
 ```
 
 Pass a DataFrame if you already have one, and name the reference:
@@ -28,7 +27,7 @@ df = pd.read_csv("examples/cloud_providers.csv", index_col=0)
 sp.positioning(df, reference="AWS").export("out")
 ```
 
-Choose a different local model for the axis names and analysis:
+Choose a different local model for the axis names:
 
 ```python
 sp.positioning(df, model="qwen2.5vl:7b").export("out")
@@ -66,8 +65,8 @@ column where lower is better, no `--lower` flag needed.
 
 ### Voitures électriques (French)
 
-The column names are French, so the axis names and the written analysis come out in
-French. Leader: Tesla Model 3.
+The column names are French, so the axis names come out in French. Leader: Tesla
+Model 3.
 
 ![Carte de positionnement des voitures électriques](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/voitures_electriques.png)
 
@@ -78,7 +77,5 @@ French. Leader: Tesla Model 3.
   embed it anywhere.
 - `.white.png` and `.white.svg`: the same figure on a **white** background, for dark
   surfaces (e.g. GitHub dark mode) where the near-black labels would otherwise vanish.
-- `.md`: a short written analysis. What the axes mean, where the leader wins, which
-  groups stand out, plus the loadings and a ranking.
 - `.yaml`: metadata (variance, rotation), each axis's loadings, and every option's
   coordinates, role, colour, and original values.

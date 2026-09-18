@@ -1,12 +1,12 @@
-"""Standpoint: know where each option actually stands.
+"""Standpoint: where do you stand?
 
 Explainable 2D Principal Component Analysis (PCA) positioning map from any
 comparison table: PCA finds the few directions along which the rows differ the
 most, so a table of many criteria collapses into a readable two-axis map.
 
 Turn a table of *approaches x criteria* (CSV or Markdown, numeric ratings on any
-scale) into a competitive positioning map, plus a written interpretation and a
-full dump of the coefficients: a three-fold deliverable from one input file.
+scale) into a competitive positioning map, plus a full dump of the coefficients:
+a two-fold deliverable from one input file.
 
 Pipeline
 --------
@@ -121,7 +121,6 @@ __all__ = [
     "render_figures",
     "png_on_white",
     "export_all",
-    "analysis_markdown",
     "suggest_ratings",
     "results_yaml",
     "validate_table",
@@ -1494,7 +1493,7 @@ def to_svg(
 
 
 # --------------------------------------------------------------------------- #
-# Three-fold export: figures (PNG + SVG), markdown, YAML
+# Two-fold export: figures (PNG + SVG), YAML
 # --------------------------------------------------------------------------- #
 def _white_variant(svg: str) -> str:
     """Insert an opaque white background rect right after the opening ``<svg>`` tag.
@@ -1689,123 +1688,6 @@ def _clamp_rating(value: object) -> int:
         return 3
 
 
-def _llm_text(prompt: str, model: str | None, fallback: str) -> str:
-    """Free-text completion from the local model; `fallback` if unreachable."""
-    try:
-        text = llm.chat(prompt, engine=engine(), kind="vlm", temperature=0.3, model=model)
-        return (text.strip() if isinstance(text, str) else "") or fallback
-    except Exception:
-        return fallback
-
-
-def _approx_pct(fraction: float) -> str:
-    """Format a fraction as an approximate percentage: nearest 5, with a '~' prefix.
-
-    An exact figure like '89%' reads as false precision in a written takeaway; '~90%'
-    conveys the same magnitude at an honest resolution.
-    """
-    return f"~{round(fraction * 20) * 5}%"
-
-
-def analysis_markdown(
-    result: PCAResult,
-    roles: list[str],
-    poles: list[str],
-    model: str | None = None,
-    lang: str | None = None,
-) -> str:
-    """A thoughtful, precise interpretation of the map as Markdown.
-
-    Combines data-derived facts (axis loadings, variance, roles, coordinates) with
-    an LLM-written narrative in the table's own language (auto-detected). Falls
-    back to a templated narrative when the model is unavailable.
-    """
-    left, right, bottom, top = poles
-    evr = result.explained_variance_ratio
-    names = result.names
-    role_of = dict(zip(names, roles, strict=False))
-    coords = result.coords()
-    if lang is None:
-        lang = detect_language(result.features)
-
-    def order_line(k: int) -> str:
-        """Axis `k`'s criteria in order, from the ones pulling toward its positive
-        (right/top) pole to those pulling toward the negative one. Names only: the
-        ordering is what a reader can use; the raw weights are noise here.
-        """
-        pairs = sorted(
-            zip(result.features, result.components[k], strict=False), key=lambda t: -t[1]
-        )
-        return " · ".join(f for f, _ in pairs)
-
-    ranked = sorted(names, key=lambda n: -(coords.loc[n].sum()))
-    role_rows = {
-        r: next((n for n, rr in role_of.items() if rr == r), "—")
-        for r in ("best", "worst", "top", "right")
-    }
-
-    narrative = _llm_text(
-        i18n(lang)["narrative_prompt"].format(
-            left=left,
-            right=right,
-            bottom=bottom,
-            top=top,
-            reference=result.reference,
-            best=role_rows["best"],
-            worst=role_rows["worst"],
-            champ_top=role_rows["top"],
-            champ_right=role_rows["right"],
-            leaderboard=", ".join(ranked[:8]),
-        ),
-        model,
-        fallback=(
-            f"The map's horizontal axis contrasts **{left}** (left) with **{right}** "
-            f"(right); the vertical contrasts **{bottom}** (bottom) with **{top}** "
-            f"(top), together capturing {_approx_pct(evr.sum())} of the information that tells "
-            f"these approaches apart. **{result.reference}** anchors the top-right as the "
-            f"reference leader, strongest on the {right.lower()} and {top.lower()} "
-            f"directions. **{role_rows['worst']}** sits opposite as the weakest on "
-            f"these dimensions, while among the challengers **{role_rows['top']}** "
-            f"reaches furthest toward {top.lower()} and **{role_rows['right']}** "
-            f"furthest toward {right.lower()}."
-        ),
-    )
-
-    # The structural labels (headings and fixed lines) are localized so the whole
-    # report follows `lang`, matching the localized narrative and pole names above.
-    a = i18n(lang).get("analysis", i18n("en")["analysis"])
-    horiz = a["axis_horizontal"].format(left=left, right=right)
-    vert = a["axis_vertical"].format(bottom=bottom, top=top)
-    lines = [
-        f"# {result.reference}",
-        "",
-        f"## {a['interpretation']}",
-        "",
-        narrative,
-        "",
-        f"## {a['axes']}",
-        "",
-        f"**{horiz}** {a['info_share'].format(pct=_approx_pct(evr[0]))}",
-        "",
-        a["relevant_columns"].format(cols=order_line(0)),
-        "",
-        f"**{vert}** {a['info_share'].format(pct=_approx_pct(evr[1]))}",
-        "",
-        a["relevant_columns"].format(cols=order_line(1)),
-        "",
-        a["preserved"].format(pct=_approx_pct(evr.sum())),
-        "",
-        f"## {a['highlighted']}",
-        "",
-        f"- **{a['leader']}** {role_rows['best']}",
-        f"- **{a['opposite']}** {role_rows['worst']} {a['opposite_note']}",
-        f"- **{a['strongest_top'].format(top=top)}** {role_rows['top']} {a['top_note']}",
-        f"- **{a['strongest_right'].format(right=right)}** {role_rows['right']} {a['right_note']}",
-        "",
-    ]
-    return "\n".join(lines)
-
-
 def results_yaml(
     df: pd.DataFrame,
     result: PCAResult,
@@ -1873,13 +1755,11 @@ def export_all(
     axis_names: list[str],
     colors: list[str],
     stem: str,
-    model: str | None = None,
     noun_plural: str = "Approaches",
     title: str | None = None,
 ) -> list[str]:
-    """Write the full three-fold deliverable for one table: figures (PNG + SVG), a
-    Markdown interpretation, and a YAML of coordinates + coefficients. Returns the
-    list of paths written.
+    """Write the full two-fold deliverable for one table: figures (PNG + SVG) and a
+    YAML of coordinates + coefficients. Returns the list of paths written.
     """
     svg = to_svg(
         result,
@@ -1891,13 +1771,10 @@ def export_all(
         attributes=df,
     )
     written = render_figures(svg, stem)
-    for path, text in [
-        (f"{stem}.md", analysis_markdown(result, roles, poles, model)),
-        (f"{stem}.yaml", results_yaml(df, result, roles, poles, axis_names, colors)),
-    ]:
-        with open(path, "w", encoding="utf-8") as fh:
-            fh.write(text)
-        written.append(path)
+    yaml_path = f"{stem}.yaml"
+    with open(yaml_path, "w", encoding="utf-8") as fh:
+        fh.write(results_yaml(df, result, roles, poles, axis_names, colors))
+    written.append(yaml_path)
     return written
 
 
@@ -1950,10 +1827,6 @@ class Positioning:
             attributes=self.df,  # raw values, so the hover tooltip lists every column
         )
 
-    def to_markdown(self, model: str | None = None) -> str:
-        """The written interpretation as Markdown."""
-        return analysis_markdown(self.result, self.roles, self.poles, model)
-
     def to_yaml(self) -> str:
         """All coordinates + coefficients as YAML."""
         return results_yaml(
@@ -1964,13 +1837,8 @@ class Positioning:
         """Render the map to `<stem>.png` and `<stem>.svg`; returns the paths."""
         return render_figures(self.to_svg(), stem)
 
-    def export(
-        self,
-        outdir: str = ".",
-        stem: str | None = None,
-        model: str | None = None,
-    ) -> list[str]:
-        """Write the full three-fold deliverable into `outdir`; returns the paths."""
+    def export(self, outdir: str = ".", stem: str | None = None) -> list[str]:
+        """Write the full two-fold deliverable into `outdir`; returns the paths."""
         os.makedirs(outdir, exist_ok=True)
         name = stem or re.sub(r"[^A-Za-z0-9]+", "_", self.result.reference).strip("_").lower()
         return export_all(
@@ -1981,7 +1849,6 @@ class Positioning:
             self.axis_names,
             self.colors,
             os.path.join(outdir, name),
-            model=model,
             noun_plural=self.noun_plural,
             title=self.title,
         )
@@ -2004,7 +1871,7 @@ def positioning(
     named option into the top-pole / right-pole highlight (see `assign_roles`).
     `lang` forces the output language (one of `SUPPORTED_LANGS`); left `None` it is
     detected from the column names. Returns a `Positioning` with `.coords`,
-    `.loadings`, `.axes`, `.to_svg()`, `.to_markdown()`, `.to_yaml()`, `.export()`.
+    `.loadings`, `.axes`, `.to_svg()`, `.to_yaml()`, `.export()`.
 
     >>> pos = positioning("examples/programming_languages.csv")
     >>> pos.export("out")
@@ -2026,7 +1893,7 @@ def positioning(
     # "Voitures dans le quadrant", never "Voitures in the Quadrant".
     title = i18n(lang)["title_template"].format(plural=plural)
     # Bundle the geometry and the model-named parts into the façade the caller drives
-    # (.coords / .loadings / .to_svg / .to_markdown / .to_yaml / .export).
+    # (.coords / .loadings / .to_svg / .to_yaml / .export).
     return Positioning(
         df,
         result,
@@ -2097,8 +1964,8 @@ def run(
     print("Canonical axes in the oriented frame (loadings):")
     print(pos.loadings.round(3).to_string(), "\n")
 
-    written = pos.export(outdir, stem=stem, model=model)
-    print("Three-fold deliverable written:")
+    written = pos.export(outdir, stem=stem)
+    print("Two-fold deliverable written:")
     for path in written:
         print(f"  {path}")
 
@@ -2132,7 +1999,7 @@ def main(argv: list[str] | None = None) -> None:
         "-o",
         "--outdir",
         default="out",
-        help="output directory for the three-fold deliverable (default out/)",
+        help="output directory for the two-fold deliverable (default out/)",
     )
     ap.add_argument("--stem", help="basename for outputs (default: derived from reference)")
     ap.add_argument(

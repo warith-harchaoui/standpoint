@@ -1,13 +1,10 @@
 # Standpoint: localized LLM prompt templates.
 # Language is auto-detected from the table's column names (langdetect); the
-# detected language drives the pole names and the written analysis so the whole
-# deliverable comes out in the table's own language. Supported: en, fr, es.
+# detected language drives the pole names so the whole deliverable comes out in
+# the table's own language. Supported: en, fr, es.
 #
 # Placeholders (Python str.format): {glossary} {left} {right} {bottom} {top}
-# for axis_prompt; {left} {right} {bottom} {top} {reference} {best} {worst}
-# {champ_top} {champ_right} {leaderboard} for narrative_prompt ({champ_top} /
-# {champ_right} are the challengers that reach furthest toward the top / right
-# poles). JSON braces are escaped as {{ }}.
+# for axis_prompt. JSON braces are escaped as {{ }}.
 
 en:
   # Figure title. {plural} is the plural of the table's first-column noun. The whole
@@ -44,20 +41,6 @@ en:
     TOP pole, strongest at: {top}
 
     Reply as JSON: {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
-  narrative_prompt: |
-    You are a sharp analyst writing the takeaways from a positioning map, in English.
-    Write 4-6 sentences of concrete, decision-useful insight, NOT a restatement of
-    the axes. The horizontal axis runs from '{left}' to '{right}'; the vertical from
-    '{bottom}' to '{top}'. '{reference}' is the reference leader (top-right).
-    Best={best}, worst={worst}; the standout toward '{top}' is {champ_top} and toward
-    '{right}' is {champ_right}. Overall order, strongest first: {leaderboard}.
-    Cover, in flowing prose: (1) the single biggest takeaway a reader should leave
-    with; (2) what '{reference}' actually wins on and where it is exposed;
-    (3) the sharpest trade-off in the field and which option fits which need;
-    (4) any option that punches above or below its rank. Name real options, be
-    specific and genuinely useful, never generic. No acronyms, no bullet lists.
-    Write plain prose with no dash punctuation: use commas, colons, semicolons, or
-    separate sentences instead of em dashes or en dashes.
   # "Flemme" (lazy) autofill: the user typed the option names and the criteria; the
   # model fills every rating from its own knowledge. {noun} is the first-column word.
   ratings_prompt: |
@@ -73,9 +56,10 @@ en:
     {{"OptionA": {{"Crit1": 4, "Crit2": 2}}, "OptionB": {{"Crit1": 3, "Crit2": 5}}}}.
   gui:
     lang_name: English
-    baseline: Know where each option actually stands.
+    baseline: Where do you stand?
+    guide_1: Fill out the table (or import it as a CSV/XLSX file), then select the row you want to promote.
+    guide_2: Click “Generate Quadrant”.
     github: ⭐️ on GitHub
-    footer_note: "Local-first: your table never leaves this machine."
     theme_light_aria: Switch to dark theme
     theme_dark_aria: Switch to light theme
     lang_aria: Switch language
@@ -99,15 +83,26 @@ en:
     flemme_running: "Asking the model to fill the table… (this can take a moment)"
     quadrant_title: Quadrant
     chart_placeholder: Generate to see the map.
-    analysis_title: Basic Analysis
-    download_md: Download Markdown
-    analysis_placeholder: The written interpretation appears here once you generate.
     err_upload: "Upload failed: "
     err_xlsx: XLSX export failed.
     err_flemme: "Auto-fill failed: "
     err_generic: "Error: "
     err_image: "Image export failed: "
-    no_analysis: "*(no analysis, enable the model)*"
+    # Static (in-browser) build only: axis naming runs on a small embedding
+    # model by default, and "Laziness" delegates to the user's own AI via a
+    # copy-the-prompt / paste-the-JSON panel (webapp/backend-pyodide.js).
+    # The server GUI never shows these keys.
+    naming_loading: "Naming the axes… (first-time model load, a few seconds)"
+    naming_offline: "Naming model unavailable; axes named from the criteria."
+    delegate_title: Fill with your own AI
+    delegate_intro: "1. Copy this prompt and paste it into your favorite AI (ChatGPT, Claude, a local model…). 2. Paste its JSON answer below."
+    delegate_copy: 📋 Copy the prompt
+    delegate_copied: Prompt copied!
+    delegate_paste: Paste the AI's JSON answer here
+    delegate_apply: Apply
+    delegate_cancel: Cancel
+    delegate_bad_json: "That doesn't parse as JSON: "
+    delegate_cancelled: cancelled
     new_option: New
     new_criterion: Criterion
     aria_options_col: Name of the options column
@@ -129,25 +124,6 @@ en:
     aria_pole_left: Left pole name
     aria_pole_right: Right pole name
     aria_pole_bottom: Bottom pole name
-  # Localized labels for the structural parts of the written analysis (the headings
-  # and fixed lines around the LLM narrative), so the whole report follows the
-  # language. Placeholders: {left} {right} {bottom} {top} {pct} {cols}.
-  analysis:
-    interpretation: Interpretation
-    axes: Axes
-    axis_horizontal: "Horizontal ({left} ↔ {right}):"
-    axis_vertical: "Vertical ({bottom} ↔ {top}):"
-    info_share: "{pct} of the information."
-    relevant_columns: "Relevant columns for axis: {cols}."
-    preserved: "In two axes, we preserved **{pct}** of the information."
-    highlighted: Highlighted approaches
-    leader: "Chosen leader reference:"
-    opposite: "Exact reference opposite:"
-    opposite_note: (diametrically opposite the leader on the map)
-    strongest_top: "Strongest toward {top}:"
-    top_note: (challenger furthest up the vertical axis)
-    strongest_right: "Strongest toward {right}:"
-    right_note: (challenger furthest along the horizontal axis)
 
 fr:
   # « Voitures dans le quadrant », jamais « Voitures in the Quadrant ».
@@ -185,21 +161,6 @@ fr:
     Pôle HAUT, les plus fortes en : {top}
 
     Répondez en JSON : {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
-  narrative_prompt: |
-    Vous êtes un analyste pointu qui rédige les enseignements d'une carte de
-    positionnement, en français. Écrivez 4 à 6 phrases d'analyse concrète et utile à
-    la décision, PAS une paraphrase des axes. L'axe horizontal va de « {left} » à
-    « {right} » ; le vertical de « {bottom} » à « {top} ». « {reference} » est la
-    référence en tête (haut à droite). Meilleur={best}, pire={worst} ; le plus
-    marquant vers « {top} » est {champ_top}, vers « {right} » est {champ_right}.
-    Ordre global, du plus fort au plus faible : {leaderboard}. Traitez, en prose
-    fluide : (1) l'enseignement principal à retenir ; (2) ce sur quoi « {reference} »
-    l'emporte vraiment et où elle est exposée ; (3) l'arbitrage le plus net du champ
-    et quelle option pour quel besoin ; (4) toute option qui surperforme ou
-    sous-performe son rang. Nommez de vraies options, soyez précis et vraiment utile,
-    jamais générique. Pas d'acronymes, pas de listes à puces. Écrivez une prose sans
-    tiret de ponctuation : virgules, deux-points, points-virgules ou phrases séparées
-    à la place des cadratins ou demi-cadratins.
   # « Flemme » : l'utilisateur a saisi les noms des options et des critères ; le
   # modèle remplit chaque note depuis sa propre connaissance. {noun} = mot d'en-tête.
   ratings_prompt: |
@@ -216,9 +177,10 @@ fr:
     {{"OptionA": {{"Crit1": 4, "Crit2": 2}}, "OptionB": {{"Crit1": 3, "Crit2": 5}}}}.
   gui:
     lang_name: Français
-    baseline: Sachez où se situe vraiment chaque option.
+    baseline: Sachez où vous en êtes
+    guide_1: Remplir le tableau (ou l'importer en CSV/XLSX) puis choisir la ligne à promouvoir.
+    guide_2: Cliquer sur « Générer le quadrant ».
     github: ⭐️ sur GitHub
-    footer_note: "Tout est local : votre tableau ne quitte jamais cette machine."
     theme_light_aria: Passer au thème sombre
     theme_dark_aria: Passer au thème clair
     lang_aria: Changer de langue
@@ -242,15 +204,26 @@ fr:
     flemme_running: "Le modèle remplit le tableau… (cela peut prendre un moment)"
     quadrant_title: Quadrant
     chart_placeholder: Générez pour voir la carte.
-    analysis_title: Analyse
-    download_md: Télécharger le Markdown
-    analysis_placeholder: L'interprétation écrite apparaît ici après génération.
     err_upload: "Échec de l'import : "
     err_xlsx: Échec de l'export XLSX.
     err_flemme: "Échec du remplissage : "
     err_generic: "Erreur : "
     err_image: "Échec de l'export de l'image : "
-    no_analysis: "*(pas d'analyse, activez le modèle)*"
+    # Build statique (navigateur) uniquement : le nommage des axes tourne par
+    # défaut sur un petit modèle d'embeddings, et « Paresse » délègue à l'IA de
+    # l'utilisateur via un panneau copier le prompt / coller le JSON
+    # (webapp/backend-pyodide.js). Le GUI serveur ne montre jamais ces clés.
+    naming_loading: "Nommage des axes… (premier chargement du modèle, quelques secondes)"
+    naming_offline: "Modèle de nommage indisponible ; axes nommés depuis les critères."
+    delegate_title: Remplir avec votre propre IA
+    delegate_intro: "1. Copiez ce prompt et collez-le dans votre IA préférée (ChatGPT, Claude, un modèle local…). 2. Collez sa réponse JSON ci-dessous."
+    delegate_copy: 📋 Copier le prompt
+    delegate_copied: Prompt copié !
+    delegate_paste: Collez ici la réponse JSON de l'IA
+    delegate_apply: Appliquer
+    delegate_cancel: Annuler
+    delegate_bad_json: "Impossible de lire ce JSON : "
+    delegate_cancelled: annulé
     new_option: Nouvelle
     new_criterion: Critère
     aria_options_col: Nom de la colonne des options
@@ -272,22 +245,6 @@ fr:
     aria_pole_left: Nom du pôle gauche
     aria_pole_right: Nom du pôle droit
     aria_pole_bottom: Nom du pôle bas
-  analysis:
-    interpretation: Interprétation
-    axes: Axes
-    axis_horizontal: "Horizontal ({left} ↔ {right}) :"
-    axis_vertical: "Vertical ({bottom} ↔ {top}) :"
-    info_share: "{pct} de l'information."
-    relevant_columns: "Colonnes pertinentes pour l'axe : {cols}."
-    preserved: "Sur deux axes, nous avons préservé **{pct}** de l'information."
-    highlighted: Approches mises en avant
-    leader: "Référence en tête choisie :"
-    opposite: "Opposé exact de la référence :"
-    opposite_note: (diamétralement opposé au leader sur la carte)
-    strongest_top: "Plus fort vers {top} :"
-    top_note: (challenger le plus haut sur l'axe vertical)
-    strongest_right: "Plus fort vers {right} :"
-    right_note: (challenger le plus à droite sur l'axe horizontal)
 
 es:
   # «Coches en el cuadrante», nunca «Coches in the Quadrant».
@@ -324,20 +281,6 @@ es:
     Polo SUPERIOR, más fuertes en: {top}
 
     Responde en JSON: {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
-  narrative_prompt: |
-    Eres un analista agudo que escribe las conclusiones de un mapa de posicionamiento,
-    en español. Escribe de 4 a 6 frases de análisis concreto y útil para decidir, NO
-    una paráfrasis de los ejes. El eje horizontal va de « {left} » a « {right} »; el
-    vertical de « {bottom} » a « {top} ». « {reference} » es la referencia líder
-    (arriba a la derecha). Mejor={best}, peor={worst}; el más destacado hacia
-    « {top} » es {champ_top} y hacia « {right} » es {champ_right}. Orden global, del
-    más fuerte al más débil: {leaderboard}. Cubre, en prosa fluida: (1) la conclusión
-    principal; (2) en qué gana realmente « {reference} » y dónde queda expuesta;
-    (3) el compromiso más claro del campo y qué opción para qué necesidad; (4) alguna
-    opción que rinda por encima o por debajo de su rango. Nombra opciones reales, sé
-    específico y realmente útil, nunca genérico. Sin siglas, sin listas con viñetas.
-    Escribe en prosa sin guiones de puntuación: usa comas, dos puntos, puntos y coma
-    o frases separadas en lugar de rayas o guiones largos.
   # «Flemme»: el usuario escribió los nombres; el modelo rellena cada nota con su
   # propio conocimiento. {noun} es la palabra de la primera columna.
   ratings_prompt: |
@@ -354,9 +297,10 @@ es:
     {{"OpcionA": {{"Crit1": 4, "Crit2": 2}}, "OpcionB": {{"Crit1": 3, "Crit2": 5}}}}.
   gui:
     lang_name: Español
-    baseline: Sepa dónde está realmente cada opción.
+    baseline: ¿Dónde te sitúas?
+    guide_1: Rellena la tabla (o impórtala en CSV/XLSX) y elige la fila a promover.
+    guide_2: Haz clic en «Generar el cuadrante».
     github: ⭐️ en GitHub
-    footer_note: "Todo es local: tu tabla nunca sale de esta máquina."
     theme_light_aria: Cambiar al tema oscuro
     theme_dark_aria: Cambiar al tema claro
     lang_aria: Cambiar de idioma
@@ -380,15 +324,26 @@ es:
     flemme_running: "El modelo rellena la tabla… (puede tardar un momento)"
     quadrant_title: Cuadrante
     chart_placeholder: Genera para ver el mapa.
-    analysis_title: Análisis
-    download_md: Descargar Markdown
-    analysis_placeholder: La interpretación escrita aparece aquí tras generar.
     err_upload: "Error al importar: "
     err_xlsx: Error al exportar XLSX.
     err_flemme: "Error al rellenar: "
     err_generic: "Error: "
     err_image: "Error al exportar la imagen: "
-    no_analysis: "*(sin análisis, activa el modelo)*"
+    # Solo para la versión estática (navegador): el nombrado de los ejes corre
+    # por defecto sobre un pequeño modelo de embeddings, y «Pereza» delega en la
+    # IA del usuario mediante un panel copiar el prompt / pegar el JSON
+    # (webapp/backend-pyodide.js). La GUI del servidor nunca muestra estas claves.
+    naming_loading: "Nombrando los ejes… (primera carga del modelo, unos segundos)"
+    naming_offline: "Modelo de nombrado no disponible; ejes nombrados desde los criterios."
+    delegate_title: Rellenar con tu propia IA
+    delegate_intro: "1. Copia este prompt y pégalo en tu IA favorita (ChatGPT, Claude, un modelo local…). 2. Pega su respuesta JSON abajo."
+    delegate_copy: 📋 Copiar el prompt
+    delegate_copied: ¡Prompt copiado!
+    delegate_paste: Pega aquí la respuesta JSON de la IA
+    delegate_apply: Aplicar
+    delegate_cancel: Cancelar
+    delegate_bad_json: "No se puede leer ese JSON: "
+    delegate_cancelled: cancelado
     new_option: Nueva
     new_criterion: Criterio
     aria_options_col: Nombre de la columna de opciones
@@ -410,19 +365,3 @@ es:
     aria_pole_left: Nombre del polo izquierdo
     aria_pole_right: Nombre del polo derecho
     aria_pole_bottom: Nombre del polo inferior
-  analysis:
-    interpretation: Interpretación
-    axes: Ejes
-    axis_horizontal: "Horizontal ({left} ↔ {right}):"
-    axis_vertical: "Vertical ({bottom} ↔ {top}):"
-    info_share: "{pct} de la información."
-    relevant_columns: "Columnas relevantes para el eje: {cols}."
-    preserved: "En dos ejes, conservamos **{pct}** de la información."
-    highlighted: Propuestas destacadas
-    leader: "Referencia líder elegida:"
-    opposite: "Opuesto exacto de la referencia:"
-    opposite_note: (diametralmente opuesto al líder en el mapa)
-    strongest_top: "Más fuerte hacia {top}:"
-    top_note: (retador más arriba en el eje vertical)
-    strongest_right: "Más fuerte hacia {right}:"
-    right_note: (retador más a la derecha en el eje horizontal)

@@ -2,10 +2,10 @@
 
 Chaque exemple part d'un tableau du dossier
 [`examples/`](https://github.com/warith-harchaoui/standpoint/tree/main/examples).
-Chaque exécution écrit six fichiers : la figure transparente `<nom>.png` / `<nom>.svg`,
+Chaque exécution écrit cinq fichiers : la figure transparente `<nom>.png` / `<nom>.svg`,
 une version fond blanc `<nom>.white.png` / `<nom>.white.svg` (pour les surfaces sombres,
-où les libellés foncés disparaîtraient sur fond transparent), l'analyse `<nom>.md` et
-les données `<nom>.yaml`.
+où les libellés foncés disparaîtraient sur fond transparent) et les données
+`<nom>.yaml`.
 
 ## En bibliothèque
 
@@ -17,7 +17,7 @@ pos.axes            # {'x': 'Scalability ↔ Versatility', 'y': 'Flexibility ↔
 pos.coords          # DataFrame : coordonnées axe 1 / axe 2 par option
 pos.loadings        # DataFrame : poids de chaque critère par axe
 pos.role_of         # {'Python': 'best', 'Rust': 'worst', ...}
-pos.export("out")   # écrit out/python.{png,svg,white.png,white.svg,md,yaml}
+pos.export("out")   # écrit out/python.{png,svg,white.png,white.svg,yaml}
 ```
 
 Passez un DataFrame si vous en avez déjà un et nommez la référence :
@@ -28,7 +28,7 @@ df = pd.read_csv("examples/cloud_providers.csv", index_col=0)
 sp.positioning(df, reference="AWS").export("out")
 ```
 
-Choisissez un autre modèle local pour le nom des axes et l'analyse :
+Choisissez un autre modèle local pour le nom des axes :
 
 ```python
 sp.positioning(df, model="qwen2.5vl:7b").export("out")
@@ -66,8 +66,8 @@ une colonne où une valeur plus basse est meilleure, sans besoin de l'option `--
 
 ### Voitures électriques (français)
 
-Les noms de colonnes sont en français, donc le nom des axes et l'analyse écrite sortent
-eux aussi en français. Leader : Tesla Model 3.
+Les noms de colonnes sont en français, donc le nom des axes sort lui aussi en
+français. Leader : Tesla Model 3.
 
 ![Carte de positionnement des voitures électriques](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/voitures_electriques.png)
 
@@ -79,7 +79,5 @@ eux aussi en français. Leader : Tesla Model 3.
 - `.white.png` et `.white.svg` : la même figure sur fond **blanc**, pour les surfaces
   sombres (par exemple le mode sombre de GitHub) où les libellés presque noirs
   deviendraient sinon invisibles.
-- `.md` : une courte analyse écrite. Ce que signifient les axes, où le leader l'emporte,
-  quels groupes se distinguent, plus les poids et un classement.
 - `.yaml` : les métadonnées (variance, rotation), les poids de chaque axe et, pour
   chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'origine.

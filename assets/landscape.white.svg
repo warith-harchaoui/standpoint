@@ -1,55 +1,99 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><rect width="1224" height="946" fill="#FFFFFF"/><title id="sp-title">Positioning maps in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 9 positioning maps, Accessible to Efficient on the horizontal axis, Consistent to Expressive on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="220.8" y1="484.0" x2="1018.3" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="862.0" x2="612.0" y2="106.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="493.1" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="end">Efficient</text><text data-pole="left" x="60.0" y="493.1" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="start">Accessible</text><text data-pole="top" x="612.0" y="64.5" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="middle">Expressive</text><text data-pole="bottom" x="612.0" y="918.8" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="middle">Consistent</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Standpoint
-role: best
-axis1: 2.11
-axis2: 1.93"><circle cx="912.0" cy="259.0" r="8.65" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Standpoint
-role: best
-axis1: 2.11
-axis2: 1.93</title></g><text x="899.5" y="264.9" font-size="17" fill="#1C1C1E" text-anchor="end">Standpoint</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: prince
-role: competitor
-axis1: 1.98
-axis2: -1.68"><circle cx="893.9" cy="680.2" r="8.65" fill="#B47819" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: prince
-role: competitor
-axis1: 1.98
-axis2: -1.68</title></g><text x="906.4" y="686.2" font-size="17" fill="#1C1C1E" text-anchor="start">prince</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: PCA (scikit-learn)
-role: competitor
-axis1: 1.73
-axis2: -1.93"><circle cx="857.4" cy="709.0" r="8.65" fill="#F591B1" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: PCA (scikit-learn)
-role: competitor
-axis1: 1.73
-axis2: -1.93</title></g><text x="844.9" y="715.0" font-size="17" fill="#1C1C1E" text-anchor="end">PCA (scikit-learn)</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: factoextra + FactoMineR
-role: right
-axis1: 2.11
-axis2: -1.43"><circle cx="912.0" cy="650.5" r="8.65" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: factoextra + FactoMineR
-role: right
-axis1: 2.11
-axis2: -1.43</title></g><text x="899.5" y="656.4" font-size="17" fill="#1C1C1E" text-anchor="end">factoextra + FactoMineR</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Tableau
-role: competitor
-axis1: -0.53
-axis2: 0.68"><circle cx="536.8" cy="405.1" r="8.65" fill="#15B7D6" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Tableau
-role: competitor
-axis1: -0.53
-axis2: 0.68</title></g><text x="524.3" y="398.6" font-size="17" fill="#1C1C1E" text-anchor="end">Tableau</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Power BI
-role: competitor
-axis1: -0.40
-axis2: 0.93"><circle cx="554.9" cy="375.4" r="8.65" fill="#62A962" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Power BI
-role: competitor
-axis1: -0.40
-axis2: 0.93</title></g><text x="567.4" y="381.3" font-size="17" fill="#1C1C1E" text-anchor="start">Power BI</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Gartner Magic Quadrant
-role: top
-axis1: -0.75
-axis2: 1.93"><circle cx="505.9" cy="259.0" r="8.65" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Gartner Magic Quadrant
-role: top
-axis1: -0.75
-axis2: 1.93</title></g><text x="518.4" y="264.9" font-size="17" fill="#1C1C1E" text-anchor="start">Gartner Magic Quadrant</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Excel/PowerPoint 2x2
-role: competitor
-axis1: -0.86
-axis2: 0.49"><circle cx="489.9" cy="427.4" r="8.65" fill="#C0B7FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Excel/PowerPoint 2x2
-role: competitor
-axis1: -0.86
-axis2: 0.49</title></g><text x="502.4" y="433.4" font-size="17" fill="#1C1C1E" text-anchor="start">Excel/PowerPoint 2x2</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Canva/Figma template
-role: worst
-axis1: -2.11
-axis2: 1.23"><circle cx="312.0" cy="341.2" r="8.65" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Canva/Figma template
-role: worst
-axis1: -2.11
-axis2: 1.23</title></g><text x="324.5" y="347.2" font-size="17" fill="#1C1C1E" text-anchor="start">Canva/Figma template</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Positioning maps in the Quadrant</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><rect width="1224" height="946" fill="#FFFFFF"/><title id="sp-title">Positioning maps in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 7 positioning maps, Accessible to Efficient on the horizontal axis, Consistent to Intuitive on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="220.8" y1="484.0" x2="1018.3" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="862.0" x2="612.0" y2="106.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="493.1" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="end">Efficient</text><text data-pole="left" x="60.0" y="493.1" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="start">Accessible</text><text data-pole="top" x="612.0" y="64.5" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="middle">Intuitive</text><text data-pole="bottom" x="612.0" y="918.8" font-size="26" font-style="italic" fill="#6E6E73" text-anchor="middle">Consistent</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Standpoint
+Automated Axis Naming: 5
+One Command: 5
+Local Execution: 5
+Reproducible Coordinates: 5
+No-Code Workflow: 4
+Multilingual Output: 5
+PCA-Based: 5"><circle cx="912.0" cy="259.0" r="8.74" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Standpoint
+Automated Axis Naming: 5
+One Command: 5
+Local Execution: 5
+Reproducible Coordinates: 5
+No-Code Workflow: 4
+Multilingual Output: 5
+PCA-Based: 5</title></g><text x="899.5" y="264.9" font-size="17" fill="#1C1C1E" text-anchor="end">Standpoint</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: prince
+Automated Axis Naming: 1
+One Command: 2
+Local Execution: 5
+Reproducible Coordinates: 5
+No-Code Workflow: 1
+Multilingual Output: 1
+PCA-Based: 5"><circle cx="912.0" cy="664.9" r="8.74" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: prince
+Automated Axis Naming: 1
+One Command: 2
+Local Execution: 5
+Reproducible Coordinates: 5
+No-Code Workflow: 1
+Multilingual Output: 1
+PCA-Based: 5</title></g><text x="924.5" y="670.8" font-size="17" fill="#1C1C1E" text-anchor="start">prince</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: PCA
+Automated Axis Naming: 1
+One Command: 1
+Local Execution: 5
+Reproducible Coordinates: 5
+No-Code Workflow: 1
+Multilingual Output: 1
+PCA-Based: 5"><circle cx="876.9" cy="709.0" r="8.74" fill="#C26383" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: PCA
+Automated Axis Naming: 1
+One Command: 1
+Local Execution: 5
+Reproducible Coordinates: 5
+No-Code Workflow: 1
+Multilingual Output: 1
+PCA-Based: 5</title></g><text x="889.4" y="715.0" font-size="17" fill="#1C1C1E" text-anchor="start">PCA</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Tableau
+Automated Axis Naming: 1
+One Command: 3
+Local Execution: 3
+Reproducible Coordinates: 3
+No-Code Workflow: 4
+Multilingual Output: 2
+PCA-Based: 1"><circle cx="536.6" cy="323.0" r="8.74" fill="#B8962D" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Tableau
+Automated Axis Naming: 1
+One Command: 3
+Local Execution: 3
+Reproducible Coordinates: 3
+No-Code Workflow: 4
+Multilingual Output: 2
+PCA-Based: 1</title></g><text x="579.7" y="394.1" font-size="17" fill="#1C1C1E" text-anchor="start">Tableau</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Gartner Magic Quadrant
+Automated Axis Naming: 2
+One Command: 1
+Local Execution: 3
+Reproducible Coordinates: 2
+No-Code Workflow: 5
+Multilingual Output: 2
+PCA-Based: 1"><circle cx="426.6" cy="301.9" r="8.74" fill="#A5C0FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Gartner Magic Quadrant
+Automated Axis Naming: 2
+One Command: 1
+Local Execution: 3
+Reproducible Coordinates: 2
+No-Code Workflow: 5
+Multilingual Output: 2
+PCA-Based: 1</title></g><text x="439.1" y="307.8" font-size="17" fill="#1C1C1E" text-anchor="start">Gartner Magic Quadrant</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Excel/PowerPoint 2x2
+Automated Axis Naming: 1
+One Command: 1
+Local Execution: 5
+Reproducible Coordinates: 1
+No-Code Workflow: 4
+Multilingual Output: 3
+PCA-Based: 1"><circle cx="492.5" cy="354.5" r="8.74" fill="#34C8B2" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Excel/PowerPoint 2x2
+Automated Axis Naming: 1
+One Command: 1
+Local Execution: 5
+Reproducible Coordinates: 1
+No-Code Workflow: 4
+Multilingual Output: 3
+PCA-Based: 1</title></g><text x="505.0" y="360.4" font-size="17" fill="#1C1C1E" text-anchor="start">Excel/PowerPoint 2x2</text><g class="sp-dot" tabindex="0" role="img" aria-label="Positioning maps: Canva/Figma template
+Automated Axis Naming: 1
+One Command: 1
+Local Execution: 2
+Reproducible Coordinates: 1
+No-Code Workflow: 5
+Multilingual Output: 3
+PCA-Based: 1"><circle cx="312.0" cy="259.0" r="8.74" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Positioning maps: Canva/Figma template
+Automated Axis Naming: 1
+One Command: 1
+Local Execution: 2
+Reproducible Coordinates: 1
+No-Code Workflow: 5
+Multilingual Output: 3
+PCA-Based: 1</title></g><text x="324.5" y="264.9" font-size="17" fill="#1C1C1E" text-anchor="start">Canva/Figma template</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Positioning maps in the Quadrant</text></svg>

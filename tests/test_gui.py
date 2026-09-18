@@ -66,17 +66,14 @@ def test_position_roundtrip_has_full_frontend_contract() -> None:
     r = client.post("/api/position", json={"table": table, "reference": "0"})
     assert r.status_code == 200
     data = r.json()
-    assert {"svg", "markdown", "yaml", "axes", "poles", "reference", "roles"} <= set(data)
+    assert {"svg", "yaml", "axes", "poles", "reference", "roles"} <= set(data)
     assert data["reference"] == "Python"
     assert data["roles"]["Python"] == "best"
     assert set(data["axes"]) == {"x", "y"}
     assert len(data["poles"]) == 4
-    # the four highlighted roles the analysis colorizer tints by name
     assert {"best", "worst", "top", "right"} <= set(data["roles"].values())
     assert data["svg"].startswith("<svg")  # a real SVG the browser drops straight in
     assert "<rect" not in data["svg"]  # ships transparent; the UI paints white per toggle
-    assert data["markdown"].startswith("# Python")
-    assert "Leaderboard" not in data["markdown"]
     assert "meta:" in data["yaml"]
 
 
@@ -234,5 +231,3 @@ def test_position_language_and_slug() -> None:
     # standpoint/__init__.py). "programming-languages" here would mean the noun stayed
     # English while the rest of the report went French -- the bug this guards against.
     assert data["slug"] == "langages-de-programmation"
-    assert "## Interprétation" in data["markdown"]  # analysis headings follow the language
-    assert "Approches mises en avant" in data["markdown"]

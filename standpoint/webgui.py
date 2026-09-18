@@ -1,11 +1,10 @@
 """The single-page Standpoint GUI as one self-contained HTML string.
 
-No build step, no framework, no npm: vanilla JavaScript + Tailwind (Play CDN) +
-marked (to render the Markdown analysis). The server sends back a complete,
-self-contained SVG (see `standpoint.to_svg`); the page drops it straight into the
-DOM (no chart-rendering runtime, no external spec to interpret) and edits its pole
-labels live by updating their text nodes directly. `standpoint.api` serves this
-page at ``GET /gui``.
+No build step, no framework, no npm: vanilla JavaScript + Tailwind (Play CDN).
+The server sends back a complete, self-contained SVG (see `standpoint.to_svg`);
+the page drops it straight into the DOM (no chart-rendering runtime, no
+external spec to interpret) and edits its pole labels live by updating their
+text nodes directly. `standpoint.api` serves this page at ``GET /gui``.
 
 Kept as a Python string (rather than a static file) so it ships inside the package:
 the whole GUI is a two-file backend plus this one-string frontend.
@@ -15,13 +14,13 @@ from __future__ import annotations
 
 # The whole page. Tailwind classes carry the styling; the <script> holds a small,
 # dependency-free controller: build an editable grid, serialize it to CSV, POST it,
-# then drop the returned SVG into the page and render the Markdown.
+# then drop the returned SVG into the page.
 GUI_HTML = r"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Standpoint turns a comparison table into a 2D positioning map with a written analysis. Everything runs on your machine." />
+  <meta name="description" content="Standpoint turns a comparison table into a 2D positioning map. Everything runs on your machine." />
   <title>Standpoint: table to quadrant</title>
   <!-- App icon set generated from assets/logo.png; served by api.py under /static. -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -35,15 +34,14 @@ GUI_HTML = r"""<!doctype html>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&family=Roboto+Serif:wght@400;500;600&family=Roboto+Mono&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     /* The "Good Colors" DATA palette (https://harchaoui.org/warith/colors/) is
-       reserved for DATA only: the dots on the map and the role-tinted names in the
-       analysis. The UI chrome (accents, buttons, headings) stays NEUTRAL slate/ink,
-       so a colour in this app always means "data", never decoration. */
+       reserved for the dots on the server-rendered map (see `gradient_colors` in
+       `standpoint.__init__`). The UI chrome (accents, buttons, headings) stays
+       NEUTRAL slate/ink, so a colour in this app always means "data", never
+       decoration. */
     :root {
-      --red:#FF3B30; --blue:#007AFF; --purple:#AF52DE; --brown:#A52A2A;  /* roles */
-      --ink:#171717; --paper:#FAFAFA; --slate:#a3a3a3;                    /* chrome */
+      --ink:#171717; --paper:#FAFAFA; --slate:#a3a3a3;
     }
     body { font-family: Roboto, system-ui, -apple-system, Helvetica, Arial, sans-serif;
            background: var(--paper); -webkit-font-smoothing: antialiased; }
@@ -79,22 +77,6 @@ GUI_HTML = r"""<!doctype html>
     /* Scale the rendered map down to fit the card (SVG stays crisp); exports read
        the SVG's own viewBox at native resolution, so this only affects on-screen size. */
     #chart svg, #chart canvas { max-width: 100%; height: auto; display: block; margin: 0 auto; }
-    /* The analysis panel, coloured to echo the map (Tailwind's CDN has no prose
-       plugin, so the rendered Markdown is themed here by hand). */
-    .analysis { color:#1c1c1e; line-height:1.65; }
-    .analysis h1 { font-size:1.5rem; font-weight:800; color:var(--ink); margin:.1rem 0 .6rem; }
-    .analysis h2 { font-size:1.05rem; font-weight:700; color:var(--ink);
-      border-bottom:2px solid #e2e8f0; padding-bottom:.25rem; margin:1.4rem 0 .5rem; }
-    .analysis p { margin:.6rem 0; }
-    .analysis strong { color:var(--ink); }
-    .analysis ul { margin:.5rem 0; padding-left:1.25rem; list-style:disc; }
-    .analysis li { margin:.3rem 0; }
-    /* Option names tinted by their role, matching the dots on the map. */
-    .role-best  { color:var(--red);    font-weight:700; }
-    .role-worst { color:var(--brown);  font-weight:700; }
-    .role-top   { color:var(--purple); font-weight:700; }
-    .role-right { color:var(--blue);   font-weight:700; }
-
     /* --- Dark theme -------------------------------------------------------
        Driven by a `dark` class on <html> (toggled by the header 🌞/🌛 button and
        persisted in localStorage). Rather than sprinkle Tailwind `dark:` variants over
@@ -122,9 +104,6 @@ GUI_HTML = r"""<!doctype html>
     .dark .border-neutral-400 { border-color:#525252 !important; }
     .dark input, .dark select { background-color:#0B0B0C; color:#e5e5e5; border-color:#404040; }
     .dark #run { background:#e5e5e5 !important; color:#0B0B0C !important; }
-    .dark .analysis { color:#d4d4d4; }
-    .dark .analysis h1, .dark .analysis h2, .dark .analysis strong { color:#f5f5f5; }
-    .dark .analysis h2 { border-color:#262626; }
     /* Card border, sprezzature style: solid neutral-200 (#e5e5e5), the exact border
        colour measured off harchaoui.org/warith/sprezzature/figures.html; no shadow,
        the border alone separates a card from the page (dark variant set above). */
@@ -194,7 +173,10 @@ GUI_HTML = r"""<!doctype html>
          style (their eyebrow carries the page/skill slug; ours carries the product's). -->
     <div>
       <p class="eyebrow text-sm text-neutral-500">standpoint</p>
-      <h1 class="headline mt-1 text-4xl sm:text-5xl font-bold tracking-tight text-neutral-900" data-i18n="baseline">Know where each option actually stands.</h1>
+      <h1 class="headline mt-1 text-4xl sm:text-5xl font-bold tracking-tight text-neutral-900" data-i18n="baseline">Where do you stand?</h1>
+      <!-- The whole user guide, in two lines (wording by Warith). -->
+      <p class="mt-3 text-neutral-600" data-i18n="guide_1">Fill out the table (or import it as a CSV/XLSX file), then select the row you want to promote.</p>
+      <p class="text-neutral-600" data-i18n="guide_2">Click “Generate Quadrant”.</p>
     </div>
 
     <!-- 1 · Your table -->
@@ -302,27 +284,14 @@ GUI_HTML = r"""<!doctype html>
         Generate to see the map.
       </div>
     </section>
-
-    <!-- Analysis -->
-    <section class="card bg-white rounded-2xl p-6 sm:p-8 space-y-5">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <span class="accent"></span>
-          <h2 class="text-2xl font-bold" data-i18n="analysis_title">Basic Analysis</h2>
-        </div>
-        <button id="dlMd" class="btn btn-sm hidden" data-i18n="download_md">Download Markdown</button>
-      </div>
-      <div id="comments" class="analysis max-w-none text-neutral-400" data-i18n="analysis_placeholder">
-        The written interpretation appears here once you generate.
-      </div>
-    </section>
   </div>
 
   <!-- Minimal footer, sprezzature style: a full-width band with a border-top divider
-       and one muted line, echoing the local-first pitch from the hero. -->
+       and one muted, language-neutral line: license + author (linked to deraison.ai). -->
   <footer class="site-footer mt-4">
-    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 text-sm text-neutral-500" data-i18n="footer_note">
-      Local-first: your table never leaves this machine.
+    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 text-sm text-neutral-500">
+      BSD 3-Clause License · <a href="https://deraison.ai" target="_blank" rel="noopener"
+        class="underline underline-offset-2 hover:text-neutral-700">Warith Harchaoui</a>
     </div>
   </footer>
 
@@ -337,10 +306,74 @@ let rows = [];         // each: {name: string, values: string[]}
 let LANG = localStorage.getItem("sp-lang") || "en";
 let THEME = localStorage.getItem("sp-theme") || "light";
 let T = {};             // gui strings for LANG, fetched from /api/i18n
-let hasResult = false;  // once true, keep the rendered chart/analysis on relayout
+let hasResult = false;  // once true, keep the rendered chart on relayout
 let slug = "standpoint";  // export stem, set from the table's plural after a run
 
 const $ = (id) => document.getElementById(id);
+
+// --- backend: the six data operations behind the page --------------------------
+// Every network touchpoint goes through this one object, so the page itself never
+// hardcodes a transport. The default implementation below talks to the FastAPI
+// server over relative URLs; a static build defines `window.backend` BEFORE this
+// script runs and gets the exact same page working against an in-browser engine
+// (Pyodide) instead — same markup, same handlers, different transport.
+async function _fail(res) {
+  // Prefer the server's structured `detail` message; fall back to the HTTP text.
+  let msg = res.statusText;
+  try { msg = (await res.json()).detail || msg; } catch (e) { /* non-JSON body */ }
+  throw new Error(msg);
+}
+const backend = window.backend || {
+  // The bundled example table, as CSV text.
+  example: async () => {
+    const res = await fetch("/api/example");
+    if (!res.ok) await _fail(res);
+    return res.text();
+  },
+  // The localized GUI string table for `lang`.
+  i18n: async (lang) => {
+    const res = await fetch("/api/i18n?lang=" + encodeURIComponent(lang));
+    if (!res.ok) await _fail(res);
+    return (await res.json()).strings || {};
+  },
+  // Normalize an uploaded CSV / XLSX file to CSV text.
+  upload: async (file) => {
+    const fd = new FormData(); fd.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    if (!res.ok) await _fail(res);
+    return res.text();
+  },
+  // Convert the grid's CSV to an XLSX workbook, returned as a downloadable Blob.
+  downloadXlsx: async (csv) => {
+    const res = await fetch("/api/download/xlsx", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: csv }),
+    });
+    if (!res.ok) await _fail(res);
+    return res.blob();
+  },
+  // Model-filled ratings {option: {criterion: 1..5}} for the named rows/columns.
+  autofill: async (req) => {
+    const res = await fetch("/api/autofill", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req),
+    });
+    if (!res.ok) await _fail(res);
+    return (await res.json()).ratings || {};
+  },
+  // The full positioning run: {slug, svg, poles, ...} for the posted table.
+  position: async (req) => {
+    const res = await fetch("/api/position", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req),
+    });
+    if (!res.ok) await _fail(res);
+    return res.json();
+  },
+};
 
 // Localized string with {placeholder} interpolation; falls back to the key.
 function t(key, vars) {
@@ -463,11 +496,8 @@ $("upload").onchange = async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   $("error").classList.add("hidden");
-  const fd = new FormData(); fd.append("file", file);
   try {
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
-    loadCsv(await res.text());
+    loadCsv(await backend.upload(file));
   } catch (err) {
     $("error").textContent = t("err_upload") + err.message;
     $("error").classList.remove("hidden");
@@ -492,14 +522,7 @@ $("flemme").onclick = async () => {
   $("status").textContent = t("flemme_running");
   $("status").classList.remove("hidden");
   try {
-    const res = await fetch("/api/autofill", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ noun: firstCol, options, criteria, lang: LANG }),
-    });
-    if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
-    const data = await res.json();
-    const ratings = data.ratings || {};
+    const ratings = await backend.autofill({ noun: firstCol, options, criteria, lang: LANG });
     // Fill only blank cells, so anything the user already typed is preserved.
     rows.forEach((r) => {
       const rr = ratings[r.name] || {};
@@ -531,43 +554,15 @@ function toCsv() {
 // Download the current grid: CSV is built client-side; XLSX is built by the server.
 $("dlCsv").onclick = () => download(fileStem() + ".csv", toCsv(), "text/csv");
 $("dlXlsx").onclick = async () => {
-  const res = await fetch("/api/download/xlsx", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ table: toCsv() }),
-  });
-  if (!res.ok) { $("error").textContent = t("err_xlsx"); $("error").classList.remove("hidden"); return; }
-  const blob = await res.blob();
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = fileStem() + ".xlsx"; a.click();
-  URL.revokeObjectURL(a.href);
-};
-
-// Tint each highlighted option name in the rendered analysis by its role, so the
-// text matches the coloured dots on the map. DOM-walk the text nodes (never touch
-// tags/attributes) and wrap whole-word name matches, longest name first.
-function colorizeRoles(html, roles) {
-  const roleClass = { best: "role-best", worst: "role-worst", top: "role-top", right: "role-right" };
-  const names = Object.entries(roles)
-    .filter(([, r]) => roleClass[r])
-    .sort((a, b) => b[0].length - a[0].length);
-  if (!names.length) return html;
-  const tmp = document.createElement("div");
-  tmp.innerHTML = html;
-  const walker = document.createTreeWalker(tmp, NodeFilter.SHOW_TEXT);
-  const textNodes = [];
-  while (walker.nextNode()) textNodes.push(walker.currentNode);
-  for (const node of textNodes) {
-    let out = node.nodeValue, hit = false;
-    for (const [name, role] of names) {
-      const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const re = new RegExp(`(^|[^\\w])(${esc})(?=[^\\w]|$)`, "g");
-      if (re.test(out)) { hit = true; out = out.replace(re, `$1<span class="${roleClass[role]}">$2</span>`); }
-    }
-    if (hit) { const s = document.createElement("span"); s.innerHTML = out; node.replaceWith(s); }
+  try {
+    const blob = await backend.downloadXlsx(toCsv());
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = fileStem() + ".xlsx"; a.click();
+    URL.revokeObjectURL(a.href);
+  } catch (err) {
+    $("error").textContent = t("err_xlsx"); $("error").classList.remove("hidden");
   }
-  return tmp.innerHTML;
-}
+};
 
 // --- editable axis poles ------------------------------------------------------
 // After a run we keep the server's SVG (baseSvg) and the model's four pole names
@@ -613,8 +608,7 @@ function drawChart() {
   }
 }
 
-// --- generate: POST the table, render the SVG + markdown ----------------------
-let lastMd = "";
+// --- generate: POST the table, render the SVG -----------------------------
 $("run").onclick = async () => {
   const btn = $("run");
   // A run calls a local model and can take a while on a cold start; lock the
@@ -629,18 +623,12 @@ $("run").onclick = async () => {
   $("status").textContent = t("status_running");
   $("status").classList.remove("hidden");
   try {
-    const res = await fetch("/api/position", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        table: toCsv(),
-        reference: $("reference").value,
-        lower: "",                 // lower-is-better is carried by the (↓) markers
-        lang: LANG,                // the toggle drives the language of the whole output
-      }),
+    const data = await backend.position({
+      table: toCsv(),
+      reference: $("reference").value,
+      lower: "",                 // lower-is-better is carried by the (↓) markers
+      lang: LANG,                // the toggle drives the language of the whole output
     });
-    if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
-    const data = await res.json();
     slug = data.slug || "standpoint";  // name exports after the table's subject
     // Keep the server SVG and the model's pole names pristine; the compass editor
     // (renderPoleEditors) fills its inputs and every draw re-inserts baseSvg fresh
@@ -651,16 +639,7 @@ $("run").onclick = async () => {
     renderPoleEditors();
     drawChart();  // honours the background toggle and any pole edits
     $("dlPng").classList.remove("hidden"); $("dlSvg").classList.remove("hidden");
-    // Render the analysis, then tint each option name by its role so the prose
-    // echoes the dots on the map (leader red, weakest brown, top purple, right blue).
-    lastMd = data.markdown;
-    $("comments").className = "analysis max-w-none";
-    $("comments").innerHTML = colorizeRoles(
-      marked.parse(data.markdown || t("no_analysis")),
-      data.roles || {},
-    );
-    $("dlMd").classList.remove("hidden");
-    hasResult = true;  // keep the chart/analysis on a later language relayout
+    hasResult = true;  // keep the chart on a later language relayout
     $("status").classList.add("hidden");
   } catch (e) {
     $("status").classList.add("hidden");
@@ -681,8 +660,6 @@ function download(name, text, type) {
   a.href = URL.createObjectURL(new Blob([text], { type }));
   a.download = name; a.click(); URL.revokeObjectURL(a.href);
 }
-$("dlMd").onclick = () => download(slug + ".md", lastMd, "text/markdown");
-
 // Export the rendered quadrant straight from the live #chart SVG (already carries
 // any pole edits and the background rect from drawChart): vector SVG is a plain
 // serialize; PNG rasterises it through an offscreen canvas at 2x (no server round
@@ -729,11 +706,11 @@ $("bgTransparent").addEventListener("change", () => { if (baseSvg) drawChart(); 
 
 // --- language + theme toggles -------------------------------------------------
 // Apply the fetched string table to every [data-i18n] / [data-i18n-aria] node, then
-// re-render the grid so its labels follow. The chart and analysis are skipped once a
+// re-render the grid so its labels follow. The chart is skipped once a
 // result is on screen, so flipping the language never wipes a rendered map.
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
-    if ((el.id === "chart" || el.id === "comments") && hasResult) return;
+    if (el.id === "chart" && hasResult) return;
     const k = el.getAttribute("data-i18n");
     if (T[k] != null) el.textContent = T[k];
   });
@@ -756,8 +733,7 @@ function updateToggles() {
 
 async function loadI18n() {
   try {
-    const res = await fetch("/api/i18n?lang=" + encodeURIComponent(LANG));
-    T = (await res.json()).strings || {};
+    T = await backend.i18n(LANG);
   } catch (e) { T = {}; }
   applyI18n();
 }
@@ -779,7 +755,7 @@ $("themeToggle").onclick = () => setTheme(THEME === "dark" ? "light" : "dark");
 // --- boot ---------------------------------------------------------------------
 setTheme(THEME);  // apply the saved theme before first paint of interactive chrome
 // Localize, then load the shipped example so the page is alive and translated on load.
-loadI18n().then(() => fetch("/api/example").then((r) => r.text()).then(loadCsv));
+loadI18n().then(() => backend.example().then(loadCsv));
 </script>
 </body>
 </html>

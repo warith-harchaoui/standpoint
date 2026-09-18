@@ -2,7 +2,7 @@
 
 `standpoint` turns one comparison table (options in rows, criteria in columns, numbers
 in the cells) into a labelled 2D **positioning map** (a quadrant / perceptual /
-competitive-landscape map), a short written analysis, and a YAML of every coordinate.
+competitive-landscape map) and a YAML of every coordinate.
 This page is the exhaustive list of what should, and should not, reach for it: for a
 human skimming, and for an agent deciding whether to invoke the
 [skill](skills/standpoint/SKILL.md).

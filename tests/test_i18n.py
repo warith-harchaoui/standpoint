@@ -17,31 +17,11 @@ import standpoint as sp
 
 # Placeholders each block is allowed to interpolate (a superset; not every key uses all).
 _GUI_PLACEHOLDERS = {"n", "i", "opt", "crit"}
-_ANALYSIS_ARGS = {
-    "left": "L",
-    "right": "R",
-    "bottom": "B",
-    "top": "T",
-    "pct": "~50%",
-    "cols": "a · b",
-}
 # Substrings every localized LLM prompt must keep, so the pipeline can fill them in.
 _PROMPT_REQUIRED = {
     "title_template": ["{plural}"],
     "noun_prompt": ["{word}"],
     "axis_prompt": ["{glossary}", "{left}", "{right}", "{bottom}", "{top}"],
-    "narrative_prompt": [
-        "{left}",
-        "{right}",
-        "{bottom}",
-        "{top}",
-        "{reference}",
-        "{best}",
-        "{worst}",
-        "{champ_top}",
-        "{champ_right}",
-        "{leaderboard}",
-    ],
     "ratings_prompt": ["{noun}", "{options}", "{criteria}"],
 }
 
@@ -55,30 +35,26 @@ def _placeholders(text: str) -> set[str]:
 def test_language_is_complete_and_formats_cleanly(lang: str) -> None:
     """One language's whole i18n table: every required block/placeholder, no format errors.
 
-    Merges what used to be four separate checks (blocks present, prompts keep their
-    placeholders, `analysis` templates format, `ratings_prompt` formats) since they
-    all walk the same `sp.i18n(lang)` table for one language and are cheap/model-free;
-    splitting them bought no extra signal, just three extra reads of the same fixture.
+    Merges what used to be separate checks (blocks present, prompts keep their
+    placeholders, `ratings_prompt` formats) since they all walk the same
+    `sp.i18n(lang)` table for one language and are cheap/model-free; splitting
+    them bought no extra signal, just extra reads of the same fixture.
     """
     d = sp.i18n(lang)
-    for key in (*_PROMPT_REQUIRED, "glossary_prefix", "gui", "analysis"):
+    for key in (*_PROMPT_REQUIRED, "glossary_prefix", "gui"):
         assert key in d, f"{lang} is missing {key!r}"
     for key, needed in _PROMPT_REQUIRED.items():
         for token in needed:
             assert token in d[key], f"{lang}.{key} dropped {token}"
-    for template in d["analysis"].values():
-        # A stray `{foo}` would raise KeyError here; a missing one is harmless.
-        str(template).format(**_ANALYSIS_ARGS)
     out = d["ratings_prompt"].format(noun="Language", options="A, B", criteria="X, Y")
     assert "Language" in out and "A, B" in out and "X, Y" in out
 
 
-def test_gui_and_analysis_keys_match_across_languages() -> None:
-    """Every language exposes exactly the same `gui` / `analysis` keys (no gaps, no extras)."""
-    for block in ("gui", "analysis"):
-        reference = set(sp.i18n("en")[block])
-        for lang in sp.SUPPORTED_LANGS:
-            assert set(sp.i18n(lang)[block]) == reference, f"{lang}.{block} keys diverge"
+def test_gui_keys_match_across_languages() -> None:
+    """Every language exposes exactly the same `gui` keys (no gaps, no extras)."""
+    reference = set(sp.i18n("en")["gui"])
+    for lang in sp.SUPPORTED_LANGS:
+        assert set(sp.i18n(lang)["gui"]) == reference, f"{lang}.gui keys diverge"
 
 
 def test_gui_placeholders_are_known_and_consistent() -> None:

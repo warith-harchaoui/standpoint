@@ -37,7 +37,6 @@ from pydantic import BaseModel
 from standpoint import (
     SUPPORTED_LANGS,
     __version__,
-    analysis_markdown,
     i18n,
     parse_table,
     positioning,
@@ -110,7 +109,6 @@ class PositionResponse(BaseModel):
     """What the browser needs to draw the quadrant and show the write-up."""
 
     svg: str
-    markdown: str
     yaml: str
     axes: dict[str, str]
     poles: list[str]
@@ -336,7 +334,7 @@ def position(req: PositionRequest) -> PositionResponse:
     -------
     PositionResponse
         The self-contained, interactive SVG (dropped straight into the page), the
-        Markdown interpretation, the YAML dump, and the axis names / poles / roles.
+        YAML dump, and the axis names / poles / roles.
 
     Raises
     ------
@@ -351,7 +349,7 @@ def position(req: PositionRequest) -> PositionResponse:
     ref: int | str = int(req.reference) if req.reference.lstrip("-").isdigit() else req.reference
     lower = [c.strip() for c in req.lower.split(",") if c.strip()]
     # "" means detect from the table; a toggle value forces the whole deliverable
-    # (poles, title, narrative) into that language.
+    # (poles, title) into that language.
     lang = req.lang if req.lang in SUPPORTED_LANGS else None
     try:
         pos = positioning(
@@ -361,22 +359,16 @@ def position(req: PositionRequest) -> PositionResponse:
             model=req.model or None,
             lang=lang,
         )
-        # The Markdown narrative is a separate call so a slow model doesn't block the
-        # spec; here we compute it inline since the whole request is already synchronous.
-        markdown = analysis_markdown(
-            pos.result, pos.roles, pos.poles, model=req.model or None, lang=lang
-        )
     except ValueError as exc:  # bad table / unknown reference -> a clean 400 for the UI
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except (ConnectionError, RuntimeError) as exc:  # model unavailable -> actionable 503
         raise _model_error(exc, req.model) from exc
     # One payload with everything the page draws from: the SVG for the chart, the
-    # Markdown write-up, the YAML dump for download, and the axis names / poles /
-    # per-option roles the front-end uses to colour the analysis. Bundling them
-    # means the browser draws the whole result from a single round-trip.
+    # YAML dump for download, and the axis names / poles / per-option roles the
+    # front-end uses to colour the analysis. Bundling them means the browser draws
+    # the whole result from a single round-trip.
     return PositionResponse(
         svg=pos.to_svg(),  # dropped straight into the page's #chart div
-        markdown=markdown,  # the written interpretation
         yaml=pos.to_yaml(),  # coordinates + coefficients, offered as a download
         axes=pos.axes,  # {'x': ..., 'y': ...} axis titles
         poles=pos.poles,  # the four pole labels

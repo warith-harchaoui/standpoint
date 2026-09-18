@@ -2,10 +2,10 @@
 
 > Status: **shipped**, one of Standpoint's access surfaces. Install the `gui` extra
 > (`pip install "standpoint[gui]"`) and run `standpoint-gui`. It takes you from
-> editing a table to a quadrant image and written comments, all in the browser, all
-> on your machine. The rest of this page explains why it exists and how it is built.
+> editing a table to a quadrant image, all in the browser, all on your machine.
+> The rest of this page explains why it exists and how it is built.
 
-![Standpoint GUI: edit a table, generate the quadrant and analysis](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/gui-preview.png)
+![Standpoint GUI: edit a table and generate the quadrant](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/gui-preview.png)
 
 ## The opportunity
 
@@ -42,25 +42,21 @@ Run it (`standpoint-gui`) and, entirely on `localhost`:
    **PNG / SVG** export buttons (PNG rasterises the live SVG client-side through an
    offscreen canvas, no server round trip). Exports are named after the table's
    subject (e.g. `programming-languages.png`).
-5. **Read the analysis**: the Markdown interpretation is rendered below the map and
-   **colour-coded**: each highlighted option is tinted by its role (leader red,
-   weakest brown, top-pole purple, right-pole blue) to match the dots on the map.
-   Downloadable as Markdown.
 
 Two header toggles round it off: **🇫🇷 / 🇬🇧 language** (re-localizes the whole page,
-including the model output: pole names, title, and the written analysis) and
+including the model output: pole names and title) and
 **🌞 / 🌛 theme** (light / dark, remembered across visits). GUI strings and LLM prompts
 live together in `standpoint/locales/i18n.yaml`.
 
 **Colour discipline**: the ["Good Colors"](https://harchaoui.org/warith/colors/)
-palette is reserved for **data only**: the dots on the map and the role-tinted names
-in the analysis. The UI chrome (buttons, accents, headings) stays neutral slate/ink,
-so a colour in the app always means "data", never decoration. Accessible labels and
-keyboard focus rings throughout.
+palette is reserved for **data only**: the dots on the map, rendered server-side by
+`gradient_colors()`. The UI chrome (buttons, accents, headings) stays neutral
+slate/ink, so a colour in the app always means "data", never decoration. Accessible
+labels and keyboard focus rings throughout.
 
-The axis names and the written narrative come from the same local Ollama model the CLI
-uses, so a generate call takes a few seconds longer than the geometry alone. The map
-itself is computed without the model and is the same every run.
+The axis names come from the same local Ollama model the CLI uses, so a generate
+call takes a few seconds longer than the geometry alone. The map itself is computed
+without the model and is the same every run.
 
 ## Architecture
 
@@ -72,18 +68,17 @@ the **FastAPI** server on top of the unchanged core library.
 ```mermaid
 flowchart LR
     grid["🖥️ Editable grid"] ==>|"POST /api/position · CSV"| pos["positioning(csv, …)"]
-    pos --> lib["core library, unchanged<br/>to_svg · to_markdown · to_yaml"]
+    pos --> lib["core library, unchanged<br/>to_svg · to_yaml"]
     lib -->|"SVG string"| embed["🖥️ innerHTML<br/>live quadrant"]
-    lib -->|"markdown · JSON"| md["🖥️ marked<br/>written analysis"]
 
     %% "Good Colors" palette: https://harchaoui.org/warith/colors/
     classDef browser fill:#CCE4FF,stroke:#007AFF,color:#000000,stroke-width:2px;
     classDef server fill:#D4F5D9,stroke:#28CD41,color:#000000,stroke-width:2px;
-    class grid,embed,md browser;
+    class grid,embed browser;
     class pos,lib server;
 ```
 
-(Tailwind + marked load from a CDN; no chart-rendering runtime at all; the core
+(Tailwind loads from a CDN; no chart-rendering runtime at all; the core
 library never imports the web layer.)
 
 - `standpoint/api.py`: FastAPI app. Pages: `GET /gui`, `GET /` → `/gui`. Data:
@@ -91,10 +86,10 @@ library never imports the web layer.)
   `POST /api/autofill`, `POST /api/position`. Static: `/favicon.ico`,
   `/site.webmanifest`, `/static/*`. Launcher `main_gui()` (`standpoint-gui`).
 - `standpoint/webgui.py`: the whole page as one self-contained HTML string
-  (vanilla JS + Tailwind + marked, all via CDN, no chart-rendering runtime, no
+  (vanilla JS + Tailwind, all via CDN, no chart-rendering runtime, no
   framework, no npm).
-- `standpoint/locales/i18n.yaml`: localized LLM prompts **and** GUI strings (`gui:` /
-  `analysis:` blocks) for `en` / `fr` / `es`, the single source of truth for language.
+- `standpoint/locales/i18n.yaml`: localized LLM prompts **and** GUI strings (`gui:`
+  block) for `en` / `fr` / `es`, the single source of truth for language.
 - `standpoint/static/`: the app icon set + PWA manifest, generated from
   `assets/logo.png` and shipped as package data.
 - `pyproject.toml`: a `gui` extra (`fastapi`, `uvicorn`) and the `standpoint-gui`
@@ -111,20 +106,93 @@ standpoint-gui                     # → http://localhost:8000/gui
 Local-first: the server binds to `127.0.0.1` only, so the table never leaves the
 machine (the LLM, when enabled, is the same local Ollama the CLI uses).
 
+## Static build: the same GUI with no server (`webapp/`)
+
+The page routes its six data operations through one injectable `backend` object
+(see the "backend" block at the top of `webgui.py`'s script). The default
+implementation is the FastAPI transport above; `webapp/build.py` composes a
+**fully static bundle** that injects a Pyodide implementation instead, so the
+*same page* runs the *same engine* entirely in the visitor's browser. Upload
+the folder to any static host (plain SFTP is enough, e.g.
+`https://deraison.ai/standpoint`): nothing to run or maintain server-side, and
+the local-first promise gets even stronger, since there is no server at all.
+
+Blue nodes run in the **browser page**; purple nodes are the **in-browser
+engines** (WebAssembly) that replace the green server nodes of the diagram
+above. The AI strategy follows
+[harchaoui.org's in-page RAG](https://harchaoui.org/warith/livre-elephant/rag.html):
+a small embedding model plus curated static data for what runs in the page,
+and copy-the-prompt delegation for real generation, never a big generative
+model download.
+
+```mermaid
+flowchart LR
+    grid["🖥️ Editable grid"] ==>|"backend.position(csv)"| glue["glue.py<br/>positioning(csv, …)"]
+    glue --> lib["core library, unchanged<br/>Pyodide · numpy · pandas · scikit-learn"]
+    lib -->|"SVG string"| embed["🖥️ innerHTML<br/>live quadrant"]
+    glue -.->|"pending naming call<br/>(memoized replay)"| emb["transformers.js MiniLM<br/>+ vocab/&lt;lang&gt;.json"]
+    emb -.->|"nearest quality word<br/>per pole"| glue
+    glue -.->|"pending ratings call"| user["📋 copy prompt →<br/>the user's own AI"]
+    user -.->|"pasted JSON"| glue
+
+    %% "Good Colors" palette: https://harchaoui.org/warith/colors/
+    classDef browser fill:#CCE4FF,stroke:#007AFF,color:#000000,stroke-width:2px;
+    classDef wasm fill:#EAD6FF,stroke:#AF52DE,color:#000000,stroke-width:2px;
+    class grid,embed,user browser;
+    class glue,lib,emb wasm;
+```
+
+- **Same engine, byte for byte.** The bundle vendors the `standpoint` wheel
+  (plus `langdetect` / `openpyxl`); Pyodide supplies numpy, pandas and
+  scikit-learn as WebAssembly wheels. `webapp/glue.py` mirrors the endpoint
+  logic of `api.py`, same behaviours and error messages.
+- **LLM calls become a memoized replay.** `webapp/beh_shim.py` stands in for
+  `best-engine-ai-helper`: a model call either hits a seeded answer cache or
+  reports the one prompt it is blocked on; the JS driver answers it and re-runs.
+  Whatever answers fail, schema-shaped neutral defaults push the engine onto
+  its built-in fallbacks (loading-derived pole words, naive plural), so
+  **Generate always completes**.
+- **Axis naming is on by default, via embeddings, not generation.** The first
+  Generate lazily loads the multilingual MiniLM used by harchaoui.org's
+  semantic search (transformers.js, a few dozen MB, then browser-cached),
+  embeds each pole's criteria as one phrase, and picks the nearest word from a
+  curated vocabulary of positive qualities (`webapp/vocab/<lang>.json`;
+  confusable entries carry a disambiguating gloss that is what actually gets
+  embedded). The engine's `finalize_poles` still validates and dedupes.
+- **"Laziness" auto-fill is delegated, rag.html-style.** The button opens a
+  copy-the-prompt / paste-the-JSON panel around the engine's own localized
+  `ratings_prompt`: the user's favorite AI (ChatGPT, Claude, a local model…)
+  does the rating, and the pasted JSON is seeded back through the replay. No
+  key, no account, no model download.
+
+```bash
+python webapp/build.py            # writes webapp/dist/ (~4 MB + CDN runtime)
+# then upload the CONTENTS of webapp/dist/ to the web folder, e.g. via SFTP:
+#   sftp> put -r webapp/dist/* /path/to/htdocs/standpoint/
+```
+
+Static-build limitations: the first visit downloads the Pyodide runtime and
+wheels from the jsDelivr CDN (~15–20 MB, then browser-cached) and the first
+Generate adds the MiniLM download (a few dozen MB, a few seconds); offline or
+CDN-blocked, axes fall back to loading-derived words. A forced cross-language
+run (FR toggle on an English table) keeps the noun untranslated in the title —
+translating it is the one thing only the server's local LLM does. Verified
+headless (Playwright + Chromium, with an embedding seam for determinism plus a
+real-model spot check): boot, generate, FR/EN + theme toggles, XLSX
+round-trip, embedding-named poles, the delegation panel end to end.
+
 ## Limitations
 
-- **Polish.** Column headers truncate at a fixed width; the two-panel layout
-  pushes the analysis below the map on narrow screens; no drag-to-reorder yet. All
+- **Polish.** Column headers truncate at a fixed width; no drag-to-reorder yet. Both
   are straightforward front-end work.
 - **Tests.** `tests/test_gui.py` covers the endpoints (page served, example, the full
   position round-trip contract, both 400 paths, CSV+XLSX upload, XLSX download);
   `tests/test_gui_e2e.py` drives the *real page* in headless Chromium (generate,
-  quadrant renders, analysis role-colorized, PNG/SVG buttons, zero JS errors). Both
-  skip unless their deps are present (`gui` extra; Playwright + Chromium for the e2e),
-  so the default CI suite is unaffected. Run the e2e locally with
-  `pip install playwright && playwright install chromium`.
+  quadrant renders, PNG/SVG buttons, zero JS errors). Both skip unless their deps are
+  present (`gui` extra; Playwright + Chromium for the e2e), so the default CI suite is
+  unaffected. Run the e2e locally with `pip install playwright && playwright install chromium`.
 - **Synchronous requests.** With the model on, `/api/position` blocks for ~10–25 s.
-  Fine for one user on localhost; a streaming or two-step (spec first, narrative
+  Fine for one user on localhost; a streaming or two-step (geometry first, pole names
   after) response would feel better.
 - **Scope guard.** The GUI stays an *optional extra* (the `gui` extra); the core
   library and the two CLIs must never import it.
@@ -132,7 +200,8 @@ machine (the LLM, when enabled, is the same local Ollama the CLI uses).
 ## Roadmap
 
 1. CSV / XLSX upload + download **done**; next: Markdown paste and drag-to-reorder.
-2. Two-step response: render the map immediately, stream the narrative when ready.
+2. Two-step response: render the map geometry immediately, stream the axis names
+   when ready.
 3. `--reference`, `--top`/`--right` overrides and `--model` surfaced in the UI.
 
 ## Design note

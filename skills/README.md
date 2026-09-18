@@ -12,7 +12,7 @@ skills/standpoint/
 │   ├── interfaces.md              # library / CLI / GUI / API / MCP / Docker / conda
 │   └── input-and-output.md        # table rules and the files written
 └── scripts/
-    └── positioning_summary.py     # table -> figure (SVG + PNG) + analysis, then print the paths
+    └── positioning_summary.py     # table -> figure (SVG + PNG) + YAML, then print the paths
 ```
 
 The agent reads `SKILL.md` first; it pulls a `references/*.md` file only when it needs

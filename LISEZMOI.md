@@ -10,12 +10,12 @@
 
 [![Logo Standpoint](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/logo.png)](https://harchaoui.org/warith/ai-helpers)
 
-Sachez où se situe vraiment chaque option.
+Sachez où vous en êtes
 
 Standpoint lit un tableau de comparaison (les options en lignes, les critères en
-colonnes, des nombres dans les cellules) et produit une carte de positionnement 2D,
-une courte analyse rédigée et un fichier YAML avec toutes les coordonnées et tous
-les coefficients. Une seule commande suffit.
+colonnes, des nombres dans les cellules) et produit une carte de positionnement 2D
+et un fichier YAML avec toutes les coordonnées et tous les coefficients. Une seule
+commande suffit.
 
 La méthode est une analyse en composantes principales (ACP) ordinaire : à partir de
 plusieurs colonnes de notes, elle trouve les quelques directions nouvelles où les
@@ -33,7 +33,7 @@ coloration et le rendu de la figure en SVG écrit à la main, converti en PNG pa
 [`resvg`](https://github.com/RazrFalcon/resvg). Votre tableau n'est jamais envoyé nulle part ; pas de
 télémétrie, pas de compte, rien à créer.
 
-Seuls le nommage des axes et l'analyse rédigée sollicitent un vision-LLM local tournant
+Seul le nommage des axes sollicite un vision-LLM local tournant
 sur `localhost`. Standpoint ne fige aucun modèle : il embarque un brief versionné
 (`standpoint/llm.brief.yaml`) décrivant la tâche, et
 [best-engine-ai-helper](https://pypi.org/project/best-engine-ai-helper/) résout le
@@ -63,21 +63,19 @@ Sortie : une carte de positionnement,
 
 ![Carte de positionnement des langages de programmation](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/examples/programming_languages.png)
 
-plus une analyse Markdown (le sens des axes, où la référence l'emporte, quelles
-options se distinguent, avec les loadings et un classement) et un fichier YAML avec,
-pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'origine.
+plus un fichier YAML avec, pour chaque option, ses coordonnées, son rôle, sa
+couleur et ses valeurs d'origine.
 
 ## Fonctionnalités
 
-- **Une commande, un livrable en trois volets** : une figure interactive écrite à
-  la main, une interprétation Markdown et un YAML de
-  coordonnées + coefficients.
+- **Une commande, un livrable en deux volets** : une figure interactive écrite à
+  la main et un YAML de coordonnées + coefficients.
 - **Axes lisibles** : l'ACP garde les axes sous forme de sommes pondérées de vos
   colonnes ; un modèle local nomme les quatre pôles par des qualités positives,
   avec un garde-fou contre les acronymes, les négatifs et les paires d'antonymes.
-- **Multilingue** : les noms d'axes, l'analyse rédigée et le titre de la figure
-  sortent dans la langue même du tableau (anglais, français ou espagnol),
-  détectée automatiquement à partir des noms de colonnes, si bien qu'un tableau
+- **Multilingue** : les noms d'axes et le titre de la figure sortent dans la
+  langue même du tableau (anglais, français ou espagnol), détectée
+  automatiquement à partir des noms de colonnes, si bien qu'un tableau
   français affiche *Voitures dans le quadrant*.
 - **Orienté sur une référence** : l'option qui vous intéresse est pivotée en haut à
   droite ; une référence maximale sur tous les critères est placée juste au-delà du
@@ -91,7 +89,7 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
   la figure se lit correctement (leader en haut à droite, étiquettes lisibles,
   légende visible).
 
-**Un moteur, six surfaces d'accès.** Le même pipeline `positioning()` s'utilise via :
+**Un moteur, sept surfaces d'accès.** Le même pipeline `positioning()` s'utilise via :
 
 - **Bibliothèque** : `import standpoint as sp`.
 - **CLI ×2** : `standpoint` (argparse, toujours installée) et `standpoint-click`
@@ -99,6 +97,10 @@ pour chaque option, ses coordonnées, son rôle, sa couleur et ses valeurs d'ori
 - **GUI** : `standpoint-gui` → une page web sur `/gui` (extra `[gui]`).
 - **API HTTP** : une application FastAPI (`POST /api/position`), même extra `[gui]`.
 - **MCP** : `standpoint-mcp` publie l'API comme outils MCP sur `/mcp` (extra `[mcp]`).
+- **Application web statique** : la même page GUI avec le moteur compilé en
+  WebAssembly (Pyodide), composée par `webapp/build.py` en un dossier que
+  n'importe quel hébergement statique peut servir ; aucun processus serveur
+  (voir [GUI.md](GUI.md) § Static build).
 
 Elle s'installe aussi comme **skill Claude / OpenCode** ; voir
 [skills/standpoint/SKILL.md](https://github.com/warith-harchaoui/standpoint/blob/main/skills/standpoint/SKILL.md)
@@ -133,7 +135,7 @@ veut plus de contrôle.
 - 🐧 **Ubuntu/Debian** : `sudo apt update && sudo apt install -y python3 python3-pip git`
 - 🪟 **Windows** (PowerShell) : `winget install Python.Python.3.12 Git.Git`
 
-Pour les noms d'axes et l'analyse rédigée, installez [Ollama](https://ollama.com) et
+Pour les noms d'axes, installez [Ollama](https://ollama.com) et
 démarrez-le. Vous ne choisissez **pas** de modèle : dès la première utilisation,
 best-engine-ai-helper résout le meilleur vision-LLM local pour votre machine à
 partir de `standpoint/llm.brief.yaml` et le télécharge une seule fois.
@@ -238,12 +240,12 @@ En bibliothèque :
 import standpoint as sp
 
 pos = sp.positioning("examples/programming_languages.csv")
-pos.export("out")                 # écrit out/python.{png,svg,white.png,white.svg,md,yaml}
+pos.export("out")                 # écrit out/python.{png,svg,white.png,white.svg,yaml}
 print(pos.axes)
 # {'x': 'Concurrency ↔ Ecosystem', 'y': 'Safety ↔ Learning'}
 ```
 
-Choisissez un autre modèle local pour les noms d'axes et l'analyse :
+Choisissez un autre modèle local pour les noms d'axes :
 
 ```bash
 standpoint mon_tableau.csv --model qwen3:8b
@@ -258,10 +260,10 @@ pip install "standpoint[gui]"
 standpoint-gui                     # appli web → http://localhost:8000/gui
 ```
 
-![La GUI Standpoint : éditez un tableau, générez le quadrant et l'analyse](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/gui-preview.png)
+![La GUI Standpoint : éditez un tableau et générez le quadrant](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/gui-preview.png)
 
 Le back-end de la GUI est une application FastAPI : `POST /api/position` renvoie le
-SVG, l'analyse Markdown et le YAML. Servez-la avec l'endpoint MCP monté,
+SVG et le YAML. Servez-la avec l'endpoint MCP monté,
 pour qu'un agent puisse appeler `position` comme un outil :
 
 ```bash
@@ -275,6 +277,13 @@ Ou tout dans un conteneur (installe depuis `requirements.txt`, sert l'API + MCP)
 docker build -t standpoint .
 docker run --rm -p 8000:8000 standpoint
 ```
+
+Sans serveur du tout ? `python webapp/build.py` compose la même GUI en **dossier
+statique** : le moteur tourne dans le navigateur du visiteur via Pyodide, les
+axes sont nommés par défaut par un petit modèle d'embeddings dans la page, et
+l'auto-remplissage délègue à l'IA de l'utilisateur via un panneau « copier le
+prompt ». Il suffit d'uploader `webapp/dist/` dans un dossier web statique et
+tout fonctionne. Détails dans [GUI.md](GUI.md) § Static build.
 
 Pour travailler la bibliothèque en local, un environnement conda minimal enveloppe le
 même `requirements.txt` :

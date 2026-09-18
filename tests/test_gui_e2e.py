@@ -1,8 +1,8 @@
 """End-to-end GUI test: drive the real page in headless Chromium (dev-gui).
 
 This is the one test that exercises the *frontend* JavaScript rather than the
-endpoints: it loads `/gui`, clicks Generate, and checks that the quadrant actually
-renders, the analysis comes out role-colorized, and no JavaScript error fires.
+endpoints: it loads `/gui`, clicks Generate, and checks that the quadrant
+actually renders, the export buttons appear, and no JavaScript error fires.
 Generating always names the axes with the local model (a hard prerequisite that
 `tests/conftest.py` guarantees). It is otherwise heavily gated on test infrastructure:
 it starts the FastAPI app on a loopback port in a background thread and skips unless
@@ -56,7 +56,7 @@ def base_url() -> Iterator[str]:
     thread.join(timeout=5)
 
 
-def test_generate_flow_renders_and_colorizes(base_url: str) -> None:
+def test_generate_flow_renders(base_url: str) -> None:
     """Load the page, generate a quadrant, and verify the rendered result."""
     errors: list[str] = []
     try:
@@ -70,14 +70,7 @@ def test_generate_flow_renders_and_colorizes(base_url: str) -> None:
             page.goto(f"{base_url}/gui", wait_until="networkidle")
             page.wait_for_selector("#grid input")  # the seeded example loaded
             page.click("#run")
-            # the chart appears and the analysis heading renders
             page.wait_for_selector("#chart canvas, #chart svg", timeout=30000)
-            page.wait_for_function("document.querySelector('#comments h1') !== null", timeout=30000)
-            role_spans = page.eval_on_selector_all(
-                "#comments .role-best, #comments .role-worst, "
-                "#comments .role-top, #comments .role-right",
-                "els => els.length",
-            )
             png_visible = page.is_visible("#dlPng")
             svg_visible = page.is_visible("#dlSvg")
             browser.close()
@@ -85,5 +78,4 @@ def test_generate_flow_renders_and_colorizes(base_url: str) -> None:
         pytest.skip(f"playwright runtime unavailable: {exc}")
 
     assert not errors, f"JavaScript errors on the page: {errors}"
-    assert role_spans >= 3, "analysis should tint highlighted option names by role"
     assert png_visible and svg_visible, "PNG/SVG export buttons should appear"

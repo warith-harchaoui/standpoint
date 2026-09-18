@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""Run standpoint on one table: write the figure + analysis, print where they went.
+"""Run standpoint on one table: write the figure + data, print where they went.
 
 A thin, deterministic wrapper the skill can call instead of re-writing the glue. It
 reads a table (a path argument, or ``-`` for stdin), runs ``standpoint.positioning()``,
 and writes the deliverable to disk. The figure is a hand-authored, interactive
 **SVG** (no Vega), plus the same figure as PNG, each on a transparent and a white
-background, alongside the Markdown analysis and the YAML. It then prints the
-analysis and the list of files it wrote.
+background, alongside the YAML. It then prints the list of files it wrote.
 
-Axis naming and the narrative come from a local Ollama model (``--model``, default
+Axis naming comes from a local Ollama model (``--model``, default
 ``qwen2.5vl:7b``). Requires the ``standpoint`` package.
 
 Examples
@@ -56,7 +55,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--model",
         default="qwen2.5vl:7b",
-        help="Ollama model for axis naming and the narrative (default qwen2.5vl:7b)",
+        help="Ollama model for axis naming (default qwen2.5vl:7b)",
     )
     a = ap.parse_args(argv)
 
@@ -71,15 +70,13 @@ def main(argv: list[str] | None = None) -> int:
         pos = sp.positioning(
             _read_table(a.table), reference=ref, lower_is_better=lower, model=a.model
         )
-        # Write the deliverable: <name>.{svg,png,white.svg,white.png,md,yaml}.
-        files = pos.export(a.outdir, model=a.model)
+        # Write the deliverable: <name>.{svg,png,white.svg,white.png,yaml}.
+        files = pos.export(a.outdir)
     except (ValueError, OSError) as exc:  # bad table / unknown reference / missing file
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
-    # The analysis for the reader, then the paths; the .svg is the figure.
-    print(pos.to_markdown(model=a.model))
-    print("\nFiles written:")
+    print("Files written:")
     for path in files:
         print(f"  {path}")
     return 0

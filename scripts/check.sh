@@ -15,11 +15,11 @@ if ! ruff --version 2>/dev/null | grep -q "$RUFF_PIN"; then
   echo "      install the pin with: pip install 'ruff==$RUFF_PIN'" >&2
 fi
 
-echo "==> ruff check (standpoint tests skills)"
-ruff check standpoint tests skills
+echo "==> ruff check (standpoint tests skills webapp)"
+ruff check standpoint tests skills webapp
 
-echo "==> ruff format --check (standpoint tests)"
-ruff format --check standpoint tests
+echo "==> ruff format --check (standpoint tests webapp)"
+ruff format --check standpoint tests webapp
 
 echo "==> pytest (core + any installed surface; each heavy surface self-skips)"
 pytest tests/ -q

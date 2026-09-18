@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Baseline reworded everywhere**: "Know where each option actually stands."
+  becomes "Where do you stand?" ("Sachez où vous en êtes" / "¿Dónde te
+  sitúas?") — GUI hero, i18n tables, README/LISEZMOI, package docstring.
+
+### Added
+
+- **A seventh access surface: the static web app (`webapp/`).** `python
+  webapp/build.py` composes the exact GUI page into a folder any static host
+  can serve (plain SFTP upload, no server process): the engine (numpy /
+  pandas / scikit-learn / the unchanged `standpoint` wheel) runs in the
+  visitor's browser via Pyodide, XLSX import/export runs on a vendored
+  `openpyxl`, and figures stay the same hand-authored SVG. LLM calls go
+  through a memoized-replay shim of `best-engine-ai-helper`
+  (`webapp/beh_shim.py`), answered rag.html-style (no big generative model in
+  the page): **axis naming runs by default** on a small multilingual embedding
+  model (transformers.js MiniLM, lazily loaded, browser-cached) matched
+  against a curated vocabulary of positive qualities
+  (`webapp/vocab/<lang>.json`, confusable entries glossed), and **"Laziness"
+  auto-fill delegates to the user's own AI** via a copy-the-prompt /
+  paste-the-JSON panel built around the engine's own localized
+  `ratings_prompt`. Offline or on any failure, schema-shaped neutral answers
+  push the engine onto its built-in fallbacks so Generate always completes.
+  Verified headless (Playwright), with an embedding seam for determinism plus
+  a real-model spot check on an English and a French table.
+- **`webgui.py`: an injectable `backend` layer.** The page's six data
+  operations (`example`, `i18n`, `upload`, `downloadXlsx`, `autofill`,
+  `position`) now route through one `window.backend`-overridable object whose
+  default implementation is the previous FastAPI transport, byte-for-byte
+  behaviour-equivalent for the server GUI; this is what lets the static build
+  reuse the page unmodified.
+- **`i18n.yaml`: `gui.naming_*` and `gui.delegate_*` keys** (en/fr/es), the
+  strings for the static build's axis-naming badge and delegation panel; the
+  server GUI never shows them.
+
+### Removed
+
+- **The `narrative` feature: the LLM-written "Interpretation" paragraph and the
+  whole Markdown deliverable it lived in.** `export()`/`export_all()` now write
+  a **two-fold** deliverable (figures + YAML) instead of three-fold; `<name>.md`
+  is no longer written. `analysis_markdown()`/`Positioning.to_markdown()` are
+  gone, along with the `analysis:`/`narrative_prompt` blocks in
+  `standpoint/locales/i18n.yaml` and the GUI's "Basic Analysis" panel
+  (`webgui.py`: the panel, its role-tinting CSS/JS, and the `marked` CDN
+  dependency). `POST /api/position` no longer returns a `markdown` field.
+  `assets/landscape.csv`/`paysage.csv` drop the "Written Analysis" criterion
+  and are re-run through the tool (see `LANDSCAPE.md`/`PAYSAGE.md`); this also
+  consolidates two pairs of now-identically-rated competitors (`factoextra +
+  FactoMineR` into `prince`, `Power BI` into `Tableau`) rather than inventing a
+  fake differentiator to keep them apart.
+
 ### Fixed
 
 - **`export_all()` never forwarded `attributes` to `to_svg()`**, so every

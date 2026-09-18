@@ -247,24 +247,11 @@ def test_i18n_all_languages_present_and_formattable():
         assert {
             "glossary_prefix",
             "axis_prompt",
-            "narrative_prompt",
             "noun_prompt",
             "title_template",
         } <= set(tpl)
         tpl["axis_prompt"].format(glossary="", left="a", right="b", bottom="c", top="d")
         tpl["title_template"].format(plural="Cars")
-        tpl["narrative_prompt"].format(
-            left="a",
-            right="b",
-            bottom="c",
-            top="d",
-            reference="r",
-            best="x",
-            worst="y",
-            champ_top="z",
-            champ_right="w",
-            leaderboard="l",
-        )
         tpl["noun_prompt"].format(word="Language")
 
 
@@ -406,8 +393,8 @@ def test_export_all_writes_complete_and_focused_deliverable(tmp_path, df, result
     colors = p4m.gradient_colors(result, roles)
     stem = str(tmp_path / "map")
     written = p4m.export_all(df, result, roles, poles, names, colors, stem)
-    # transparent png+svg, white png+svg, then md + yaml
-    assert len(written) == 6
+    # transparent png+svg, white png+svg, then yaml
+    assert len(written) == 5
     assert Path(f"{stem}.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
     assert Path(f"{stem}.white.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
     assert "<svg" in Path(f"{stem}.svg").read_text()
@@ -415,13 +402,6 @@ def test_export_all_writes_complete_and_focused_deliverable(tmp_path, df, result
     doc = yaml.safe_load(Path(f"{stem}.yaml").read_text())
     assert doc["meta"]["reference"] == "Python"
     assert len(doc["approaches"]) == 12
-    # The analysis ends at the highlighted approaches: no leaderboard coordinate
-    # dump and no PCA-units footer (dropped as noise).
-    md_text = Path(f"{stem}.md").read_text()
-    assert f"# {result.reference}" in md_text
-    assert "## Highlighted approaches" in md_text
-    assert "Leaderboard" not in md_text
-    assert "Coordinates are PCA" not in md_text
 
 
 @pytest.mark.needs_model
@@ -446,7 +426,6 @@ def test_positioning_end_to_end(tmp_path, df):
         "demo.svg",
         "demo.white.png",
         "demo.white.svg",
-        "demo.md",
         "demo.yaml",
     }
 

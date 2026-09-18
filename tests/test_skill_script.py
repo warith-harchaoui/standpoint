@@ -44,15 +44,10 @@ class _StubPositioning:
     def __init__(self, **kwargs: object) -> None:
         self.kwargs = kwargs
 
-    def export(self, outdir: str, model: str = "") -> list[str]:
+    def export(self, outdir: str) -> list[str]:
         """Record the export call and return one fake output path."""
-        self.export_kwargs = {"outdir": outdir, "model": model}
-        return [f"{outdir}/stub.md"]
-
-    def to_markdown(self, model: str = "") -> str:
-        """Record the markdown call and return a fixed string."""
-        self.markdown_kwargs = {"model": model}
-        return "# Stub\n"
+        self.export_kwargs = {"outdir": outdir}
+        return [f"{outdir}/stub.yaml"]
 
 
 def test_helper_calls_current_api_not_use_llm(
@@ -81,7 +76,7 @@ def test_helper_calls_current_api_not_use_llm(
     assert calls["model"] == "some-model"  # --model reached the engine
     assert calls["reference"] == 0  # default numeric reference is an int (row index)
     out = capsys.readouterr().out
-    assert "# Stub" in out and "Files written:" in out
+    assert "Files written:" in out and "stub.yaml" in out
 
 
 def test_helper_reports_bad_table_without_crashing(
