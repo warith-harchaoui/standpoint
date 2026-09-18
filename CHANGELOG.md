@@ -11,7 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Baseline reworded everywhere**: "Know where each option actually stands."
   becomes "Where do you stand?" ("Sachez où vous en êtes" / "¿Dónde te
-  sitúas?") — GUI hero, i18n tables, README/LISEZMOI, package docstring.
+  sitúas?") — GUI hero, i18n tables, README/LISEZMOI, package docstring. The
+  hero also gains the whole user guide in two lines (fill the table / pick the
+  row to promote / Generate), and the footer is reduced to the license plus an
+  author link to deraison.ai.
 
 ### Added
 
@@ -58,6 +61,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   consolidates two pairs of now-identically-rated competitors (`factoextra +
   FactoMineR` into `prince`, `Power BI` into `Tableau`) rather than inventing a
   fake differentiator to keep them apart.
+
+## [0.8.5] - 2026-08-25
+
+### Fixed
+
+- **`render_figures()`/`export_all()` wrote SVG/PNG/export files
+  non-atomically** (plain `open(path, "w")`), so a crash or a concurrent
+  reader (e.g. a dev-server auto-reloader watching the output directory)
+  could observe or persist a truncated file. Both now write via a new
+  `_atomic_write()` helper (temp file + `os.replace`).
+
+### Added
+
+- **Pre-push git hook** (`.githooks/pre-push`, `git config core.hooksPath
+  .githooks`) delegating to the repo's own `scripts/check.sh`, so
+  `ruff check`/`ruff format --check`/`pytest` failures are caught before
+  reaching `origin/main` instead of only in CI. `scripts/check.sh` now
+  invokes `python3 -m ruff`/`python3 -m pytest` explicitly (a stray
+  Homebrew `pytest` on some machines shadows the project's own
+  environment). Documented in `CONTRIBUTING.md`.
+
+## [0.8.4] - 2026-08-17
+
+### Documentation
+
+- **PCA/ACP was named repeatedly in README.md, LISEZMOI.md, and the
+  package's own module docstring, expanded once as an acronym, but never
+  actually explained** — added a plain-language gloss at each file's first
+  substantive use: PCA finds the few directions along which the rows
+  differ the most, collapsing many criteria into a readable two-axis map.
 
 ### Fixed
 

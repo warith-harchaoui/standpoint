@@ -16,12 +16,12 @@ if ! ruff --version 2>/dev/null | grep -q "$RUFF_PIN"; then
 fi
 
 echo "==> ruff check (standpoint tests skills webapp)"
-ruff check standpoint tests skills webapp
+python -m ruff check standpoint tests skills webapp
 
 echo "==> ruff format --check (standpoint tests webapp)"
-ruff format --check standpoint tests webapp
+python -m ruff format --check standpoint tests webapp
 
 echo "==> pytest (core + any installed surface; each heavy surface self-skips)"
-pytest tests/ -q
+python -m pytest tests/ -q
 
 echo "==> gate green"
