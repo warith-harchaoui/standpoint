@@ -60,10 +60,16 @@ en:
     guide_1: Fill out the table (or import it as a CSV/XLSX file), then select the row you want to promote.
     guide_2: Click “Generate Quadrant”.
     github: ⭐️ on GitHub
+    busy_aria: Working…
     theme_light_aria: Switch to dark theme
     theme_dark_aria: Switch to light theme
     lang_aria: Switch language
     table_title: Table
+    examples_label: "Examples:"
+    ex_languages: Programming languages
+    ex_laptops: Laptops
+    ex_cloud: Cloud providers
+    ex_cars: Electric cars
     add_row: ＋ Option (row)
     add_col: ＋ Criterion (column)
     new_table: 🆕 New Table
@@ -175,10 +181,16 @@ fr:
     guide_1: Remplir le tableau (ou l'importer en CSV/XLSX) puis choisir la ligne à promouvoir.
     guide_2: Cliquer sur « Générer le quadrant ».
     github: ⭐️ sur GitHub
+    busy_aria: Traitement en cours…
     theme_light_aria: Passer au thème sombre
     theme_dark_aria: Passer au thème clair
     lang_aria: Changer de langue
     table_title: Tableau
+    examples_label: "Exemples :"
+    ex_languages: Langages de programmation
+    ex_laptops: Ordinateurs portables
+    ex_cloud: Fournisseurs cloud
+    ex_cars: Voitures électriques
     add_row: ＋ Option (ligne)
     add_col: ＋ Critère (colonne)
     new_table: 🆕 Nouveau tableau
@@ -289,10 +301,16 @@ es:
     guide_1: Rellena la tabla (o impórtala en CSV/XLSX) y elige la fila a promover.
     guide_2: Haz clic en «Generar el cuadrante».
     github: ⭐️ en GitHub
+    busy_aria: Procesando…
     theme_light_aria: Cambiar al tema oscuro
     theme_dark_aria: Cambiar al tema claro
     lang_aria: Cambiar de idioma
     table_title: Tabla
+    examples_label: "Ejemplos:"
+    ex_languages: Lenguajes de programación
+    ex_laptops: Portátiles
+    ex_cloud: Proveedores cloud
+    ex_cars: Coches eléctricos
     add_row: ＋ Opción (fila)
     add_col: ＋ Criterio (columna)
     new_table: 🆕 Nueva tabla

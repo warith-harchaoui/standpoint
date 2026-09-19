@@ -72,6 +72,9 @@
   async function boot() {
     if (bootPromise) return bootPromise;
     bootPromise = (async () => {
+      // Light the page's header activity ring for the whole boot (the page
+      // wraps its backend calls, but the background boot starts on its own).
+      if (window.spBusy) window.spBusy.start();
       badge("Python engine: loading runtime…");
       await new Promise((res, rej) => {
         const s = document.createElement("script");
@@ -106,11 +109,15 @@ for _url in WHEEL_URLS:
 import standpoint_glue  # imports standpoint -> fails loudly here if anything is missing
 `);
       badge("Python engine ready", true);
-    })().catch((err) => {
-      bootPromise = null; // allow a retry on the next call
-      badge("Python engine failed: " + err.message);
-      throw err;
-    });
+    })()
+      .catch((err) => {
+        bootPromise = null; // allow a retry on the next call
+        badge("Python engine failed: " + err.message);
+        throw err;
+      })
+      .finally(() => {
+        if (window.spBusy) window.spBusy.end();
+      });
     return bootPromise;
   }
 
@@ -397,8 +404,20 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
 
   // --- the backend contract (same six operations as the FastAPI default) ----------
   window.backend = {
-    // Starter table + string tables are exported at build time: instant, no Python.
-    example: async () => (await fetch(rel("example.csv"))).text(),
+    // Example tables + string tables are exported at build time: instant, no
+    // Python. `name` picks one of the shipped datasets ("" the default), `lang`
+    // its language variant: <name>.<lang>.csv when shipped, base <name>.csv
+    // otherwise (each dataset has one base file plus translated twins).
+    example: async (name, lang) => {
+      const id = /^[a-z_]+$/.test(name || "") ? name : "programming_languages";
+      if (/^[a-z]{2}$/.test(lang || "")) {
+        const localized = await fetch(rel("examples/" + id + "." + lang + ".csv"));
+        if (localized.ok) return localized.text();
+      }
+      const res = await fetch(rel("examples/" + id + ".csv"));
+      if (res.ok) return res.text();
+      return (await fetch(rel("examples/programming_languages.csv"))).text();
+    },
     i18n: async (lang) => {
       const res = await fetch(rel("i18n/" + encodeURIComponent(lang) + ".json"));
       const table = res.ok

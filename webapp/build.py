@@ -27,7 +27,7 @@ What lands in ``dist/``:
                           needs no Python at page load
 - ``vocab/<lang>.json``   candidate pole names for the embedding-based axis
                           naming (transformers.js MiniLM, loaded lazily)
-- ``example.csv``         the starter table (tracked example, same as the API)
+- ``examples/*.csv``      the tracked example tables (one per example button)
 - ``static/*``            icons + webmanifest (paths rewritten to relative),
                           incl. the sprezzature favicon/PWA set generated from
                           assets/logo.png and the Open Graph card (og-card.png)
@@ -203,8 +203,21 @@ def copy_assets(wheel_names: list[str]) -> None:
         icon["src"] = "./" + icon["src"].lstrip("/")
     (static_dst / "site.webmanifest").write_text(json.dumps(manifest, indent=2))
 
-    # The same starter table the API serves, so the two builds boot identically.
-    shutil.copy2(REPO / "examples" / "programming_languages.csv", DIST / "example.csv")
+    # The same tracked example tables the API serves (one per example button),
+    # so the two builds boot identically and offer identical datasets. The
+    # language matrix is completed here: every dataset ships as <id>.en.csv AND
+    # <id>.fr.csv (the base file fills any missing translation), so the page
+    # can fetch the current language's variant directly, without 404 probing.
+    examples_dst = DIST / "examples"
+    examples_dst.mkdir(parents=True, exist_ok=True)
+    for csv in (REPO / "examples").glob("*.csv"):
+        shutil.copy2(csv, examples_dst / csv.name)
+    base_ids = [p.stem for p in examples_dst.glob("*.csv") if "." not in p.stem]
+    for base_id in base_ids:
+        for lang in ("en", "fr"):
+            variant = examples_dst / f"{base_id}.{lang}.csv"
+            if not variant.exists():
+                shutil.copy2(examples_dst / f"{base_id}.csv", variant)
 
     # The candidate pole-name vocabularies the embedding-based axis naming
     # scores against (one list of positive qualities per GUI language).

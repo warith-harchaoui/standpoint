@@ -1,0 +1,14 @@
+Fournisseur,Étendue du calcul,IA/ML managé,Couverture mondiale,Rapport qualité-prix,Expérience développeur,Confiance entreprise,Serverless
+AWS,5,4,5,3,3,5,5
+Google Cloud,4,5,4,4,4,4,4
+Microsoft Azure,4,4,5,3,3,5,4
+Oracle Cloud,3,2,3,4,2,4,2
+IBM Cloud,3,3,3,3,2,4,2
+Alibaba Cloud,4,3,4,4,3,3,3
+DigitalOcean,2,1,2,5,5,2,2
+Cloudflare,2,3,5,4,5,3,5
+Vercel,1,2,4,3,5,2,5
+Hetzner,2,1,2,5,3,2,1
+Fly.io,2,2,4,4,4,2,4
+Render,2,2,3,4,5,2,4
+Vast.ai,3,3,2,5,3,1,1

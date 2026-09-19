@@ -141,6 +141,36 @@ GUI_HTML = r"""<!doctype html>
     .dark .btn { border-color:#404040; background:transparent; color:#d4d4d4; }
     .dark .btn:hover { border-color:#737373; background:#171717; }
     .btn-sm { padding:.3rem .65rem; font-size:.75rem; }
+    /* The header activity ring: neutral chrome (never a data color), a thin
+       ring whose gap orbits while work is in flight. Reduced-motion users get
+       a steady ring instead of the rotation (the presence itself signals
+       activity), per the motion-reduce rule. */
+    .spinner { width:1.1rem; height:1.1rem; border-radius:9999px; display:inline-block;
+      border:2px solid #d4d4d4; border-top-color:#525252;
+      animation: sp-spin .8s linear infinite; }
+    .dark .spinner { border-color:#404040; border-top-color:#d4d4d4; }
+    @keyframes sp-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+    /* Example-dataset chips: Good Colors light tint as fill, base hue as stroke
+       (https://harchaoui.org/warith/colors/). These are the one colored piece of
+       chrome, because each button IS a dataset ("color means data"). Text stays
+       near-ink for contrast; dark mode keeps the stroke and drops the tint. */
+    .ex-blue   { background:#CCE4FF; border-color:#007AFF; color:#0a3d75; }
+    .ex-green  { background:#D4F5D9; border-color:#28CD41; color:#0e5b1e; }
+    .ex-orange { background:#FFEACC; border-color:#FF9500; color:#7a4a00; }
+    .ex-purple { background:#EFDCF8; border-color:#AF52DE; color:#5b2179; }
+    .ex-blue:hover   { background:#b8d9ff; border-color:#007AFF; }
+    .ex-green:hover  { background:#c2efc9; border-color:#28CD41; }
+    .ex-orange:hover { background:#ffdfad; border-color:#FF9500; }
+    .ex-purple:hover { background:#e6cbf4; border-color:#AF52DE; }
+    .dark .ex-blue   { background:transparent; border-color:#007AFF; color:#7db8ff; }
+    .dark .ex-green  { background:transparent; border-color:#28CD41; color:#6fdd82; }
+    .dark .ex-orange { background:transparent; border-color:#FF9500; color:#ffb54d; }
+    .dark .ex-purple { background:transparent; border-color:#AF52DE; color:#cd8fea; }
+    .dark .ex-blue:hover   { background:#0a2a4d; }
+    .dark .ex-green:hover  { background:#0c3a16; }
+    .dark .ex-orange:hover { background:#4d3000; }
+    .dark .ex-purple:hover { background:#3a1650; }
   </style>
 </head>
 <body class="text-neutral-800">
@@ -161,6 +191,10 @@ GUI_HTML = r"""<!doctype html>
       <div class="flex items-center gap-1">
         <a id="ghLink" class="gh-link" href="https://github.com/warith-harchaoui/standpoint"
            target="_blank" rel="noopener" data-i18n="github">⭐️ on GitHub</a>
+        <!-- Global activity ring: visible whenever anything loads or computes
+             (engine boot, generate, uploads, auto-fill). Driven by the busy
+             counter wrapped around every backend call; see busyStart(). -->
+        <span id="busy" class="spinner hidden" role="status" data-i18n-aria="busy_aria" aria-label="Working…"></span>
         <button id="langToggle" class="toggle-btn" type="button" data-i18n-aria="lang_aria" aria-label="Switch language">🇬🇧</button>
         <button id="themeToggle" class="toggle-btn" type="button" data-i18n-aria="theme_light_aria" aria-label="Switch theme">🌛</button>
       </div>
@@ -184,6 +218,19 @@ GUI_HTML = r"""<!doctype html>
       <div class="flex items-center gap-3">
         <span class="accent"></span>
         <h2 class="text-2xl font-bold" data-i18n="table_title">Table</h2>
+      </div>
+
+      <!-- Ready-made datasets: one click loads a complete tracked example into the
+           grid (same files the CLI docs use), replacing the current table. Colored
+           chips (Good Colors light tint + base stroke): these buttons ARE data --
+           each one is a dataset -- so they get the data palette, per this app's
+           "color means data" rule. -->
+      <div class="flex items-center gap-2 flex-wrap text-sm">
+        <span class="text-neutral-500" data-i18n="examples_label">Examples:</span>
+        <button class="btn example-btn ex-blue" data-example="programming_languages" data-i18n="ex_languages">Programming languages</button>
+        <button class="btn example-btn ex-green" data-example="laptops" data-i18n="ex_laptops">Laptops</button>
+        <button class="btn example-btn ex-orange" data-example="cloud_providers" data-i18n="ex_cloud">Cloud providers</button>
+        <button class="btn example-btn ex-purple" data-example="voitures_electriques" data-i18n="ex_cars">Electric cars</button>
       </div>
 
       <div class="flex items-center gap-2 flex-wrap">
@@ -324,9 +371,13 @@ async function _fail(res) {
   throw new Error(msg);
 }
 const backend = window.backend || {
-  // The bundled example table, as CSV text.
-  example: async () => {
-    const res = await fetch("/api/example");
+  // A bundled example table, as CSV text; `name` picks one ("" the default),
+  // `lang` its language variant (each dataset exists in EN and FR).
+  example: async (name, lang) => {
+    const res = await fetch(
+      "/api/example?name=" + encodeURIComponent(name || "") +
+      "&lang=" + encodeURIComponent(lang || "")
+    );
     if (!res.ok) await _fail(res);
     return res.text();
   },
@@ -374,6 +425,24 @@ const backend = window.backend || {
     return res.json();
   },
 };
+
+// --- global activity indicator -------------------------------------------------
+// A counter (not a boolean): overlapping operations each start/end their own
+// slot, and the header ring stays visible until the LAST one finishes. Every
+// backend method is wrapped below, so any transport (fetch or in-browser
+// engine) lights the ring without per-call wiring; `window.spBusy` lets the
+// static build's engine boot / model downloads participate too.
+let busyCount = 0;
+function busyStart() { busyCount++; $("busy").classList.remove("hidden"); }
+function busyEnd() { busyCount = Math.max(0, busyCount - 1); if (!busyCount) $("busy").classList.add("hidden"); }
+window.spBusy = { start: busyStart, end: busyEnd };
+for (const key of Object.keys(backend)) {
+  const op = backend[key];
+  backend[key] = async (...args) => {
+    busyStart();
+    try { return await op(...args); } finally { busyEnd(); }
+  };
+}
 
 // Localized string with {placeholder} interpolation; falls back to the key.
 function t(key, vars) {
@@ -476,6 +545,19 @@ function syncReference() {
 // column's minimum (never helps an option), and Laziness only fills cells that are
 // still blank -- a prefilled "3" would silently block both, since neither treats an
 // existing "3" as missing.
+// The example buttons: load a complete dataset into the grid in one click.
+document.querySelectorAll(".example-btn").forEach((btn) => {
+  btn.onclick = async () => {
+    $("error").classList.add("hidden");
+    try {
+      loadCsv(await backend.example(btn.getAttribute("data-example"), LANG));
+    } catch (err) {
+      $("error").textContent = t("err_generic") + err.message;
+      $("error").classList.remove("hidden");
+    }
+  };
+});
+
 $("addRow").onclick = () => { rows.push({ name: t("new_option"), values: headers.map(() => "") }); renderGrid(); };
 $("addCol").onclick = () => { headers.push(t("new_criterion")); rows.forEach((r) => r.values.push("")); renderGrid(); };
 // New Table: a blank slate with one empty option and one empty criterion, so the user
@@ -755,7 +837,7 @@ $("themeToggle").onclick = () => setTheme(THEME === "dark" ? "light" : "dark");
 // --- boot ---------------------------------------------------------------------
 setTheme(THEME);  // apply the saved theme before first paint of interactive chrome
 // Localize, then load the shipped example so the page is alive and translated on load.
-loadI18n().then(() => backend.example().then(loadCsv));
+loadI18n().then(() => backend.example("", LANG).then(loadCsv));
 </script>
 </body>
 </html>

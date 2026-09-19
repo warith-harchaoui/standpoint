@@ -70,9 +70,17 @@ def webmanifest() -> FileResponse:
     return FileResponse(_STATIC_DIR / "site.webmanifest", media_type="application/manifest+json")
 
 
-# The grid is seeded from the tracked example so the GUI always mirrors it; this
-# small built-in table is the fallback when the file isn't on disk (installed package).
-_EXAMPLE_CSV = Path(__file__).resolve().parents[1] / "examples" / "programming_languages.csv"
+# The grid is seeded from the tracked examples so the GUI always mirrors them;
+# the small built-in table below is the fallback when the files aren't on disk
+# (installed package). The whitelist doubles as the set of example buttons the
+# page offers (see `gui.ex_*` in i18n.yaml).
+_EXAMPLES_DIR = Path(__file__).resolve().parents[1] / "examples"
+_EXAMPLE_NAMES = (
+    "programming_languages",
+    "laptops",
+    "cloud_providers",
+    "voitures_electriques",
+)
 _STARTER_TABLE = (
     "Programming Language,Performance,Ease of Learning,Ecosystem,Concurrency,Type Safety,Job Market,Tooling\n"
     "Python,2,5,5,2,2,5,4\n"
@@ -130,16 +138,26 @@ def gui() -> str:
 
 
 @app.get("/api/example", response_class=PlainTextResponse)
-def example() -> str:
-    """Return a starter table (CSV text) to populate an empty grid.
+def example(name: str = "", lang: str = "") -> str:
+    """Return one of the tracked example tables (CSV text) to populate the grid.
 
-    Prefer the tracked `examples/programming_languages.csv` so the GUI stays in sync
-    with it; fall back to the small built-in table when the file isn't present.
+    `name` picks an example from the whitelist (the GUI's example buttons);
+    empty or unknown falls back to the default `programming_languages`. `lang`
+    picks the language variant: ``<name>.<lang>.csv`` when it exists, the base
+    ``<name>.csv`` otherwise (each dataset has one base file plus translated
+    twins, e.g. ``laptops.csv`` EN + ``laptops.fr.csv``). The small built-in
+    table covers a missing file (installed package).
     """
-    try:
-        return _EXAMPLE_CSV.read_text(encoding="utf-8")
-    except OSError:
-        return _STARTER_TABLE
+    if name not in _EXAMPLE_NAMES:
+        name = _EXAMPLE_NAMES[0]
+    candidates = [f"{name}.{lang}.csv"] if lang in SUPPORTED_LANGS else []
+    candidates.append(f"{name}.csv")
+    for filename in candidates:
+        try:
+            return (_EXAMPLES_DIR / filename).read_text(encoding="utf-8")
+        except OSError:
+            continue
+    return _STARTER_TABLE
 
 
 def _df_to_csv(df: pd.DataFrame) -> str:
