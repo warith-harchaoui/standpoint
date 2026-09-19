@@ -35,6 +35,19 @@ What lands in ``dist/``:
   ``humans.txt``          SEO + GEO indexes (sprezzature-publish site_indexes)
 - ``*.md``                the curated Markdown corpus (README, LISEZMOI, GUI,
                           EXAMPLES, EXEMPLES) the indexes cite, served raw
+- ``index.php``           the PUBLIC landing page (lead-magnet gate): SEO head,
+                          static example figures, professional-email form
+- ``gate/*.php``, ``gate/free_domains.txt``, ``gate/track.js``, ``.htaccess``
+                          the gate itself (see webapp/gate/auth.php): magic-link
+                          auth, per-user activity logs, generic-domain blocklist;
+                          the .htaccess routes every app file through the gate
+- ``private/``            runtime data (secret, leads, logs), pre-created here
+                          with its "Require all denied" .htaccess
+
+The gate needs the host to run PHP (deraison.ai does, 8.1) and to honour
+.htaccess rewrites; served without PHP the SAME dist/ degrades to the old
+ungated static app (index.html still works directly), which is also how the
+local python -m http.server smoke tests keep passing.
 
 ``index.html`` additionally carries the deployment head block (canonical URL,
 Open Graph / Twitter card, Schema.org JSON-LD) from ``seo/head-seo.html``,
@@ -161,7 +174,11 @@ def compose_index(base_url: str) -> None:
     anchor = "<script>\n// --- tiny state"
     if html.count(anchor) != 1:
         raise SystemExit("GUI_HTML anchor not found: webgui.py layout changed, update build.py")
-    html = html.replace(anchor, '<script src="./backend-pyodide.js"></script>\n' + anchor)
+    html = html.replace(
+        anchor,
+        '<script src="./gate/track.js" defer></script>\n'
+        '<script src="./backend-pyodide.js"></script>\n' + anchor,
+    )
     (DIST / "index.html").write_text(html, encoding="utf-8")
     print("index.html composed")
 
@@ -226,6 +243,46 @@ def copy_assets(wheel_names: list[str]) -> None:
         shutil.rmtree(vocab_dst)
     shutil.copytree(WEBAPP / "vocab", vocab_dst)
     print("assets copied")
+
+
+def gate_assets(base_url: str) -> None:
+    """Install the lead-magnet gate: landing page, PHP endpoints, .htaccess.
+
+    The interactive app stays exactly as composed by :func:`compose_index`;
+    the gate wraps it at the HTTP layer (see ``webapp/gate/auth.php`` for the
+    architecture). The landing page reuses the same SEO head block as the app,
+    so gating changes what visitors can DO, not what crawlers can read.
+    """
+    gate_src = WEBAPP / "gate"
+    gate_dst = DIST / "gate"
+    gate_dst.mkdir(parents=True, exist_ok=True)
+    for name in (
+        "auth.php",
+        "access.php",
+        "login.php",
+        "serve.php",
+        "track.php",
+        "track.js",
+        "free_domains.txt",
+    ):
+        shutil.copy2(gate_src / name, gate_dst / name)
+
+    # The public landing (dist/index.php) carries the deployment SEO head.
+    seo_head = (WEBAPP / "seo" / "head-seo.html").read_text(encoding="utf-8")
+    seo_head = seo_head.replace("{BASE}", base_url.rstrip("/"))
+    landing = (gate_src / "landing.php").read_text(encoding="utf-8")
+    if landing.count("<!--SEO_HEAD-->") != 1:
+        raise SystemExit("landing.php SEO_HEAD placeholder missing")
+    (DIST / "index.php").write_text(landing.replace("<!--SEO_HEAD-->", seo_head), encoding="utf-8")
+
+    shutil.copy2(gate_src / "htaccess.dist", DIST / ".htaccess")
+
+    # Pre-create the runtime data directory already web-denied, so the deny
+    # rule is in place from the very first upload (auth.php re-asserts it).
+    private = DIST / "private"
+    private.mkdir(exist_ok=True)
+    (private / ".htaccess").write_text("Require all denied\n", encoding="utf-8")
+    print("gate installed (index.php, gate/, .htaccess, private/)")
 
 
 def site_indexes(base_url: str) -> None:
@@ -296,6 +353,7 @@ def main() -> None:
     export_i18n()
     compose_index(args.base_url)
     copy_assets(wheels)
+    gate_assets(args.base_url)
     site_indexes(args.base_url)
     total = sum(f.stat().st_size for f in DIST.rglob("*") if f.is_file())
     print(f"\ndist/ ready ({total / 1e6:.1f} MB before the CDN-served Pyodide runtime).")
