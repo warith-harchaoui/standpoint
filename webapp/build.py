@@ -264,6 +264,9 @@ def gate_assets(base_url: str) -> None:
         "track.php",
         "track.js",
         "free_domains.txt",
+        # The healing template: auth.php restores the root .htaccess from this
+        # copy when an SFTP sync drops or overwrites the dotfile (seen in prod).
+        "htaccess.dist",
     ):
         shutil.copy2(gate_src / name, gate_dst / name)
 

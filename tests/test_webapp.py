@@ -158,6 +158,15 @@ def test_gate_htaccess_and_serve_protect_the_same_app_surface() -> None:
     # The two other denial layers: runtime data, and the library file.
     assert "private" in htaccess
     assert "gate/auth\\.php" in htaccess
+    # The self-heal loop: auth.php restores the root .htaccess from the shipped
+    # template when a sync drops the dotfile (2026-09-20 prod incident), so the
+    # function, its invocation, and the template's presence in the build are
+    # all load-bearing.
+    auth = (_GATE / "auth.php").read_text()
+    assert "function ensure_htaccess" in auth, "self-heal function removed from auth.php"
+    assert auth.rstrip().endswith("ensure_htaccess();"), "self-heal no longer runs on require"
+    build = (_WEBAPP / "build.py").read_text()
+    assert '"htaccess.dist"' in build, "healing template no longer shipped by build.py"
 
 
 def test_gate_php_sources_parse() -> None:

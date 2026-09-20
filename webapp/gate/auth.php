@@ -33,6 +33,37 @@ function gate_root(): string
     return dirname(__DIR__);
 }
 
+/**
+ * Self-heal the bundle root .htaccess (the gate's single point of failure).
+ *
+ * SFTP syncs routinely drop or overwrite dotfiles: lose this file and Apache
+ * serves the whole app ungated (observed in production on 2026-09-20, when a
+ * foreign project's sync replaced both index.php and .htaccess). So every
+ * gate endpoint re-asserts it: if the root .htaccess is missing or no longer
+ * contains our marker rule, it is rewritten from gate/htaccess.dist and the
+ * incident is logged to private/heal.log. Best-effort: an unwritable root
+ * must never break the endpoint that called us.
+ */
+function ensure_htaccess(): void
+{
+    $target = gate_root() . '/.htaccess';
+    $marker = 'gate/serve.php';
+    if (is_file($target) && str_contains((string) file_get_contents($target), $marker)) {
+        return;
+    }
+    $template = __DIR__ . '/htaccess.dist';
+    if (!is_file($template)) {
+        return;
+    }
+    if (@file_put_contents($target, file_get_contents($template), LOCK_EX) !== false) {
+        @file_put_contents(
+            private_dir() . '/heal.log',
+            gmdate('c') . " root .htaccess restored from gate/htaccess.dist\n",
+            FILE_APPEND | LOCK_EX
+        );
+    }
+}
+
 /** The private data directory, created (and web-denied) on first use. */
 function private_dir(): string
 {
@@ -236,3 +267,7 @@ function send_magic_link(string $email, string $lang): bool
     @mail(OWNER_EMAIL, 'Standpoint lead: ' . $email, "New access request from {$email}\n", $headers);
     return $sent;
 }
+
+// Every endpoint that includes this library re-asserts the root .htaccess:
+// the lock must survive dotfile-dropping SFTP syncs (see ensure_htaccess).
+ensure_htaccess();
