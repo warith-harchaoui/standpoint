@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 
 OUT_DIR = Path(__file__).resolve().parents[1] / "data" / "dataset"
-TASKS = ["pole_naming", "noun_forms", "narrative", "vlm_assess"]
+TASKS = ["pole_naming", "noun_forms", "suggest_ratings", "vlm_assess"]
 
 
 def merge_jsonl(task: str) -> int:

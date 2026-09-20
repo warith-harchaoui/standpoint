@@ -55,9 +55,9 @@ BASE_MODEL = CHECKPOINTS_DIR / "qwen3-vl-2b-mlx-bf16"  # bf16, not a quantizatio
 # not assumed identical.
 ADAPTER_OUT = CHECKPOINTS_DIR / "distilled-adapter-fr"
 
-TASKS = ["pole_naming", "noun_forms"]  # narrative excluded (out of scope, the
-# feature is being removed from standpoint); vlm_assess excluded (Qwen3-VL image
-# training crashes, see module docstring) -- served by the English adapter instead
+TASKS = ["pole_naming", "noun_forms", "suggest_ratings"]  # narrative excluded
+# for good (the feature was removed from standpoint); vlm_assess excluded (Qwen3-VL
+# image training crashes, see module docstring) -- served by the English adapter instead
 LANG = "fr"
 VAL_FRACTION = 0.15
 SEED = 42  # same seed as 03_train_lora.py's train_test_split, for consistency

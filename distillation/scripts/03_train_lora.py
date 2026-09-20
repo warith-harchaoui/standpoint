@@ -48,7 +48,7 @@ BASE_MODEL = CHECKPOINTS_DIR / "smolvlm2-500m-mlx-bf16"  # not the float16 conve
 # (as opposed to inference, where the Phase 0 float16 checkpoint works fine)
 ADAPTER_OUT = CHECKPOINTS_DIR / "distilled-adapter"
 
-TASKS = ["pole_naming", "noun_forms", "vlm_assess"]
+TASKS = ["pole_naming", "noun_forms", "suggest_ratings", "vlm_assess"]
 VAL_FRACTION = 0.15
 SEED = 42
 EPOCHS = 3

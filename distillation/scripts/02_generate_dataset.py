@@ -3,10 +3,12 @@
 Rather than reconstructing standpoint's internal prompts by hand (a drift risk if
 `standpoint/__init__.py` ever changes them), this monkeypatches
 `best_engine_ai_helper.llm.chat` -- the one call boundary every one of standpoint's
-four LLM/VLM jobs goes through -- to *capture* the exact (prompt, images, schema,
+LLM/VLM jobs goes through -- to *capture* the exact (prompt, images, schema,
 response) of each real call made while running the genuine pipeline functions
-(`axis_poles`, `noun_forms`, `analysis_markdown`, `vlm_assess`). The captured calls
+(`axis_poles`, `noun_forms`, `suggest_ratings`, `vlm_assess`). The captured calls
 become training examples with guaranteed fidelity to production behaviour.
+(`analysis_markdown` / the `narrative` task is gone for good: the feature was
+removed from standpoint itself, so nothing generates or trains on it anymore.)
 
 `vlm_assess` negatives (the leader dot genuinely NOT top-right) are the one
 exception: rather than trust the teacher's own judgement on a doctored image (this
@@ -16,7 +18,7 @@ rendering, which deterministically moves the red dot to the "worst" point's
 position (geometrically the far corner from the reference) -- the correct verdict
 is then known by construction, not asked of any model.
 
-Output: ``distillation/data/dataset/{pole_naming,noun_forms,narrative,vlm_assess}.jsonl``
+Output: ``distillation/data/dataset/{pole_naming,noun_forms,suggest_ratings,vlm_assess}.jsonl``
 plus ``distillation/data/dataset/images/`` for the vlm_assess image files.
 """
 
@@ -30,6 +32,7 @@ from pathlib import Path
 from types import ModuleType
 
 import best_engine_ai_helper.llm as llm_module
+import pandas as pd
 
 import standpoint as sp
 
@@ -166,11 +169,25 @@ def noun_forms_examples(subject: str, lang: str) -> list[dict]:
     return examples
 
 
-def narrative_example(result: sp.PCAResult, roles: list[str], poles: list[str], lang: str) -> dict:
+def suggest_ratings_example(df: pd.DataFrame, lang: str) -> dict:
+    """Capture one GUI-style "Flemme" auto-fill call: names in, full ratings matrix out.
+
+    Uses the parsed table BEFORE `resolve_polarity` so the option/criterion names
+    match what a GUI user actually typed (polarity markers and all), which is the
+    exact input `suggest_ratings` sees in production.
+    """
     _captured.clear()
-    sp.analysis_markdown(result, roles, poles, lang=lang)
+    noun = str(df.index.name or "Option")
+    options = [str(o) for o in df.index]
+    criteria = [str(c) for c in df.columns]
+    sp.suggest_ratings(noun, options, criteria, lang=lang)
     call = _harvest_one()
-    return {"lang": lang, "question": call["prompt"], "answer": call["response"]}
+    return {
+        "lang": lang,
+        "question": call["prompt"],
+        "answer": json.dumps(call["response"], ensure_ascii=False),
+        "json_schema": call["json_schema"],
+    }
 
 
 def vlm_assess_positive_example(
@@ -254,7 +271,7 @@ def main() -> None:
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     sinks = {
         name: (OUT_DIR / f"{name}{suffix}.jsonl").open("a", encoding="utf-8")
-        for name in ("pole_naming", "noun_forms", "narrative", "vlm_assess")
+        for name in ("pole_naming", "noun_forms", "suggest_ratings", "vlm_assess")
     }
     shard_log = OUT_DIR / f".processed{suffix}"
     csv_paths = sorted(TABLES_DIR.glob("*.csv"))
@@ -280,8 +297,8 @@ def main() -> None:
         subject, lang = SUBJECT_NAME[idx], SUBJECT_LANG[idx]
         print(f"[{n}/{len(todo)}] {csv_path.name} ({lang})...", flush=True)
         try:
-            df = sp.parse_table(str(csv_path))
-            df, lower = sp.resolve_polarity(df)
+            df_raw = sp.parse_table(str(csv_path))
+            df, lower = sp.resolve_polarity(df_raw)
             result = sp.analyze(df, reference=0, lower_is_better=list(lower))
             roles = sp.assign_roles(result)
 
@@ -294,9 +311,9 @@ def main() -> None:
                 sinks["noun_forms"].write(json.dumps(ex, ensure_ascii=False) + "\n")
                 counts["noun_forms"] += 1
 
-            ex = narrative_example(result, roles, poles, lang)
-            sinks["narrative"].write(json.dumps(ex, ensure_ascii=False) + "\n")
-            counts["narrative"] += 1
+            ex = suggest_ratings_example(df_raw, lang)
+            sinks["suggest_ratings"].write(json.dumps(ex, ensure_ascii=False) + "\n")
+            counts["suggest_ratings"] += 1
 
             pos_path = IMAGES_DIR / f"{csv_path.stem}_pos.png"
             ex = vlm_assess_positive_example(result, roles, poles, pos_path, lang)

@@ -1,5 +1,28 @@
 # Distilling Standpoint's local VLM to a 500M engine
 
+## Scope change (2026-09-20): narrative out for good, suggest_ratings in
+
+`remove-narrative-feature` is merged to `main` and deleted: the narrative
+feature no longer exists in standpoint, so the `narrative` task leaves the
+distillation scope permanently (not "dropped for this session" -- gone, along
+with its generation in `02_generate_dataset.py`). In its place,
+**`suggest_ratings`** (the GUI's "Flemme" auto-fill: option/criterion names in,
+a full 1..5 ratings matrix out) joins the captured tasks -- it postdates the
+original dataset and is now the GUI's main LLM call, so the students must cover
+it. Captured through the same `llm.chat` monkeypatch as the other tasks, from
+the parsed table BEFORE `resolve_polarity` (the names a GUI user actually
+types). Scored in both eval scripts as: valid JSON, every (option, criterion)
+cell present, every value an integer already in 1..5, and a mean absolute
+deviation from the teacher of at most 0.75. Scope is explicitly **en/fr only**
+(the product's Spanish UI locale is out of the distillation's scope).
+
+Same-day state note: `distillation/data/` (tables + datasets, gitignored,
+regenerable) no longer exists on this machine, and neither do the converted
+base checkpoints or `.venv` -- only the two `best-adapter` directories survive,
+committed via LFS. Full regeneration relaunched from the 01 scripts (574
+subjects + 171 translated, ~90 s/table measured -> roughly a day of teacher
+time), with env + base-model rebuild in parallel.
+
 Status: **English/vision engine (SmolVLM2-500M) and French engine
 (`kurakurai/Luth-0.6B-Instruct` superseded by `Qwen3-VL-2B-Instruct`, see
 below) both retrained and evaluated as of 2026-08-16.** `narrative` is

@@ -1,4 +1,9 @@
-"""Phase 1c: deduplicate and trim pole_naming/narrative to exact EN/FR parity.
+"""Phase 1c: deduplicate and trim pole_naming/suggest_ratings to exact EN/FR parity.
+
+(Originally written for pole_naming/narrative; `narrative` is gone for good --
+the feature was removed from standpoint -- and `suggest_ratings` inherits the
+same one-example-per-table, language-follows-the-table shape, so it needs the
+same dedup + parity trim. The history below is kept as-is for the record.)
 
 Two independent effects of this session's parity pass need cleaning up before
 `03_train_lora.py` builds the combined dataset:
@@ -20,7 +25,7 @@ Two independent effects of this session's parity pass need cleaning up before
 
 This trims each task's FR side down to exactly the EN count via seeded random
 sampling (seed=42, matching this project's other splits), so
-`data/dataset/{pole_naming,narrative}.jsonl` end up EN/FR-balanced before the
+`data/dataset/{pole_naming,suggest_ratings}.jsonl` end up EN/FR-balanced before the
 train/val split. Rewrites the files in place; run once, before `03_train_lora.py`.
 """
 
@@ -54,7 +59,7 @@ def _balance(examples: list[dict], seed: int) -> list[dict]:
 
 
 def main() -> None:
-    for task in ("pole_naming", "narrative"):
+    for task in ("pole_naming", "suggest_ratings"):
         path = DATA_DIR / f"{task}.jsonl"
         examples = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
         before = len(examples)

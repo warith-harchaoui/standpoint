@@ -44,7 +44,7 @@ ADAPTER = DIST_DIR / "checkpoints" / "distilled-adapter-fr" / "best-adapter"
 VAL_PATH = DIST_DIR / "data" / "dataset" / "combined_fr" / "validation.jsonl"
 REPORT_PATH = DIST_DIR / "data" / "eval_report_fr.json"
 
-JSON_TASKS = {"pole_naming", "noun_forms"}
+JSON_TASKS = {"pole_naming", "noun_forms", "suggest_ratings"}
 
 
 # --------------------------------------------------------------------------- #
@@ -76,6 +76,33 @@ def noun_forms_ok(candidate: str) -> bool:
     return data is not None and bool(data.get("singular")) and bool(data.get("plural"))
 
 
+def suggest_ratings_ok(candidate: str, expected: str) -> bool:
+    """Complete, in-range ratings matrix close to the teacher's -- see 04_evaluate.py.
+
+    Pass = valid JSON covering every (option, criterion) cell the teacher scored,
+    every value already an integer in 1..5, and a mean absolute deviation from the
+    teacher of at most 0.75 (within less than one rating step on average).
+    """
+    data, ref = valid_json(candidate), valid_json(expected)
+    if data is None or ref is None:
+        return False
+    diffs: list[float] = []
+    for option, row in ref.items():
+        got = data.get(option)
+        if not isinstance(got, dict) or not isinstance(row, dict):
+            return False
+        for criterion, value in row.items():
+            g = got.get(criterion)
+            if isinstance(g, bool) or not isinstance(g, int) or not 1 <= g <= 5:
+                return False
+            try:
+                v = max(1.0, min(5.0, float(value)))  # teacher raw output, pre-clamp
+            except (TypeError, ValueError):
+                continue  # unusable teacher cell: skip it rather than fail the student
+            diffs.append(abs(g - v))
+    return bool(diffs) and sum(diffs) / len(diffs) <= 0.75
+
+
 # --------------------------------------------------------------------------- #
 # main
 # --------------------------------------------------------------------------- #
@@ -89,7 +116,7 @@ def load_val_examples() -> list[dict]:
 def student_answer(model, processor, config, question: str, image: str | None) -> str:
     formatted = apply_chat_template(processor, config, question, num_images=1 if image else 0)
     result = generate(
-        model, processor, formatted, image=image, max_tokens=300, verbose=False, temperature=0.0
+        model, processor, formatted, image=image, max_tokens=600, verbose=False, temperature=0.0
     )
     return result.text if hasattr(result, "text") else str(result)
 
@@ -112,8 +139,12 @@ def main() -> None:
         task = ex.get("task", "unknown")
         candidate = student_answer(model, processor, config, ex["question"], ex.get("image"))
 
-        if task in JSON_TASKS:
-            ok = pole_naming_ok(candidate) if task == "pole_naming" else noun_forms_ok(candidate)
+        if task == "pole_naming":
+            ok = pole_naming_ok(candidate)
+        elif task == "noun_forms":
+            ok = noun_forms_ok(candidate)
+        elif task == "suggest_ratings":
+            ok = suggest_ratings_ok(candidate, ex["answer"])
         else:
             ok = bool(candidate.strip())
 
