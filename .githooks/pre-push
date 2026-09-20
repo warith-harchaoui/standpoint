@@ -10,3 +10,8 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 scripts/check.sh
+
+# LFS transfer: since core.hooksPath points here, git-lfs cannot install its
+# own pre-push hook -- without this line, pushes would silently skip uploading
+# LFS objects (the distillation checkpoints) and leave broken pointers upstream.
+git lfs pre-push "$@"
