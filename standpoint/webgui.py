@@ -195,7 +195,7 @@ GUI_HTML = r"""<!doctype html>
              (engine boot, generate, uploads, auto-fill). Driven by the busy
              counter wrapped around every backend call; see busyStart(). -->
         <span id="busy" class="spinner hidden" role="status" data-i18n-aria="busy_aria" aria-label="Working…"></span>
-        <button id="langToggle" class="toggle-btn" type="button" data-i18n-aria="lang_aria" aria-label="Switch language">🇬🇧</button>
+        <button id="langToggle" class="toggle-btn" type="button" data-i18n-aria="lang_aria" aria-label="Switch language">🇫🇷</button>
         <button id="themeToggle" class="toggle-btn" type="button" data-i18n-aria="theme_light_aria" aria-label="Switch theme">🌛</button>
       </div>
     </nav>
@@ -805,9 +805,10 @@ function applyI18n() {
   renderGrid();
 }
 
-// The toggle glyphs show the CURRENT language flag and the theme you would switch TO.
+// Both toggle glyphs show what you would switch TO: the other language's flag,
+// the other theme's icon (a control announces its action, not the current state).
 function updateToggles() {
-  $("langToggle").textContent = LANG === "fr" ? "🇫🇷" : "🇬🇧";
+  $("langToggle").textContent = LANG === "fr" ? "🇬🇧" : "🇫🇷";
   const dark = document.documentElement.classList.contains("dark");
   $("themeToggle").textContent = dark ? "🌞" : "🌛";
   if (T.theme_dark_aria) $("themeToggle").setAttribute("aria-label", dark ? T.theme_dark_aria : T.theme_light_aria);

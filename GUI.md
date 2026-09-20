@@ -43,7 +43,7 @@ Run it (`standpoint-gui`) and, entirely on `localhost`:
    offscreen canvas, no server round trip). Exports are named after the table's
    subject (e.g. `programming-languages.png`).
 
-Two header toggles round it off: **🇫🇷 / 🇬🇧 language** (re-localizes the whole page,
+Two header toggles round it off: **🇫🇷 / 🇬🇧 language** (the flag shows the language you would switch to; re-localizes the whole page,
 including the model output: pole names and title) and
 **🌞 / 🌛 theme** (light / dark, remembered across visits). GUI strings and LLM prompts
 live together in `standpoint/locales/i18n.yaml`.

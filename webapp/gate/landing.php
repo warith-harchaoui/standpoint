@@ -141,6 +141,11 @@ $flag = (string) ($_GET['link'] ?? ($_GET['login'] ?? ''));
     .dark button[type=submit]:hover { background: #fff; }
     .dark .msg.ok { background: #14532d; color: #D4F5D9; }
     .dark .msg.err { background: #7f1d1d; color: #FFD8D6; }
+    /* Ralph Eyeball fix: the muted grays readable on white fail on the dark
+       cards (consent, notes, eyebrow ~2.8:1); lift them to a legible stone. */
+    .dark .consent { color: #a8a29e; }
+    .dark .note, .dark .eyebrow, .dark footer { color: #a8a29e; }
+    .dark .gh-link { color: #d4d4d4; }
     .dark footer { border-color: #292524; }
   </style>
 </head>
@@ -155,7 +160,7 @@ $flag = (string) ($_GET['link'] ?? ($_GET['login'] ?? ''));
     <div class="controls">
       <a id="ghLink" class="gh-link" href="https://github.com/warith-harchaoui/standpoint"
          target="_blank" rel="noopener" data-i18n="github">⭐️ on GitHub</a>
-      <button id="langToggle" class="toggle-btn" type="button" aria-label="Switch language">🇬🇧</button>
+      <button id="langToggle" class="toggle-btn" type="button" aria-label="Switch language"><?= $lang === 'fr' ? '🇬🇧' : '🇫🇷' ?></button>
       <button id="themeToggle" class="toggle-btn" type="button" aria-label="Switch theme">🌛</button>
     </div>
   </nav>
@@ -219,8 +224,8 @@ const STRINGS = {
     guide2: "Click “Generate Quadrant”. Everything runs in your browser; nothing is uploaded.",
     form_title: "Get access with your work email",
     form_sub: "We send you a sign-in link. One click and the interactive app is yours for 30 days on this device.",
-    email_label: "Work email (generic addresses such as gmail.com are not accepted)",
-    consent: "I agree that my email address and my activity in the app are recorded so Warith Harchaoui can contact me about Standpoint. Removal on request: warith@deraison.ai.",
+    email_label: "Work email (no generic addresses such as gmail.com)",
+    consent: "I agree that my email address is recorded. Removal on request: warith@deraison.ai.",
     submit: "Email me the access link",
     examples_title: "What you will get",
     examples_sub: "Four real datasets rendered by the engine. These previews are static; the app makes them yours: edit any cell, import your own table, export the map.",
@@ -254,8 +259,8 @@ const STRINGS = {
     guide2: "Cliquer sur « Générer le quadrant ». Tout tourne dans votre navigateur ; rien n'est envoyé.",
     form_title: "Accédez avec votre email professionnel",
     form_sub: "Nous vous envoyons un lien de connexion. Un clic et l'application interactive est à vous pour 30 jours sur cet appareil.",
-    email_label: "Email professionnel (les adresses génériques type gmail.com sont refusées)",
-    consent: "J'accepte que mon adresse email et mon activité dans l'application soient enregistrées afin que Warith Harchaoui puisse me recontacter au sujet de Standpoint. Suppression sur demande : warith@deraison.ai.",
+    email_label: "Email professionnel (pas d'adresse générique type gmail.com)",
+    consent: "J'accepte que mon adresse email soit enregistrée. Suppression sur demande : warith@deraison.ai.",
     submit: "Recevoir le lien d'accès",
     examples_title: "Ce que vous obtiendrez",
     examples_sub: "Quatre jeux de données réels rendus par le moteur. Ces aperçus sont statiques ; l'application les rend vôtres : modifiez chaque case, importez votre tableau, exportez la carte.",
@@ -300,10 +305,10 @@ function apply() {
   document.querySelectorAll("[data-i18n]").forEach(el => {
     el.textContent = t[el.dataset.i18n];
   });
-  // Same convention as the app: the flag shows the CURRENT language, the sun/
-  // moon shows the theme you would switch to, and the aria labels say so.
+  // Same convention as the app: both toggles show what you would switch TO
+  // (the other language's flag, the other theme's icon), aria labels included.
   const langBtn = document.getElementById("langToggle");
-  langBtn.textContent = lang === "fr" ? "🇫🇷" : "🇬🇧";
+  langBtn.textContent = lang === "fr" ? "🇬🇧" : "🇫🇷";
   langBtn.setAttribute("aria-label", t.lang_aria);
   const themeBtn = document.getElementById("themeToggle");
   themeBtn.textContent = isDark() ? "🌞" : "🌛";
