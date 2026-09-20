@@ -37,7 +37,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.8.5"
+__version__ = "0.8.6"
 
 import argparse
 import contextlib
@@ -1597,11 +1597,13 @@ def vlm_assess(image: str | bytes, model: str | None = None) -> dict:
     }
     prompt = (
         "This image is a 2D competitor positioning map. The single RED dot is the "
-        "leader and should sit in the TOP-RIGHT area. The four axis poles are named "
+        "leader and should sit in the TOP-RIGHT QUADRANT (anywhere in the upper-right "
+        "quarter of the map, above the horizontal axis and right of the vertical axis; "
+        "it does NOT need to touch the extreme corner). The four axis poles are named "
         "in italic text at the top, bottom, left, and right edges. Assess three "
-        "things: (1) is the red leader dot in the top-right? (2) are the point "
-        "labels readable and not badly overlapping? (3) are the four italic axis "
-        "pole labels at the edges present and legible? Reply as JSON."
+        "things: (1) is the red leader dot anywhere in the top-right quadrant? "
+        "(2) are the point labels readable and not badly overlapping? (3) are the "
+        "four italic axis pole labels at the edges present and legible? Reply as JSON."
     )
     try:
         # `llm.chat` wants raw image bytes; read the file when handed a path.
