@@ -2,6 +2,28 @@
 
 ## Rearchitecture (2026-09-21): no vision, one 0.6B text model per language
 
+### Results, French specialist (Luth-0.6B, best checkpoint iter 2456, val 0.118)
+
+| task | pass | reference (Aug) |
+|---|---|---|
+| `noun_forms` | **111/111 (100%)** | 100% |
+| `pole_naming` | **46/51 (90%)** | 83% Qwen3-VL-2B / 94% Luth |
+| `suggest_ratings` | 19/55 (35%) | none |
+
+`pole_naming` at 90% beats the 2 GB Qwen3-VL-2B track's 83% with a model a
+third of the size that WebLLM can actually serve.
+
+The 35% on `suggest_ratings` needs reading carefully, which is exactly why the
+report now carries the deviation. 43 of 55 answers (78%) are complete,
+well-formed matrices, and across those the mean absolute deviation from the
+teacher is **0.76 on a 1..5 scale** (median 0.78) against a pass threshold of
+0.75. The distribution sits on the threshold, so the pass rate is close to a
+coin flip and measures the threshold more than the model. What the data
+actually says: the student agrees with the teacher to within about three
+quarters of a rating step on a subjective scale, and gets the structure wrong
+one time in five. The second number is the one worth working on.
+
+
 Three changes that are one decision. The sections below this one are the log of
 how the project got here and stay as written; this is what the pipeline does
 now.

@@ -72,6 +72,12 @@ def report_path_for(lang: str) -> Path:
     return DIST_DIR / "data" / f"eval_report{suffix}.json"
 
 
+def failures_path_for(lang: str) -> Path:
+    """Where the failing answers are kept, for diagnosis without a rerun."""
+    suffix = "" if lang == "all" else f"_{lang}"
+    return DIST_DIR / "data" / f"eval_failures{suffix}.jsonl"
+
+
 JSON_TASKS = {"pole_naming", "noun_forms", "suggest_ratings"}
 
 
@@ -235,6 +241,10 @@ def main() -> None:
     # deviations behind those booleans (see suggest_ratings_deviation).
     scores: dict[tuple[str, str], list[bool]] = defaultdict(list)
     deviations: dict[tuple[str, str], list[float]] = defaultdict(list)
+    # Every failing answer is kept verbatim. A pass rate says how often the
+    # student was wrong; only the answers say in what way, and regenerating
+    # them costs another full pass over the split.
+    failures: list[dict] = []
     for i, ex in enumerate(examples):
         task = ex.get("task", "unknown")
         lang = ex.get("lang") or "n/a"
@@ -253,6 +263,16 @@ def main() -> None:
             ok = bool(candidate.strip())
 
         scores[(task, lang)].append(ok)
+        if not ok:
+            failures.append(
+                {
+                    "task": task,
+                    "lang": lang,
+                    "question": ex["question"],
+                    "expected": ex["answer"],
+                    "candidate": candidate,
+                }
+            )
         print(f"[{i + 1}/{len(examples)}] {task}/{lang}: {'PASS' if ok else 'FAIL'}")
 
     report = {}
@@ -280,6 +300,12 @@ def main() -> None:
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2))
     print(f"\nWritten to {report_path}")
+
+    failures_path = failures_path_for(args.lang)
+    failures_path.write_text(
+        "".join(json.dumps(f, ensure_ascii=False) + "\n" for f in failures), encoding="utf-8"
+    )
+    print(f"{len(failures)} failing answers written to {failures_path}")
 
 
 if __name__ == "__main__":
