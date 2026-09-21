@@ -55,8 +55,12 @@ resolved against ``--base-url`` (default: https://deraison.ai/standpoint).
 
 Run from the repo root with the project env active::
 
-    python webapp/build.py          # writes webapp/dist/
+    python webapp/build.py          # writes webapp/dist/ (gated, for deraison.ai)
     python webapp/build.py --clean  # rebuild from scratch
+
+    # Open-access mirror: no landing page, no PHP, no tracking, own folder.
+    python webapp/build.py --no-gate --clean --out webapp/dist-open \\
+        --base-url https://example.org/standpoint
 
 The Pyodide runtime itself is loaded from the jsDelivr CDN at page load (see
 ``backend-pyodide.js``): only the wheels built here ship in the folder.
@@ -154,8 +158,18 @@ def export_i18n() -> None:
         print(f"i18n/{lang}.json ({len(strings)} strings)")
 
 
-def compose_index(base_url: str) -> None:
-    """Write dist/index.html: GUI_HTML + Pyodide backend + relative URLs + SEO head."""
+def compose_index(base_url: str, *, gated: bool = True) -> None:
+    """Write dist/index.html: GUI_HTML + Pyodide backend + relative URLs + SEO head.
+
+    Parameters
+    ----------
+    base_url
+        Deployment URL, used for the canonical/OG/JSON-LD head block.
+    gated
+        Whether this build ships the lead-magnet gate. A gate-less build must
+        not reference ``gate/track.js``: the file is not copied, so the tag
+        would only buy a 404 in every visitor's console.
+    """
     from standpoint.webgui import GUI_HTML
 
     html = GUI_HTML
@@ -174,10 +188,10 @@ def compose_index(base_url: str) -> None:
     anchor = "<script>\n// --- tiny state"
     if html.count(anchor) != 1:
         raise SystemExit("GUI_HTML anchor not found: webgui.py layout changed, update build.py")
+    tracker = '<script src="./gate/track.js" defer></script>\n' if gated else ""
     html = html.replace(
         anchor,
-        '<script src="./gate/track.js" defer></script>\n'
-        '<script src="./backend-pyodide.js"></script>\n' + anchor,
+        tracker + '<script src="./backend-pyodide.js"></script>\n' + anchor,
     )
     (DIST / "index.html").write_text(html, encoding="utf-8")
     print("index.html composed")
@@ -339,6 +353,7 @@ def site_indexes(base_url: str) -> None:
 
 def main() -> None:
     """Build dist/ end to end; ``--clean`` wipes a previous build first."""
+    global DIST  # every helper writes relative to this module-level anchor
     parser = argparse.ArgumentParser(description="Build the static Standpoint web app.")
     parser.add_argument("--clean", action="store_true", help="remove dist/ before building")
     parser.add_argument(
@@ -346,7 +361,22 @@ def main() -> None:
         default=BASE_URL,
         help="deployment URL for canonical/OG/sitemap (default: %(default)s)",
     )
+    parser.add_argument(
+        "--no-gate",
+        action="store_true",
+        help="build the freely accessible app: no landing page, no PHP endpoints, "
+        "no .htaccess, no activity tracking (for hosts without PHP, or for a "
+        "mirror that is meant to be open)",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=DIST,
+        help="output folder (default: %(default)s); use a separate one to keep "
+        "the gated dist/ intact",
+    )
     args = parser.parse_args()
+    DIST = args.out.resolve()
 
     if args.clean and DIST.exists():
         shutil.rmtree(DIST)
@@ -354,9 +384,12 @@ def main() -> None:
 
     wheels = build_wheels()
     export_i18n()
-    compose_index(args.base_url)
+    compose_index(args.base_url, gated=not args.no_gate)
     copy_assets(wheels)
-    gate_assets(args.base_url)
+    if args.no_gate:
+        print("gate skipped (--no-gate): index.html is the entry point, open access")
+    else:
+        gate_assets(args.base_url)
     site_indexes(args.base_url)
     total = sum(f.stat().st_size for f in DIST.rglob("*") if f.is_file())
     print(f"\ndist/ ready ({total / 1e6:.1f} MB before the CDN-served Pyodide runtime).")

@@ -39,6 +39,8 @@ __pycache__/
 # --- Packaging / build ---
 build/
 dist/
+# Alternate build outputs (webapp/build.py --out), e.g. the gate-less mirror.
+webapp/dist-*/
 *.egg-info/
 .eggs/
 wheels/
@@ -83,3 +85,7 @@ coverage.xml
 # --- OS cruft ---
 .DS_Store
 Thumbs.db
+
+# Local HF datasets arrow cache (the shared ~/.cache/huggingface lives on a full
+# external volume; training redirects here -- see .private/train_all.sh).
+distillation/.hf-cache/
