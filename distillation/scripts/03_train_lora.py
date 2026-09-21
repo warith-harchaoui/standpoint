@@ -62,8 +62,19 @@ EPOCHS = 6  # ~1230 train rows per language: few enough that 3 epochs leaves the
 # adapter undertrained. Overfitting past the sweet spot is handled by
 # select_best_checkpoint.py picking the lowest-validation-loss snapshot, not by
 # stopping early and hoping.
-BATCH_SIZE = 4  # text-only and 0.6B: none of the batch-collation hazards that
-# forced batch-size 1 on the vision track apply here
+# Batch size 1, with the optimizer stepping on 4 accumulated examples. Not a
+# collation worry this time -- a hard limit of this machine. macOS kills a Metal
+# command buffer that holds the GPU too long
+# ("kIOGPUCommandBufferCallbackErrorImpactingInteractivity"), and one
+# forward+backward over a batch of 2 crosses that line here: measured, batch 1
+# ran 400 iterations clean at 5.0 GB peak while batch 2 died within the first
+# hundred. The cause is the LM head: Qwen3's vocabulary is 151643 wide, so the
+# logits for one 940-token example are already 0.29 GB and a batch of 2 doubles
+# that inside a single dispatch. Accumulating costs nothing in quality (the
+# optimizer still sees 4 examples per step) and is in fact FASTER here --
+# 4.4 examples/s against 3.2 at batch 4.
+BATCH_SIZE = 1
+GRAD_ACCUM = 4
 
 
 def dataset_dir_for(lang: str) -> Path:
@@ -164,7 +175,7 @@ def main() -> None:
         )
         sys.exit(1)
 
-    steps_per_epoch = len(train) // BATCH_SIZE
+    steps_per_epoch = len(train) // BATCH_SIZE  # batch 1: one iteration per example
     iters = EPOCHS * steps_per_epoch
     half_epoch = max(1, steps_per_epoch // 2)
 
@@ -182,10 +193,12 @@ def main() -> None:
         str(iters),
         "--batch-size",
         str(BATCH_SIZE),
+        "--gradient-accumulation-steps",
+        str(GRAD_ACCUM),
         "--learning-rate",
         str(args.learning_rate),
         "--warmup-steps",
-        "60",  # ~a third of an epoch: keeps Adam's moment estimates small while
+        "60",  # optimizer updates, i.e. ~240 raw iterations at GRAD_ACCUM 4  # ~a third of an epoch: keeps Adam's moment estimates small while
         # the adapter is least stable, the fix that stopped the vision track's
         # stable-then-NaN failure at iter 210
         "--grad-clip",
@@ -195,7 +208,7 @@ def main() -> None:
         "--lora-scale",
         "20.0",
         "--steps-per-report",
-        "10",
+        "100",  # one line per ~100 examples; 10 would bury the log at batch 1
         "--steps-per-save",
         str(half_epoch),  # checkpoint every half epoch...
         "--steps-per-eval",
