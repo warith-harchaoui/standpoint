@@ -397,12 +397,22 @@ def position(req: PositionRequest) -> PositionResponse:
 
 
 def main_gui() -> None:
-    """Console entry point (``standpoint-gui``): serve the GUI on localhost:8000."""
+    """Console entry point (``standpoint-gui``): serve the GUI on localhost.
+
+    Honours ``STANDPOINT_HOST`` / ``STANDPOINT_PORT`` exactly as
+    ``standpoint-mcp`` already does -- port 8000 is a popular one, and a
+    hardcoded bind left the only escape hatch being "free the port". The
+    loopback default is deliberate and stays: the table never leaves the
+    machine unless the operator asks for it by name.
+    """
+    import os
+
     import uvicorn
 
-    # Local-first: bind to loopback only, so the table never leaves the machine.
-    print("Standpoint GUI -> http://localhost:8000/gui  (Ctrl-C to stop)")
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
+    host = os.environ.get("STANDPOINT_HOST", "127.0.0.1")
+    port = int(os.environ.get("STANDPOINT_PORT", "8000"))
+    print(f"Standpoint GUI -> http://{host}:{port}/gui  (Ctrl-C to stop)")
+    uvicorn.run(app, host=host, port=port, log_level="info")
 
 
 if __name__ == "__main__":
