@@ -1,37 +1,39 @@
-"""Phase 2: combine the four per-task JSONL datasets and LoRA-train SmolVLM2-500M.
+"""Phase 2: combine the per-task JSONL datasets and LoRA-train a 0.6B text model.
 
-`mlx_vlm.lora`'s dataset loader auto-transforms a `question`/`answer`(/`image`)
-column dataset into its `messages` conversation format (see
-`mlx_vlm.lora.transform_dataset_to_messages`), which already matches every task's
-JSONL from `02_generate_dataset.py` exactly -- no reshaping needed beyond
-concatenating the four files into one, with `image: null` on the text-only tasks so
-the combined file has a consistent schema, then a train/val split.
+**One model per language** (``--lang en`` / ``--lang fr``), plus an optional
+bilingual control (``--lang all``). Standpoint's interface runs in one language
+at a time, so a visitor only ever downloads one adapter; spending all of a
+0.6B-parameter model's capacity on that one language is the point. The bilingual
+run exists to measure what specialising actually bought: it sees twice the
+schema-shaped supervision (the JSON form of an answer is language-independent),
+which is the one thing specialising gives up. `04_evaluate.py --lang` scores each
+run on its own held-out split, so the reports are directly comparable.
 
-**Batches must be modality-homogeneous.** `mlx_vlm.trainer.sft_trainer.
-iterate_batches` forms each batch from a *contiguous* slice of the dataset
-(`indices[i:i+batch_size]`) before any shuffling -- shuffling only reorders which
-batch comes next, never which items land in the same batch. Its collation
-(`pixel_values_batch = ... if "pixel_values" in items[0] ...`) only checks the
-FIRST item of a batch, so a batch mixing one text-only example (no `pixel_values`)
-with one image example crashes `mx.stack()` on the mismatched list. A fully random
-per-example shuffle (the obvious approach) produces exactly such mixed batches by
-chance. The fix: shuffle *within* the text-only and image-bearing groups
-separately, then concatenate them as two contiguous blocks (each trimmed to a
-multiple of `--batch-size` so no batch straddles the boundary either) -- every
-batch mlx-vlm actually forms is then guaranteed to be all-text or all-image.
+**The base model differs per language, on purpose.** French trains on
+Luth-0.6B-Instruct, a Qwen3-0.6B fine-tuned for French and the holder of the best
+French `pole_naming` score this project has measured (94%). English trains on
+plain Qwen3-0.6B, where Luth's French specialisation would be a handicap rather
+than a help. The bilingual control uses the plain base, which is the neutral one.
+Both are Qwen3-0.6B architectures, so both are servable as-is by the WebLLM/MLC
+chain the browser build already uses -- the point of the whole exercise, and the
+reason this is no longer a vision-language model (see below).
 
-One LoRA adapter is trained across all four tasks together (matches
-`llm.brief.yaml`'s own framing: "one model for all... jobs"), so the model learns to
-route its behaviour from the prompt's own content, exactly as the teacher already
-does with a single model.
-
-Trained via `run_lora_with_val.py`, not `mlx_vlm.lora`'s own CLI directly: that CLI
-hardcodes `val_dataset=None` regardless of `--val-batches`/`--steps-per-eval`, so no
-validation ever runs through it -- see that script's module docstring.
+**Text-only, three tasks.** `vlm_assess` was dropped from the distillation after
+measuring what the teacher actually produces for it: across all 1480 recorded
+examples, `readable` is `true` 1480 times and `axis_labels_visible` is `true`
+1480 times -- two constant fields with nothing to learn -- while the third,
+`leader_top_right`, is a geometric fact the renderer already knows by
+construction. `02_generate_dataset.py` conceded the point itself: it builds that
+field's negative examples by swapping the best/worst roles and writing the
+verdict by hand, "rather than trust the teacher's own judgement on a doctored
+image". So the CLI's `--check` computes that verdict directly from the positions
+now, and the student never needs eyes. Dropping it is what makes a 0.6B text
+model -- small enough to ship to a browser -- the right shape for this job.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import subprocess
 import sys
@@ -42,31 +44,45 @@ from sklearn.model_selection import train_test_split
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 DATASET_DIR = DATA_DIR / "dataset"
 CHECKPOINTS_DIR = Path(__file__).resolve().parents[1] / "checkpoints"
-BASE_MODEL = CHECKPOINTS_DIR / "smolvlm2-500m-mlx-bf16"  # not the float16 conversion:
-# training on it went to nan by iteration 10-20 even with grad-clip + a lower LR --
-# float16's narrow dynamic range is a known instability source for training
-# (as opposed to inference, where the Phase 0 float16 checkpoint works fine)
-ADAPTER_OUT = CHECKPOINTS_DIR / "distilled-adapter"
 
-TASKS = ["pole_naming", "noun_forms", "suggest_ratings", "vlm_assess"]
+# Text-only: vlm_assess is out of scope for the student (see module docstring).
+TASKS = ["pole_naming", "noun_forms", "suggest_ratings"]
+LANGS = ("en", "fr", "all")
+
+# Per-language base model (see module docstring for why they differ).
+BASE_MODELS = {
+    "en": CHECKPOINTS_DIR / "qwen3-0.6b-mlx-bf16",
+    "fr": CHECKPOINTS_DIR / "luth-0.6b-mlx-bf16",
+    "all": CHECKPOINTS_DIR / "qwen3-0.6b-mlx-bf16",
+}
+
 VAL_FRACTION = 0.15
 SEED = 42
-EPOCHS = 3
-# --batch-size 1 below: mlx-vlm's SFT trainer hit two separate real batch-collation
-# bugs at batch-size 2 on this architecture (see README's Phase 2 findings) -- a
-# batch of 1 sidesteps the whole class of cross-example collation code entirely.
-# Kept as a named constant since BATCH_SIZE=1 also makes the modality-grouping
-# split below a no-op in practice, not because grouping stops mattering.
-BATCH_SIZE = 1
+EPOCHS = 6  # ~1230 train rows per language: few enough that 3 epochs leaves the
+# adapter undertrained. Overfitting past the sweet spot is handled by
+# select_best_checkpoint.py picking the lowest-validation-loss snapshot, not by
+# stopping early and hoping.
+BATCH_SIZE = 4  # text-only and 0.6B: none of the batch-collation hazards that
+# forced batch-size 1 on the vision track apply here
+
+
+def dataset_dir_for(lang: str) -> Path:
+    """Where the train/validation split for `lang` is written."""
+    return DATASET_DIR / ("combined" if lang == "all" else f"combined_{lang}")
+
+
+def adapter_out_for(lang: str) -> Path:
+    """Where the trained adapter for `lang` is written."""
+    return CHECKPOINTS_DIR / ("distilled-adapter" if lang == "all" else f"distilled-adapter-{lang}")
 
 
 def load_combined() -> list[dict]:
-    """One record per example, with a `task` label carried through for Phase 3.
+    """One record per example, with `task`/`lang` labels carried through.
 
-    `mlx_vlm.lora`'s `transform_dataset_to_messages` only reads `question`/
-    `answer`/`image` by name (see `mlx_vlm/lora.py`), so the extra `task` and
-    `lang` columns ride along untouched -- ignored during training, read back by
-    `04_evaluate.py` to score each held-out example against its own task.
+    The trainer reads only `question`/`answer` (see
+    `run_lora_text_with_val.py`'s `load_split`), so the extra columns ride along
+    untouched and `04_evaluate.py` reads them back to score each held-out example
+    against its own task.
     """
     examples = []
     for task in TASKS:
@@ -81,7 +97,6 @@ def load_combined() -> list[dict]:
                     {
                         "question": ex["question"],
                         "answer": ex["answer"],
-                        "image": ex.get("image"),  # explicit null for text-only tasks
                         "task": task,
                         "lang": ex.get("lang"),
                     }
@@ -89,105 +104,108 @@ def load_combined() -> list[dict]:
     return examples
 
 
-def _split_modality_block(examples: list[dict]) -> tuple[list[dict], list[dict]]:
-    """`train_test_split` one modality group, each half a multiple of BATCH_SIZE."""
-    if len(examples) < 2:
-        return list(examples), []
+def split(examples: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Train/validation split, each half trimmed to a whole number of batches."""
     train, val = train_test_split(examples, test_size=VAL_FRACTION, random_state=SEED, shuffle=True)
     n_train = (len(train) // BATCH_SIZE) * BATCH_SIZE
     n_val = (len(val) // BATCH_SIZE) * BATCH_SIZE
-    return train[:n_train], val[:n_val]  # drop the < BATCH_SIZE remainder, not worth padding
+    return train[:n_train], val[:n_val]  # drop the sub-batch remainder, not worth padding
+
+
+def parse_args() -> argparse.Namespace:
+    """CLI: which language this run specialises in."""
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument(
+        "--lang",
+        choices=LANGS,
+        default="all",
+        help="train on this language's examples only; 'all' is the bilingual "
+        "control (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--learning-rate",
+        type=float,
+        default=5e-5,
+        help="LoRA learning rate (default: %(default)s)",
+    )
+    return parser.parse_args()
 
 
 def main() -> None:
+    args = parse_args()
+    lang = args.lang
+
     examples = load_combined()
+    if lang != "all":
+        examples = [e for e in examples if e.get("lang") == lang]
     if not examples:
-        print("No examples found; run 02_generate_dataset.py first.", file=sys.stderr)
+        print(f"No {lang} examples found; run 02_generate_dataset.py first.", file=sys.stderr)
         sys.exit(1)
 
-    # Modality-homogeneous blocks (see module docstring): text-only and image-bearing
-    # examples are split independently via sklearn's train_test_split (seed=42), then
-    # concatenated as two contiguous runs so every batch mlx-vlm forms stays
-    # single-modality.
-    text_examples = [e for e in examples if e["image"] is None]
-    image_examples = [e for e in examples if e["image"] is not None]
-    text_train, text_val = _split_modality_block(text_examples)
-    image_train, image_val = _split_modality_block(image_examples)
-    train = text_train + image_train
-    val = text_val + image_val
-
-    # A dedicated, clean subdirectory: `load_dataset(dir)` auto-discovers every
-    # json/jsonl file in the given directory, so the per-task files and the
-    # images/ subdirectory in DATASET_DIR must NOT be visible from here.
-    combined_dir = DATASET_DIR / "combined"
-    combined_dir.mkdir(exist_ok=True)
-    train_path = combined_dir / "train.jsonl"
-    val_path = combined_dir / "validation.jsonl"
-    for path, rows in ((train_path, train), (val_path, val)):
+    train, val = split(examples)
+    combined_dir = dataset_dir_for(lang)
+    combined_dir.mkdir(parents=True, exist_ok=True)
+    for path, rows in (
+        (combined_dir / "train.jsonl", train),
+        (combined_dir / "validation.jsonl", val),
+    ):
         with path.open("w", encoding="utf-8") as f:
             for ex in rows:
                 f.write(json.dumps(ex, ensure_ascii=False) + "\n")
-    print(f"{len(train)} train / {len(val)} val examples -> {train_path.name}, {val_path.name}")
+    print(f"--- {lang} track: {len(train)} train / {len(val)} val -> {combined_dir} ---")
 
-    if not BASE_MODEL.exists():
+    base_model = BASE_MODELS[lang]
+    if not base_model.exists():
         print(
-            f"Base model not found at {BASE_MODEL}; run the Phase 0 conversion first.",
+            f"Base model not found at {base_model}; convert it first, e.g.\n"
+            f"  python -m mlx_lm convert --hf-path Qwen/Qwen3-0.6B "
+            f"--mlx-path {base_model} --dtype bfloat16",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    iters = EPOCHS * len(train)  # batch-size 1: iteration count == examples seen
-    half_epoch = len(train) // 2
+    steps_per_epoch = len(train) // BATCH_SIZE
+    iters = EPOCHS * steps_per_epoch
+    half_epoch = max(1, steps_per_epoch // 2)
 
     cmd = [
         sys.executable,
-        str(Path(__file__).parent / "run_lora_with_val.py"),  # not run_lora.py: that
-        # wraps mlx_vlm.lora's CLI directly, which hardcodes val_dataset=None (see
-        # run_lora_with_val.py's module docstring) -- this wraps the trainer with
-        # validation actually wired in.
+        str(Path(__file__).parent / "run_lora_text_with_val.py"),  # not mlx_lm's own
+        # CLI: that one has no gradient clipping and no NaN guard (see that
+        # script's module docstring), both of which this project needed on the
+        # vision track and has no reason to give up here
         "--model-path",
-        str(BASE_MODEL),
+        str(base_model),
         "--dataset",
         str(combined_dir),
-        "--train-vision",  # vlm_assess needs the vision stack to actually learn, not just the LM
         "--iters",
-        str(iters),  # EPOCHS full passes over the train split at batch-size 1
+        str(iters),
         "--batch-size",
-        "1",
-        "--gradient-accumulation-steps",
-        "2",  # effective batch size 2 for the optimizer step, without ever
-        # forward-passing more than 1 example at once (see BATCH_SIZE comment above)
+        str(BATCH_SIZE),
         "--learning-rate",
-        "3e-5",  # loss went to nan by iter 20 at 1e-4 with --train-vision unfrozen
-        # (full vision-encoder fine-tuning is far more unstable than LoRA-only);
-        # lowered alongside --grad-clip below rather than dropping --train-vision,
-        # since vlm_assess needs real vision-side adaptation to improve at all
+        str(args.learning_rate),
         "--warmup-steps",
-        "100",  # optimizer-update units, i.e. ~200 raw iters at
-        # --gradient-accumulation-steps 2 below -- mlx_vlm's own TrainingArgs
-        # schema defaults to warmup_steps=100 but the trainer never actually reads
-        # it (dead field, confirmed by grep); run_lora_with_val.py builds a real
-        # ramp from this flag. Added after a full retrain at this exact LR/clip
-        # went stable-then-NaN from iter 210 on with no warmup active.
+        "60",  # ~a third of an epoch: keeps Adam's moment estimates small while
+        # the adapter is least stable, the fix that stopped the vision track's
+        # stable-then-NaN failure at iter 210
         "--grad-clip",
         "1.0",
         "--lora-rank",
         "16",
-        "--lora-alpha",
-        "32",
+        "--lora-scale",
+        "20.0",
         "--steps-per-report",
         "10",
         "--steps-per-save",
-        str(half_epoch),  # checkpoint every half epoch, as requested
+        str(half_epoch),  # checkpoint every half epoch...
         "--steps-per-eval",
-        str(half_epoch),  # validate on the same cadence
+        str(half_epoch),  # ...on the same cadence validation runs, so every
+        # snapshot select_best_checkpoint.py sees has a Val loss to compare
         "--val-batches",
-        str(len(val)),  # the whole validation split each time; NOT -1 -- confirmed by
-        # reading sft_trainer.evaluate() directly that num_batches=-1 zips two
-        # genuinely infinite generators (tqdm's total= there is display-only, not a
-        # real bound), which would hang validation forever
+        str(max(1, len(val) // BATCH_SIZE)),  # the whole validation split, as a
+        # batch count; NOT -1, which mlx's evaluate() reads as "iterate forever"
         "--output-path",
-        str(ADAPTER_OUT),
+        str(adapter_out_for(lang)),
     ]
     print("Running:", " ".join(cmd))
     subprocess.run(cmd, check=True)
