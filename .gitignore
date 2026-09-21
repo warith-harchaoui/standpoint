@@ -29,6 +29,9 @@ distillation/checkpoints/distilled-adapter/*
 !distillation/checkpoints/distilled-adapter-fr/
 distillation/checkpoints/distilled-adapter-fr/*
 !distillation/checkpoints/distilled-adapter-fr/best-adapter/
+!distillation/checkpoints/distilled-adapter-en/
+distillation/checkpoints/distilled-adapter-en/*
+!distillation/checkpoints/distilled-adapter-en/best-adapter/
 
 # --- Python bytecode & caches ---
 __pycache__/
