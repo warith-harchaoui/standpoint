@@ -1,4 +1,106 @@
-# Distilling Standpoint's local VLM to a 500M engine
+# Distilling Standpoint's local VLM to a 0.6B engine
+
+## Rearchitecture (2026-09-21): no vision, one 0.6B text model per language
+
+Three changes that are one decision. The sections below this one are the log of
+how the project got here and stay as written; this is what the pipeline does
+now.
+
+### `vlm_assess` leaves the scope, because it was never a learning problem
+
+Counted over all 1480 recorded `vlm_assess` examples in
+`data/dataset/vlm_assess.jsonl`:
+
+| field | observed |
+|---|---|
+| `readable` | `true` **1480 times**, never `false` |
+| `axis_labels_visible` | `true` **1480 times**, never `false` |
+| `leader_top_right` | 737 `true` / 743 `false` |
+
+Two constant fields: a student that always answers `true` scores 100% on both,
+having learned nothing. And the third column's negatives are not the teacher's
+judgement at all -- `02_generate_dataset.py` builds them by swapping the
+best/worst roles before rendering and writing the verdict by hand, because (its
+own words) "this is exactly the judgement small VLMs are weakest at". The
+generator had already conceded that the leader's quadrant is known by
+construction.
+
+`vlm_assess` was also only ever reached through the CLI's `--check` flag --
+absent from `webgui.py`, `api.py`, `mcp.py`, `click_cli.py` and the webapp --
+and it printed three booleans without changing anything about the rendered map.
+So standpoint grew `assess_layout()`, which returns the same verdict keys from
+the coordinates and pole labels directly: exact instead of guessed, instant
+instead of a model round-trip, and it works with nothing running.
+`vlm_assess()` stays exported for anyone who wants a model's opinion; no default
+path calls it.
+
+That was the only task carrying images. The corpus is now **1446 English + 1446
+French rows of pure text** across three tasks (`noun_forms`, `pole_naming`,
+`suggest_ratings`).
+
+### One model per language, on a Qwen3-0.6B base
+
+A text-only corpus removes the reason SmolVLM2 was chosen at all -- and SmolVLM2
+could never be served by WebLLM, so training it produced something unusable for
+the browser goal that motivated the whole exercise.
+
+- **English** trains on plain **Qwen3-0.6B**.
+- **French** trains on **Luth-0.6B-Instruct**, a Qwen3-0.6B fine-tuned for
+  French and the holder of the best French `pole_naming` score measured in this
+  project (94%). On the English side that specialisation would be a handicap,
+  which is why the bases differ.
+- **A bilingual control** (`--lang all`, plain base) runs last. It exists to
+  measure what specialising gave up: twice the schema-shaped supervision, since
+  the JSON form of an answer is language-independent.
+
+Both are Qwen3-0.6B architectures, hence servable as-is by the WebLLM/MLC chain
+the browser build already uses -- roughly 350-400 MB quantised to q4, against
+the ~1 GB generic Qwen2.5-1.5B the webapp downloads today.
+
+`03_train_lora.py --lang {en,fr,all}` and `04_evaluate.py --lang {en,fr,all}`.
+The Qwen3-VL-2B French track is retired.
+
+### The Metal command-buffer limit, correctly diagnosed this time
+
+The Qwen3-VL-2B track died reproducibly on
+`kIOGPUCommandBufferCallbackErrorImpactingInteractivity` a few dozen iterations
+in, and that was read as a bug in that model. It was not. macOS kills any Metal
+command buffer that holds the GPU long enough to hurt interactivity, and the
+same error killed the 0.6B text model the moment it ran at batch 4.
+
+Measured on this machine: **batch 1 ran 400 iterations clean at 5.0 GB peak;
+batch 2 died inside the first hundred.** The cause is the LM head -- Qwen3's
+vocabulary is 151643 wide, so one 940-token example already materialises 0.29 GB
+of logits, and doubling that inside a single dispatch is enough.
+
+Hence `BATCH_SIZE = 1` with `GRAD_ACCUM = 4`: the optimizer still steps on four
+examples, and it is *faster* anyway (4.4 examples/s against 3.2 at batch 4),
+because smaller dispatches keep the GPU fed instead of stalling it.
+
+### Other things that had to be fixed to get a run out
+
+- `~/.cache/huggingface` is a symlink onto a volume that is 100% full, so
+  `datasets` tripped its disk-space guard and training died on its first line.
+  `.private/train_all.sh` redirects `HF_HOME`/`HF_HUB_CACHE`/`HF_DATASETS_CACHE`
+  to `distillation/.hf-cache` on the internal disk.
+- `mlx_lm` wraps its training step in `mx.compile`, so the vision track's
+  host-side NaN guard (`bool(mx.all(...))`) raises inside the trace. It is
+  rewritten as graph operations in `run_lora_text_with_val.py`: one `mx.where`
+  swapping the whole gradient tree for zeros when any element is non-finite.
+- `CacheDataset` is not optional around `CompletionsDataset`; without it
+  `iterate_batches` dies on `KeyError: 0`.
+- Qwen3's chat template writes an empty `<think></think>` pair before every
+  assistant turn, so the training targets carry it and the student reproduces
+  it. `04_evaluate.py`'s `strip_reasoning()` removes it before parsing --
+  anything consuming this student in production must do the same.
+
+### Prompt masking, which the vision track could not do
+
+`CompletionsDataset(mask_prompt=True)` means loss is computed on the answer
+only. Every task here is a long fixed instruction and a short
+schema-constrained answer, so without masking most of the loss went on reciting
+prompts the model is never asked to produce. `mlx_vlm` offered no alternative;
+`mlx_lm` does.
 
 ## Scope change (2026-09-20): narrative out for good, suggest_ratings in
 
@@ -534,11 +636,16 @@ copied to `checkpoints/distilled-adapter/best-adapter/`.
 
 ## Goal
 
-Standpoint's four LLM/VLM jobs (`axis_poles`, `noun_forms`, `analysis_markdown`,
-`vlm_assess`) currently run on one local model (typically `qwen2.5vl:7b`). This
-explores distilling that behaviour into a single ~500M-parameter model, scoped to
-English and French, trained locally (this machine has no CUDA, so no Unsloth —
-training runs via Apple's MLX instead).
+Standpoint's language jobs run on one local model (typically `qwen2.5vl:7b`).
+This distils that behaviour into a small model that a browser can download,
+scoped to English and French, trained locally (this machine has no CUDA, so no
+Unsloth — training runs via Apple's MLX instead).
+
+The task list narrowed twice: `analysis_markdown` went when the narrative
+feature was removed from standpoint (2026-09-20), and `vlm_assess` went when
+measurement showed there was nothing in it to learn (2026-09-21, top of this
+file). What remains is `axis_poles` / `pole_naming`, `noun_forms` and
+`suggest_ratings` — three text tasks, all schema-constrained.
 
 ## Why this directory is separate from `standpoint/`
 
@@ -556,9 +663,17 @@ pip install -r distillation/requirements.txt
 
 ## Student model
 
-**SmolVLM2-500M-Video-Instruct** (`HuggingFaceTB/SmolVLM2-500M-Video-Instruct`,
-Apache-2.0) — the only real ~500M-parameter vision-capable model available. Gemma
-4's smallest variant is E2B (~2B), too big for the stated budget.
+**Qwen3-0.6B** (`Qwen/Qwen3-0.6B`) for English and the bilingual control,
+**Luth-0.6B-Instruct** (`kurakurai/Luth-0.6B-Instruct`, a Qwen3-0.6B fine-tuned
+for French) for French. Both are the same architecture, so both are servable by
+the WebLLM/MLC chain the browser build uses. See the rearchitecture section at
+the top of this file for why.
+
+Previously **SmolVLM2-500M-Video-Instruct**
+(`HuggingFaceTB/SmolVLM2-500M-Video-Instruct`, Apache-2.0), chosen as the only
+real ~500M-parameter vision-capable model available. It was the right pick while
+the corpus carried images; it stopped being one when `vlm_assess` left, since
+WebLLM cannot serve it.
 
 ## Phase 0 findings (2026-08-10)
 
@@ -627,11 +742,18 @@ distillation/
   scripts/
     _table_utils.py             # dedupe_ratings(): enforces validate_table()'s own
                                  # no-duplicate-row/-column rule at generation time
+    run_lora_text_with_val.py   # what 03_train_lora.py invokes now: mlx_lm with
+                                 # the three things its CLI has no flag for --
+                                 # global-norm clipping, a NaN guard, LR warmup
+                                 # (plus prompt masking)
+
+    # Vision-era trainers, kept for the record; nothing invokes them since the
+    # 2026-09-21 rearchitecture moved the student to a text model.
     _mlx_vlm_idefics3_patch.py  # upstream trainer bug workaround (see Phase 0)
     run_lora.py                 # mlx_vlm.lora's own CLI + the patch; manual smoke
                                  # tests only -- no validation (see Phase 2 #4)
-    run_lora_with_val.py        # what 03_train_lora.py actually invokes: same
-                                 # setup, but with a real val_dataset wired in
+    run_lora_with_val.py        # the mlx_vlm trainer with a real val_dataset
+                                 # wired in; run_lora_text_with_val.py's ancestor
     01_generate_tables.py            # Phase 1a: 30 hand-curated subjects
     01b_generate_tables_from_web.py  # Phase 1a: 20 subjects, real web-sourced options
     01c_generate_tables_more.py      # Phase 1a: 245 more curated subjects (scale-up)
@@ -650,18 +772,13 @@ distillation/
                                  # SVG; see that script's own docstring for why)
     04_evaluate.py               # Phase 3: distilled vs teacher, per task/language
 
-    # French track (Qwen3-VL-2B, text-only) -- see "Qwen3-VL-2B pivot" section
-    # above; supersedes the earlier Luth-0.6B track. Not part of the numbered
-    # English-track sequence: 05/06 are earmarked for Phase 4 (export) and
-    # Phase 5 (langdetect routing) in the existing plan.
-    fr_train_lora.py            # builds the French dataset + launches training
-                                 # via run_lora_with_val.py (shared with English --
-                                 # fr_run_lora_with_clip.py, the mlx_lm-era clipped
-                                 # trainer this pivot made unnecessary, is removed)
-    fr_vlm_assess.py             # backfills French vlm_assess examples for the
-                                 # record; generated but unused (see that script's
-                                 # own docstring for why -- upstream mlx_vlm bug)
-    fr_evaluate.py               # French-track equivalent of 04_evaluate.py
+    # Dead since the 2026-09-21 rearchitecture: the separate French track is
+    # gone, replaced by `03_train_lora.py --lang fr` on the same code path as
+    # English. Kept only until the branch merges.
+    fr_train_lora.py            # Qwen3-VL-2B French trainer
+    fr_evaluate.py              # its evaluator
+    fr_vlm_assess.py            # backfilled French vlm_assess examples; the task
+                                 # itself is out of scope now
   data/                      # generated datasets (gitignored; regenerable)
   checkpoints/               # LoRA adapters + merged/converted models (gitignored)
 ```
