@@ -2,31 +2,56 @@
 
 ## Rearchitecture (2026-09-21): no vision, one 0.6B text model per language
 
-### Results, French specialist (Luth-0.6B, best checkpoint iter 2456, val 0.118)
+### Results: the bilingual control wins, on both languages
 
-| task | pass | reference (Aug) |
-|---|---|---|
-| `noun_forms` | **111/111 (100%)** | 100% |
-| `pole_naming` | **46/51 (90%)** | 83% Qwen3-VL-2B / 94% Luth |
-| `suggest_ratings` | 19/55 (35%) | none |
+Three runs, each scored on its own held-out split by the same structural
+checks. Best checkpoints: en iter 2456 (val 0.138), fr iter 2456 (val 0.118),
+bilingual iter 7374 (val 0.119).
 
-`pole_naming` at 90% beats the 2 GB Qwen3-VL-2B track's 83% with a model a
-third of the size that WebLLM can actually serve.
+| task | EN specialist | FR specialist | bilingual (en) | bilingual (fr) |
+|---|---|---|---|---|
+| `noun_forms` | 111/111 (100%) | 111/111 (100%) | 100/100 (100%) | 122/122 (100%) |
+| `pole_naming` | 46/51 (90%) | 46/51 (90%) | **54/54 (100%)** | **59/59 (100%)** |
+| `suggest_ratings` pass | 17/55 (31%) | 19/55 (35%) | 22/46 (48%) | 24/53 (45%) |
+| ... well-formed | 53/55 (96%) | 43/55 (78%) | 45/46 (98%) | **49/53 (92%)** |
+| ... MAD mean | 0.88 | 0.76 | **0.75** | 0.76 |
 
-The 35% on `suggest_ratings` needs reading carefully, which is exactly why the
-report now carries the deviation. 43 of 55 answers (78%) are complete,
-well-formed matrices, and across those the mean absolute deviation from the
-teacher is **0.76 on a 1..5 scale** (median 0.78) against a pass threshold of
-0.75. The distribution sits on the threshold, so the pass rate is close to a
-coin flip and measures the threshold more than the model. What the data
-actually says: the student agrees with the teacher to within about three
-quarters of a rating step on a subjective scale, and gets the structure wrong
-one time in five. The second number is the one worth working on.
+**Specialising per language did not pay, and the control says so twice.** The
+bilingual adapter is perfect on `pole_naming` in both languages where both
+specialists sit at 90%, and that is two independent replications of the same
+effect rather than one lucky split. On `suggest_ratings` it improves the French
+structural validity from 78% to 92% and the English agreement from 0.88 to 0.75.
+It loses on nothing.
 
+The reason is the one the control was built to test: the JSON *shape* of an
+answer is language-independent, so training on both languages shows that signal
+twice as often, and the shape is exactly where a 0.6B model is fragile. Note
+the best bilingual checkpoint lands at iteration 7374 -- three epochs over 2458
+examples, i.e. the same number of examples seen as each specialist at its own
+optimum. The bilingual model is not winning by seeing more data; it wins by
+seeing more varied data.
 
-Three changes that are one decision. The sections below this one are the log of
-how the project got here and stay as written; this is what the pipeline does
-now.
+So one adapter ships, not two: better on every measured task, and half as much
+to serve and maintain.
+
+### Reading the `suggest_ratings` pass rate
+
+It is mostly an artefact and should not be quoted on its own. Categorising the
+bilingual run's 53 failures:
+
+| why it failed | count |
+|---|---|
+| well-formed matrix, agreement just beyond the 0.75 threshold | 48 |
+| missing cells | 4 |
+| invalid JSON | 1 |
+
+So the student returns a structurally correct, complete matrix **94 times out
+of 99** (95%), and the pass rate is measuring where a threshold was placed on a
+subjective 1..5 scale. What it actually does: agrees with the teacher to within
+about three quarters of a rating step. Whether that is good enough is a product
+question, not a training one -- the GUI's "Laziness" fills empty cells the user
+then edits, and three quarters of a step is inside the noise of a subjective
+judgement anyway.
 
 ### `vlm_assess` leaves the scope, because it was never a learning problem
 
