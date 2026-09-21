@@ -92,3 +92,6 @@ Thumbs.db
 # Local HF datasets arrow cache (the shared ~/.cache/huggingface lives on a full
 # external volume; training redirects here -- see .private/train_all.sh).
 distillation/.hf-cache/
+# Browser-export intermediates and bundle (regenerable from the adapter by
+# distillation/scripts/05_export_browser.py; 667 MB is not a git payload).
+distillation/checkpoints/standpoint-*
