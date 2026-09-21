@@ -79,10 +79,13 @@ PALETTE = {
 }
 FONT = "Roboto, -apple-system, Helvetica, Arial, sans-serif"
 
-# One local vision-LLM drives everything language-shaped: axis pole names, the
-# written analysis, and the visual self-check of the rendered figure (`vlm_assess`).
-# Standpoint deliberately runs that single vision model for the text tasks too, so
-# every call goes through best-engine-ai-helper with kind="vlm".
+# One local vision-LLM drives everything language-shaped: axis pole names, noun
+# forms, and the ratings auto-fill. Standpoint deliberately runs that single
+# vision model for the text tasks too, so every call goes through
+# best-engine-ai-helper with kind="vlm". The figure's own self-check is NOT among
+# them any more: `--check` calls `assess_layout`, which reads the geometry
+# directly (`vlm_assess` remains available for a model's opinion, but nothing
+# calls it by default).
 #
 # The model tag is NOT hard-coded here. It lives in the brief -> engine contract:
 #   * llm.brief.yaml  is the INPUT (committed): a hardware-independent description
@@ -129,6 +132,7 @@ __all__ = [
     "resolve_polarity",
     "detect_language",
     "i18n",
+    "assess_layout",
     "vlm_assess",
     "engine",
     "run",
@@ -1620,6 +1624,82 @@ def vlm_assess(image: str | bytes, model: str | None = None, lang: str | None = 
         return {}
 
 
+def assess_layout(pos: Positioning, *, crowding: float = 0.045) -> dict:
+    """Sanity-check a rendered positioning map from its own geometry, no model.
+
+    Returns the same verdict shape `vlm_assess` does -- `leader_top_right`,
+    `readable`, `axis_labels_visible`, `notes` -- computed directly from the
+    coordinates and pole labels instead of asking a vision model to look at a
+    PNG. This is what the CLI's ``--check`` runs.
+
+    Measuring the teacher settled the question: across the 1480 recorded
+    `vlm_assess` examples in this project's distillation corpus, `readable` came
+    back `true` 1480 times and `axis_labels_visible` came back `true` 1480
+    times, while `leader_top_right` is a fact about a coordinate's sign. A model
+    was being asked to squint at a picture to recover numbers the caller already
+    holds exactly.
+
+    Parameters
+    ----------
+    pos : Positioning
+        The computed map, as returned by `positioning()`.
+    crowding : float, optional
+        Two points closer than this fraction of the plot diagonal are reported
+        as a label-overlap risk (default 0.045, i.e. under ~5% of the diagonal).
+
+    Returns
+    -------
+    dict
+        ``{"leader_top_right": bool, "readable": bool, "axis_labels_visible":
+        bool, "notes": str}``, the notes localized to ``pos.lang``.
+    """
+    strings = i18n(pos.lang)
+    coords = pos.coords
+    leader = next((name for name, role in pos.role_of.items() if role == "best"), None)
+
+    # The leader sits top-right when both oriented coordinates are positive --
+    # exactly the quadrant the vision prompt used to describe in prose.
+    if leader is not None and leader in coords.index:
+        x, y = (float(v) for v in coords.loc[leader].to_numpy()[:2])
+        leader_top_right = x > 0 and y > 0
+    else:
+        leader_top_right = False
+
+    poles_visible = len(pos.poles) == 4 and all(str(p).strip() for p in pos.poles)
+
+    # Label legibility, as a geometric property: normalize each axis to its own
+    # span so an axis with a wider range does not dominate the distance, then
+    # flag pairs sitting on top of each other. Two labels drawn at effectively
+    # the same spot is the one failure mode a reader actually meets.
+    crowded_pairs = []
+    if len(coords) > 1:
+        xy = coords.to_numpy()[:, :2].astype(float)
+        spans = xy.max(axis=0) - xy.min(axis=0)
+        spans[spans == 0] = 1.0  # a degenerate axis contributes no separation
+        unit = (xy - xy.min(axis=0)) / spans
+        names = list(coords.index)
+        for a in range(len(names)):
+            for b in range(a + 1, len(names)):
+                if float(np.linalg.norm(unit[a] - unit[b])) < crowding:
+                    crowded_pairs.append(f"{names[a]} / {names[b]}")
+    readable = not crowded_pairs
+
+    notes = []
+    if not leader_top_right:
+        notes.append(strings["check_leader_not_top_right"].format(leader=leader or "?"))
+    if not poles_visible:
+        notes.append(strings["check_poles_missing"])
+    if crowded_pairs:
+        notes.append(strings["check_crowded"].format(pairs=", ".join(crowded_pairs)))
+
+    return {
+        "leader_top_right": leader_top_right,
+        "readable": readable,
+        "axis_labels_visible": poles_visible,
+        "notes": " ".join(notes) if notes else strings["check_ok"],
+    }
+
+
 def suggest_ratings(
     noun: str,
     options: list[str],
@@ -1990,18 +2070,14 @@ def run(
         print(f"  {path}")
 
     if check:
-        # Assess a white-composited render, not the transparent PNG on disk: the
-        # vision model's backend would otherwise flatten transparency onto black and
-        # wrongly report the dark legend as cut off (see `png_on_white`).
-        verdict = vlm_assess(png_on_white(pos.to_svg()), model=model, lang=pos.lang)
-        if verdict:
-            print("\nVision self-check:")
-            for key in ("leader_top_right", "readable", "axis_labels_visible"):
-                print(f"  {key:16s}: {verdict.get(key)}")
-            if verdict.get("notes"):
-                print(f"  notes           : {verdict['notes']}")
-        else:
-            print("\nVision self-check unavailable (model not reachable).")
+        # Computed from the coordinates, not read off a rendered PNG by a vision
+        # model: same verdict keys, exact instead of guessed, and it needs no
+        # model to be reachable (see `assess_layout`).
+        verdict = assess_layout(pos)
+        print("\nLayout self-check:")
+        for key in ("leader_top_right", "readable", "axis_labels_visible"):
+            print(f"  {key:16s}: {verdict[key]}")
+        print(f"  notes           : {verdict['notes']}")
     return written
 
 

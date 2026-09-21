@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`--check` no longer asks a vision model; it reads the geometry.** The new
+  `assess_layout()` returns the same verdict keys `vlm_assess()` does
+  (`leader_top_right`, `readable`, `axis_labels_visible`, `notes`, localized)
+  but computes them from the coordinates and pole labels the caller already
+  holds. Measuring the teacher settled it: across the 1480 `vlm_assess`
+  examples recorded in this project's distillation corpus, `readable` came back
+  `true` 1480 times and `axis_labels_visible` came back `true` 1480 times,
+  while `leader_top_right` is the sign of a coordinate. The check is now exact,
+  instant, offline, and needs no model to be reachable. `vlm_assess()` stays in
+  the public API for anyone who wants a model's opinion; nothing calls it by
+  default any more.
+
 - **Baseline reworded everywhere**: "Know where each option actually stands."
   becomes "Where do you stand?" ("Sachez où vous en êtes" / "¿Dónde te
   sitúas?") — GUI hero, i18n tables, README/LISEZMOI, package docstring. The

@@ -454,6 +454,55 @@ def test_noun_forms_guards_synonym_drift_within_same_language():
     assert p.lower().startswith("voitur")
 
 
+def _positioning_without_naming(result, roles, lang: str) -> p4m.Positioning:
+    """A Positioning built from the deterministic half of the pipeline only.
+
+    `positioning()` itself calls the model for pole names, noun forms and the
+    title; `assess_layout` reads none of that except the four pole strings, so
+    the test supplies fixed ones and stays offline.
+    """
+    poles = ["Top", "Right", "Bottom", "Left"]
+    return p4m.Positioning(
+        df=p4m.parse_table(str(EXAMPLE)),
+        result=result,
+        roles=roles,
+        poles=poles,
+        axis_names=["axis 1", "axis 2"],
+        colors=p4m.gradient_colors(result, roles),
+        lang=lang,
+    )
+
+
+def test_assess_layout_reads_the_geometry(result, roles):
+    """The deterministic --check verdict, and its one genuine failure mode.
+
+    No `needs_model` marker on purpose: replacing the vision model with geometry
+    is exactly what makes this checkable offline. The negative case is built the
+    way the distillation corpus built its own ground truth -- swap the
+    best/worst roles, which puts the red leader in the opposite corner.
+    """
+    pos = _positioning_without_naming(result, roles, "en")
+    verdict = p4m.assess_layout(pos)
+    assert verdict["leader_top_right"] is True
+    assert verdict["axis_labels_visible"] is True
+    assert verdict["readable"] is True
+    assert verdict["notes"] == p4m.i18n("en")["check_ok"]
+
+    swapped = ["worst" if r == "best" else "best" if r == "worst" else r for r in roles]
+    flipped = p4m.assess_layout(_positioning_without_naming(result, swapped, "en"))
+    assert flipped["leader_top_right"] is False
+    assert "top-right" in flipped["notes"]
+
+    # A missing pole label is reported, not silently passed.
+    blank = _positioning_without_naming(result, roles, "en")
+    blank.poles = ["Top", "", "Bottom", "Left"]
+    assert p4m.assess_layout(blank)["axis_labels_visible"] is False
+
+    # Same verdict, notes localized: the CLI prints them to the user.
+    fr = p4m.assess_layout(_positioning_without_naming(result, roles, "fr"))
+    assert fr["notes"] == p4m.i18n("fr")["check_ok"]
+
+
 @pytest.mark.needs_model
 def test_vlm_assessment_of_rendered_figure(result):
     # Assess a white-composited render (the exported figure is transparent, which the

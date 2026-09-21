@@ -64,6 +64,12 @@ en:
     top-right quadrant? (2) are the point labels readable and not badly
     overlapping? (3) are the four italic axis pole labels at the edges present
     and legible? Reply as JSON.
+  # Notes for the deterministic layout self-check (`assess_layout`), which
+  # replaced the vision model on the CLI's --check path.
+  check_ok: "Layout checks passed."
+  check_leader_not_top_right: "The leader ({leader}) is not in the top-right quadrant."
+  check_poles_missing: "Some axis pole labels are missing."
+  check_crowded: "Point labels risk overlapping: {pairs}."
   gui:
     lang_name: English
     baseline: Where do you stand?
@@ -196,6 +202,12 @@ fr:
     (2) les étiquettes des points sont-elles lisibles et ne se chevauchent-elles
     pas trop ? (3) les quatre étiquettes de pôle en italique sont-elles
     présentes et lisibles aux bords ? Répondez en JSON.
+  # Notes de la vérification de mise en page déterministe (`assess_layout`),
+  # qui a remplacé le modèle de vision sur le chemin --check de la CLI.
+  check_ok: "Vérifications de mise en page réussies."
+  check_leader_not_top_right: "Le leader ({leader}) n'est pas dans le quadrant haut-droit."
+  check_poles_missing: "Des étiquettes de pôle d'axe sont manquantes."
+  check_crowded: "Les étiquettes de points risquent de se chevaucher : {pairs}."
   gui:
     lang_name: Français
     baseline: Sachez où vous en êtes
@@ -327,6 +339,12 @@ es:
     ¿son legibles las etiquetas de los puntos y no se solapan demasiado? (3)
     ¿están presentes y son legibles las cuatro etiquetas de polo en cursiva en
     los bordes? Responde en JSON.
+  # Notas de la verificación de disposición determinista (`assess_layout`),
+  # que reemplazó al modelo de visión en la ruta --check de la CLI.
+  check_ok: "Verificaciones de disposición superadas."
+  check_leader_not_top_right: "El líder ({leader}) no está en el cuadrante superior derecho."
+  check_poles_missing: "Faltan etiquetas de polo de eje."
+  check_crowded: "Las etiquetas de los puntos corren riesgo de solaparse: {pairs}."
   gui:
     lang_name: Español
     baseline: ¿Dónde te sitúas?
