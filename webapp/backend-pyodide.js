@@ -95,7 +95,7 @@
   // which is exactly when the visitor most needs to read it.
   let badgeHeldUntil = 0;
 
-  function badge(text, done, hold) {
+  function badge(text, done, hold, link) {
     const now = Date.now();
     if (hold) badgeHeldUntil = now + hold;
     else if (now < badgeHeldUntil) return;
@@ -111,6 +111,18 @@
       document.body.appendChild(el);
     }
     el.textContent = text;
+    // A link, when the message is only actionable by going somewhere. Built as
+    // a node rather than innerHTML: `text` is localized content, and nothing
+    // that reaches this function should ever be parsed as markup.
+    if (link) {
+      const a = document.createElement("a");
+      a.href = link.href;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = " " + link.label;
+      a.style.cssText = "color:#93c5fd;text-decoration:underline";
+      el.appendChild(a);
+    }
     if (done) setTimeout(() => el.remove(), 2500); // fade out once settled
   }
 
@@ -436,6 +448,36 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
     return data.choices[0].message.content;
   }
 
+  // Telling someone to sign in without saying where is not much help, and the
+  // page cannot sign them in itself: this host serves static files only, with no
+  // server side to complete an SSO handshake. So it points at the gateway's own
+  // login, which is one click and one tab away, and after which this page works
+  // with no further setup -- the browser sends that session's cookie on the very
+  // next call.
+  function signInPrompt(hold) {
+    badge(
+      t(
+        "flemme_server_login",
+        "Sign in to the shared AI server for the fast path. Using the in-page model meanwhile."
+      ),
+      false,
+      hold,
+      { href: LLM_SERVER.loginUrl, label: t("flemme_server_login_link", "Sign in") }
+    );
+  }
+
+  // Asked once at boot, so the prompt is up before anyone clicks Laziness and
+  // waits on it. Deliberately cheap and deliberately silent on failure: an
+  // unreachable gateway is the in-page model's cue, not an error to report.
+  function probeServerSession() {
+    if (!serverUsable() || !LLM_SERVER.loginUrl) return;
+    fetch(LLM_SERVER.url.replace(/\/+$/, "") + "/api/models", { credentials: "include" })
+      .then((r) => {
+        if (r.status === 401 || r.status === 403) signInPrompt(10000);
+      })
+      .catch(() => {});
+  }
+
   // Qwen3's chat template writes an empty <think></think> pair in front of every
   // assistant turn, so the training targets carried it and the student
   // reproduces it. Left in, JSON.parse fails on answers that are in fact
@@ -516,14 +558,7 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
         // Server unreachable, slow, off-contract, or simply not signed in: say
         // so once and carry on with the model that ships in the page.
         if (String(err.message) === "unauthenticated" && LLM_SERVER.loginUrl) {
-          badge(
-            t(
-              "flemme_server_login",
-              "Sign in to the shared AI server for the fast path. Using the in-page model meanwhile."
-            ),
-            false,
-            9000 // held, or the model-download progress erases it immediately
-          );
+          signInPrompt(12000);
         }
         console.warn("shared AI server unavailable, using the in-page model:", err);
       }
@@ -642,5 +677,9 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
     // Boot in the background so the engine is usually ready before the first
     // Generate; failures surface in the badge and again on the first real call.
     boot().catch(() => {});
+    // ...and ask the shared gateway whether this visitor has a session, so the
+    // sign-in prompt is up before they click Laziness rather than after it has
+    // already fallen back.
+    probeServerSession();
   });
 })();

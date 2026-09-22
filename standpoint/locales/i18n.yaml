@@ -120,6 +120,7 @@ en:
     flemme_model: "Loading the AI model (about 650 MB, downloaded once then cached)… "
     flemme_server: "Filled by the shared AI server. Your table was sent to it, not kept in this page."
     flemme_server_login: "Sign in to the shared AI server for the fast path. Using the in-page model meanwhile."
+    flemme_server_login_link: "Sign in"
     flemme_nogpu: "this browser can't run the in-page AI model (WebGPU missing); try a recent Chrome, Edge or Safari."
     new_option: New
     new_criterion: Criterion
@@ -260,6 +261,7 @@ fr:
     flemme_model: "Chargement du modèle IA (environ 650 Mo, téléchargé une seule fois puis en cache)… "
     flemme_server: "Rempli par le serveur IA partagé. Votre tableau lui a été envoyé, il n'est pas resté dans cette page."
     flemme_server_login: "Connectez-vous au serveur IA partagé pour la voie rapide. En attendant, le modèle embarqué prend le relais."
+    flemme_server_login_link: "Se connecter"
     flemme_nogpu: "ce navigateur ne peut pas exécuter le modèle IA dans la page (WebGPU absent) ; essayez un Chrome, Edge ou Safari récent."
     new_option: Nouvelle
     new_criterion: Critère
@@ -399,6 +401,7 @@ es:
     flemme_model: "Cargando el modelo de IA (aprox. 650 MB, descargado una sola vez y luego en caché)… "
     flemme_server: "Rellenado por el servidor de IA compartido. Tu tabla se le envió, no se quedó en esta página."
     flemme_server_login: "Inicia sesión en el servidor de IA compartido para la vía rápida. Mientras tanto, se usa el modelo integrado."
+    flemme_server_login_link: "Iniciar sesión"
     flemme_nogpu: "este navegador no puede ejecutar el modelo de IA en la página (falta WebGPU); prueba un Chrome, Edge o Safari reciente."
     new_option: Nueva
     new_criterion: Criterio
