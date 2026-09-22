@@ -56,6 +56,13 @@
   // an http origin. Everything else falls back to the in-page model, which is
   // always there. The check is made before any request so a blocked call never
   // reaches the console as an error.
+  //
+  // `path` lets the endpoint be an OpenAI-compatible gateway rather than a raw
+  // vLLM (/api/chat/completions on an Open-WebUI, say). `credentials: "include"`
+  // goes with a gateway that authenticates by cookie: the visitor's existing SSO
+  // session then authorises the call and no token ships in the page. It must
+  // stay off for a server answering `Access-Control-Allow-Origin: *`, which
+  // browsers refuse to combine with credentials.
   const LLM_SERVER = window.__standpointLLMServer || null;
 
   function serverUsable() {
@@ -391,8 +398,11 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
   // carries the same JSON schema the in-browser path builds, so both paths are
   // held to the same contract: the answer is schema-valid or it is an error.
   async function serverAnswer(prompt, schema, signal) {
-    const res = await fetch(LLM_SERVER.url.replace(/\/+$/, "") + "/v1/chat/completions", {
+    const endpoint =
+      LLM_SERVER.url.replace(/\/+$/, "") + (LLM_SERVER.path || "/v1/chat/completions");
+    const res = await fetch(endpoint, {
       method: "POST",
+      credentials: LLM_SERVER.credentials || "omit",
       headers: {
         "Content-Type": "application/json",
         ...(LLM_SERVER.key ? { Authorization: "Bearer " + LLM_SERVER.key } : {}),
@@ -406,6 +416,10 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
       }),
       signal,
     });
+    // 401/403 is not a breakage, it is "you are not signed in to the gateway".
+    // Say that specifically -- the fix is one login away, and the fallback that
+    // follows would otherwise look like the server simply not existing.
+    if (res.status === 401 || res.status === 403) throw new Error("unauthenticated");
     if (!res.ok) throw new Error(`server ${res.status}`);
     const data = await res.json();
     return data.choices[0].message.content;
@@ -485,8 +499,12 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
         }
         return filled;
       } catch (err) {
-        // Server unreachable, slow, or off-contract: say so once and carry on
-        // with the model that ships in the page.
+        // Server unreachable, slow, off-contract, or simply not signed in: say
+        // so once and carry on with the model that ships in the page.
+        if (String(err.message) === "unauthenticated" && LLM_SERVER.loginUrl) {
+          badge(t("flemme_server_login", "Sign in to the shared AI server for the fast path; using the in-page model meanwhile."), false);
+          setTimeout(() => badge("", true), 8000);
+        }
         console.warn("shared AI server unavailable, using the in-page model:", err);
       }
     }

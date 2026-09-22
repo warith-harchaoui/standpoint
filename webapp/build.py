@@ -394,6 +394,28 @@ def main() -> None:
         "calling an http endpoint",
     )
     parser.add_argument(
+        "--llm-server-path",
+        default=None,
+        metavar="PATH",
+        help="endpoint path on that server (default /v1/chat/completions, which "
+        "is raw vLLM; an Open-WebUI gateway answers on /api/chat/completions)",
+    )
+    parser.add_argument(
+        "--llm-server-credentials",
+        action="store_true",
+        help="send the visitor's cookies with the call, so an SSO session on the "
+        "gateway authorises it and no token ships in the page. Requires the "
+        "server to name this deployment's origin in Access-Control-Allow-Origin; "
+        "browsers refuse credentials against a wildcard",
+    )
+    parser.add_argument(
+        "--llm-server-login",
+        default=None,
+        metavar="URL",
+        help="where a visitor signs in to that server, quoted back to them when "
+        "the call comes back unauthenticated",
+    )
+    parser.add_argument(
         "--llm-server-model",
         default=None,
         metavar="NAME",
@@ -436,6 +458,12 @@ def main() -> None:
         if not args.llm_server_model:
             parser.error("--llm-server needs --llm-server-model")
         llm_server = {"url": args.llm_server, "model": args.llm_server_model}
+        if args.llm_server_path:
+            llm_server["path"] = args.llm_server_path
+        if args.llm_server_credentials:
+            llm_server["credentials"] = "include"
+        if args.llm_server_login:
+            llm_server["loginUrl"] = args.llm_server_login
         print(f"shared inference server wired in: {args.llm_server} ({args.llm_server_model})")
     compose_index(args.base_url, gated=not args.no_gate, llm_server=llm_server)
     copy_assets(wheels)
