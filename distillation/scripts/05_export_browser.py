@@ -191,8 +191,20 @@ def lay_out_for_browser(tokenizer_src: Path, onnx_dir: Path, q4_file: Path, out:
         src = tokenizer_src / name
         if src.exists():
             shutil.copy2(src, out / name)
-    for name in ("config.json", "generation_config.json"):
-        shutil.copy2(onnx_dir / name, out / name)
+    shutil.copy2(onnx_dir / "generation_config.json", out / "generation_config.json")
+
+    # config.json needs one addition the exporter does not make: the runtime
+    # reads `transformers.js_config.kv_cache_dtype` to decide what to feed the
+    # KV-cache inputs, and defaults to float32. Our graph is fp16, so without
+    # this the model downloads, loads, and then dies on the first token with
+    # "Unexpected input data type. Actual: (tensor(float)), expected:
+    # (tensor(float16))" -- found only by running the deployed model for real.
+    config = json.loads((onnx_dir / "config.json").read_text(encoding="utf-8"))
+    config["transformers.js_config"] = {
+        "kv_cache_dtype": {"q4f16": "float16", "fp16": "float16"},
+        "use_external_data_format": False,
+    }
+    (out / "config.json").write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
     shutil.copy2(q4_file, out / "onnx" / "model_q4f16.onnx")
 
     total = sum(f.stat().st_size for f in out.rglob("*") if f.is_file())

@@ -44,6 +44,26 @@
   // `llm-engine/` next to index.html, holding the tokenizer, the config and
   // onnx/model_q4f16.onnx. Produced by distillation/scripts/05_export_browser.py.
   const LLM_MODEL = "llm-engine";
+
+  // An OPTIONAL shared inference server, injected at build time by
+  // `build.py --llm-server` (absent from the default build, which stays purely
+  // in-browser). When present and usable it answers Laziness instead of the
+  // in-page model: a large model on real hardware beats a 0.6B on a laptop.
+  //
+  // "Usable" is narrower than "configured", and the page decides rather than
+  // guessing. A browser refuses to let an https:// page call an http:// server
+  // (mixed content, unbypassable), so an http endpoint is only attempted from
+  // an http origin. Everything else falls back to the in-page model, which is
+  // always there. The check is made before any request so a blocked call never
+  // reaches the console as an error.
+  const LLM_SERVER = window.__standpointLLMServer || null;
+
+  function serverUsable() {
+    if (!LLM_SERVER || !LLM_SERVER.url) return false;
+    const endpointIsHttp = /^http:\/\//i.test(LLM_SERVER.url);
+    return !(endpointIsHttp && location.protocol === "https:");
+  }
+
   const LANGS = ["en", "fr", "es"];
 
   let py = null; // the Pyodide instance, once booted
@@ -367,6 +387,30 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
     return llmPromise;
   }
 
+  // One OpenAI-compatible chat call against the shared server. `response_format`
+  // carries the same JSON schema the in-browser path builds, so both paths are
+  // held to the same contract: the answer is schema-valid or it is an error.
+  async function serverAnswer(prompt, schema, signal) {
+    const res = await fetch(LLM_SERVER.url.replace(/\/+$/, "") + "/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(LLM_SERVER.key ? { Authorization: "Bearer " + LLM_SERVER.key } : {}),
+      },
+      body: JSON.stringify({
+        model: LLM_SERVER.model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0,
+        max_tokens: 900,
+        response_format: { type: "json_schema", json_schema: { name: "ratings", schema } },
+      }),
+      signal,
+    });
+    if (!res.ok) throw new Error(`server ${res.status}`);
+    const data = await res.json();
+    return data.choices[0].message.content;
+  }
+
   // Qwen3's chat template writes an empty <think></think> pair in front of every
   // assistant turn, so the training targets carried it and the student
   // reproduces it. Left in, JSON.parse fails on answers that are in fact
@@ -425,6 +469,28 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
       ),
       required: req.options || [],
     };
+    // The shared server first when it can be reached at all: it is a far larger
+    // model and it answers in seconds, where the in-page one takes minutes on a
+    // CPU fallback. A failure here is not fatal -- the in-page model is still
+    // there, and the user gets an answer either way.
+    if (serverUsable()) {
+      try {
+        const answer = JSON.parse(stripReasoning(await serverAnswer(buildRatingsPrompt(req), schema)));
+        badge(t("flemme_server", "Filled by the shared AI server."), false);
+        setTimeout(() => badge("", true), 6000); // long enough to read, then out of the way
+        const filled = {};
+        for (const o of req.options || []) {
+          const row = answer[o] || {};
+          filled[o] = Object.fromEntries((req.criteria || []).map((c) => [c, clampRating(row[c])]));
+        }
+        return filled;
+      } catch (err) {
+        // Server unreachable, slow, or off-contract: say so once and carry on
+        // with the model that ships in the page.
+        console.warn("shared AI server unavailable, using the in-page model:", err);
+      }
+    }
+
     const generator = await ensureLLM();
     // The test seam still speaks the old chat-completions shape; the real
     // generator is a transformers.js text-generation pipeline.

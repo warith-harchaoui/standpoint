@@ -163,7 +163,7 @@ def export_i18n() -> None:
         print(f"i18n/{lang}.json ({len(strings)} strings)")
 
 
-def compose_index(base_url: str, *, gated: bool = True) -> None:
+def compose_index(base_url: str, *, gated: bool = True, llm_server: dict | None = None) -> None:
     """Write dist/index.html: GUI_HTML + Pyodide backend + relative URLs + SEO head.
 
     Parameters
@@ -174,6 +174,12 @@ def compose_index(base_url: str, *, gated: bool = True) -> None:
         Whether this build ships the lead-magnet gate. A gate-less build must
         not reference ``gate/track.js``: the file is not copied, so the tag
         would only buy a 404 in every visitor's console.
+    llm_server
+        Optional ``{url, model, key}`` for a shared OpenAI-compatible inference
+        server. Injected as ``window.__standpointLLMServer``; the page decides
+        at runtime whether it is actually reachable (an http endpoint cannot be
+        called from an https page) and falls back to the in-page model. Absent
+        by default, so the public builds stay purely in-browser.
     """
     from standpoint.webgui import GUI_HTML
 
@@ -194,9 +200,15 @@ def compose_index(base_url: str, *, gated: bool = True) -> None:
     if html.count(anchor) != 1:
         raise SystemExit("GUI_HTML anchor not found: webgui.py layout changed, update build.py")
     tracker = '<script src="./gate/track.js" defer></script>\n' if gated else ""
+    # Injected BEFORE backend-pyodide.js, which reads it at module scope.
+    server = (
+        f"<script>window.__standpointLLMServer = {json.dumps(llm_server)};</script>\n"
+        if llm_server
+        else ""
+    )
     html = html.replace(
         anchor,
-        tracker + '<script src="./backend-pyodide.js"></script>\n' + anchor,
+        tracker + server + '<script src="./backend-pyodide.js"></script>\n' + anchor,
     )
     (DIST / "index.html").write_text(html, encoding="utf-8")
     print("index.html composed")
@@ -372,6 +384,22 @@ def main() -> None:
         help="deployment URL for canonical/OG/sitemap (default: %(default)s)",
     )
     parser.add_argument(
+        "--llm-server",
+        default=None,
+        metavar="URL",
+        help="point the Laziness button at a shared OpenAI-compatible server "
+        "(e.g. http://gpu1.example:8000) instead of the in-page model. The page "
+        "still falls back to the in-page model whenever the server cannot be "
+        "used -- including from an https page, which browsers forbid from "
+        "calling an http endpoint",
+    )
+    parser.add_argument(
+        "--llm-server-model",
+        default=None,
+        metavar="NAME",
+        help="model id to ask that server for (required with --llm-server)",
+    )
+    parser.add_argument(
         "--model",
         type=Path,
         default=None,
@@ -403,7 +431,13 @@ def main() -> None:
 
     wheels = build_wheels()
     export_i18n()
-    compose_index(args.base_url, gated=not args.no_gate)
+    llm_server = None
+    if args.llm_server:
+        if not args.llm_server_model:
+            parser.error("--llm-server needs --llm-server-model")
+        llm_server = {"url": args.llm_server, "model": args.llm_server_model}
+        print(f"shared inference server wired in: {args.llm_server} ({args.llm_server_model})")
+    compose_index(args.base_url, gated=not args.no_gate, llm_server=llm_server)
     copy_assets(wheels)
     if args.model:
         model_dst = DIST / "llm-engine"
