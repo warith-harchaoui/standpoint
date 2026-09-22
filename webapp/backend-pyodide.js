@@ -88,7 +88,18 @@
   // --- tiny boot badge ----------------------------------------------------------
   // The page's own #status element belongs to the main script; the engine keeps its
   // progress in a separate, unobtrusive fixed badge (bottom-right).
-  function badge(text, done) {
+  // A message worth reading has to survive the next progress tick. `hold`
+  // reserves the badge for a few seconds; ordinary progress writes politely
+  // wait their turn rather than overwriting it. Without this the "sign in for
+  // the fast path" hint is replaced by a download percentage within one frame,
+  // which is exactly when the visitor most needs to read it.
+  let badgeHeldUntil = 0;
+
+  function badge(text, done, hold) {
+    const now = Date.now();
+    if (hold) badgeHeldUntil = now + hold;
+    else if (now < badgeHeldUntil) return;
+
     let el = document.getElementById("engineBadge");
     if (!el) {
       el = document.createElement("div");
@@ -490,8 +501,11 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
     if (serverUsable()) {
       try {
         const answer = JSON.parse(stripReasoning(await serverAnswer(buildRatingsPrompt(req), schema)));
-        badge(t("flemme_server", "Filled by the shared AI server."), false);
-        setTimeout(() => badge("", true), 6000); // long enough to read, then out of the way
+        badge(t("flemme_server", "Filled by the shared AI server."), false, 6000);
+        setTimeout(() => {
+          badgeHeldUntil = 0;
+          badge("", true);
+        }, 6000);
         const filled = {};
         for (const o of req.options || []) {
           const row = answer[o] || {};
@@ -502,8 +516,14 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
         // Server unreachable, slow, off-contract, or simply not signed in: say
         // so once and carry on with the model that ships in the page.
         if (String(err.message) === "unauthenticated" && LLM_SERVER.loginUrl) {
-          badge(t("flemme_server_login", "Sign in to the shared AI server for the fast path; using the in-page model meanwhile."), false);
-          setTimeout(() => badge("", true), 8000);
+          badge(
+            t(
+              "flemme_server_login",
+              "Sign in to the shared AI server for the fast path. Using the in-page model meanwhile."
+            ),
+            false,
+            9000 // held, or the model-download progress erases it immediately
+          );
         }
         console.warn("shared AI server unavailable, using the in-page model:", err);
       }
