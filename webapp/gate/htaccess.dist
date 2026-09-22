@@ -19,3 +19,6 @@ RewriteRule ^gate/auth\.php$ - [F]
 RewriteRule ^index\.html$ gate/serve.php [L]
 RewriteRule ^backend-pyodide\.js$ gate/serve.php [L]
 RewriteRule ^(py|wheels|i18n|vocab|examples)/ gate/serve.php [L]
+# The distilled model the Laziness button downloads (llm-engine/onnx/*.onnx
+# is ~620 MB): same gate as every other engine file.
+RewriteRule ^llm-engine/ gate/serve.php [L]

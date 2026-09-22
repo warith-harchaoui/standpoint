@@ -1,4 +1,4 @@
-"""Compose the static, SFTP-uploadable Standpoint web app into ``webapp/dist/``.
+"""Compose the static, SFTP-uploadable Standpoint web app into ``web/``.
 
 The static build is the same single-page GUI the FastAPI server serves at
 ``/gui`` — literally the same HTML string (``standpoint.webgui.GUI_HTML``) —
@@ -55,12 +55,17 @@ resolved against ``--base-url`` (default: https://deraison.ai/standpoint).
 
 Run from the repo root with the project env active::
 
-    python webapp/build.py          # writes webapp/dist/ (gated, for deraison.ai)
+    python webapp/build.py --model distillation/checkpoints/llm-engine
+
+writes ``web/`` at the repo root: the whole upload payload for
+deraison.ai/standpoint, code and model together, nothing else to think about.
+Upload its CONTENTS (including the dotfiles ``.htaccess``) to /standpoint.
+
     python webapp/build.py --clean  # rebuild from scratch
 
-    # Open-access mirror: no landing page, no PHP, no tracking, own folder.
-    python webapp/build.py --no-gate --clean --out webapp/dist-open \\
-        --base-url https://example.org/standpoint
+    # Open-access mirror (sev7n): no landing page, no PHP, no tracking.
+    python webapp/build.py --no-gate --clean --out web-sev7n \\
+        --base-url https://deraison.ai/standpoint
 
 The Pyodide runtime itself is loaded from the jsDelivr CDN at page load (see
 ``backend-pyodide.js``): only the wheels built here ship in the folder.
@@ -79,7 +84,7 @@ from pathlib import Path
 # Repo layout anchors: this file lives in <repo>/webapp/.
 WEBAPP = Path(__file__).resolve().parent
 REPO = WEBAPP.parent
-DIST = WEBAPP / "dist"
+DIST = REPO / "web"
 
 # Where the bundle is deployed; drives the canonical URL, the OG image URL and
 # every absolute URL in sitemap.xml / llms.txt (override with --base-url).
@@ -296,8 +301,13 @@ def gate_assets(base_url: str) -> None:
 
     # Pre-create the runtime data directory already web-denied, so the deny
     # rule is in place from the very first upload (auth.php re-asserts it).
+    # private/ ships with its deny rule and NOTHING else: a local dev run leaves
+    # magic-link outboxes, a session secret and per-user logs in here, and none
+    # of that belongs in an upload. The server makes its own.
     private = DIST / "private"
-    private.mkdir(exist_ok=True)
+    if private.exists():
+        shutil.rmtree(private)
+    private.mkdir(parents=True)
     (private / ".htaccess").write_text("Require all denied\n", encoding="utf-8")
     print("gate installed (index.php, gate/, .htaccess, private/)")
 
@@ -362,6 +372,15 @@ def main() -> None:
         help="deployment URL for canonical/OG/sitemap (default: %(default)s)",
     )
     parser.add_argument(
+        "--model",
+        type=Path,
+        default=None,
+        help="copy this folder in as dist/llm-engine/ (the distilled student the "
+        "Laziness button downloads, produced by "
+        "distillation/scripts/05_export_browser.py). ~640 MB, so it is opt-in: "
+        "without it the bundle expects the folder to be uploaded separately",
+    )
+    parser.add_argument(
         "--no-gate",
         action="store_true",
         help="build the freely accessible app: no landing page, no PHP endpoints, "
@@ -386,14 +405,23 @@ def main() -> None:
     export_i18n()
     compose_index(args.base_url, gated=not args.no_gate)
     copy_assets(wheels)
+    if args.model:
+        model_dst = DIST / "llm-engine"
+        if model_dst.exists():
+            shutil.rmtree(model_dst)
+        shutil.copytree(args.model, model_dst)
+        size = sum(f.stat().st_size for f in model_dst.rglob("*") if f.is_file())
+        print(f"llm-engine/ copied ({size / 1e6:.0f} MB)")
     if args.no_gate:
         print("gate skipped (--no-gate): index.html is the entry point, open access")
     else:
         gate_assets(args.base_url)
     site_indexes(args.base_url)
     total = sum(f.stat().st_size for f in DIST.rglob("*") if f.is_file())
-    print(f"\ndist/ ready ({total / 1e6:.1f} MB before the CDN-served Pyodide runtime).")
-    print("Upload the CONTENTS of webapp/dist/ to the web folder (e.g. /standpoint).")
+    print(f"\n{DIST.name}/ ready ({total / 1e6:.1f} MB before the CDN-served Pyodide runtime).")
+    print(f"Upload the CONTENTS of {DIST.name}/ to the web folder (e.g. /standpoint),")
+    print("dotfiles included (.htaccess). Do NOT use a mirroring sync that deletes")
+    print("remote files: private/ on the server holds the leads and the session secret.")
 
 
 if __name__ == "__main__":

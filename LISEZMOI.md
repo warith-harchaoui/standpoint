@@ -283,7 +283,7 @@ statique** : le moteur tourne dans le navigateur du visiteur via Pyodide, les
 axes sont nommés par défaut par un petit modèle d'embeddings dans la page, et
 un clic sur l'auto-remplissage fait remplir les cases vides par un LLM dans le
 navigateur (WebLLM, chargé paresseusement) — sans serveur, sans clé. Il suffit
-d'uploader `webapp/dist/` dans un dossier web statique et tout fonctionne.
+d'uploader `web/` dans un dossier web statique et tout fonctionne.
 Détails dans [GUI.md](GUI.md) § Static build.
 
 Pour travailler la bibliothèque en local, un environnement conda minimal enveloppe le

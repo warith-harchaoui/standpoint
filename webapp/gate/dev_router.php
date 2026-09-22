@@ -16,7 +16,10 @@ if (preg_match('#^/private(/|$)#', $path) || $path === '/gate/auth.php') {
     http_response_code(403);
     return true;
 }
-if (preg_match('#^/(index\.html$|backend-pyodide\.js$|(?:py|wheels|i18n|vocab|examples)/)#', $path)) {
+if (preg_match(
+    '#^/(index\.html$|backend-pyodide\.js$|(?:py|wheels|i18n|vocab|examples|llm-engine)/)#',
+    $path
+)) {
     require $root . '/gate/serve.php';
     return true;
 }

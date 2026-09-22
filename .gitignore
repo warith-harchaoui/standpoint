@@ -42,8 +42,12 @@ __pycache__/
 # --- Packaging / build ---
 build/
 dist/
-# Alternate build outputs (webapp/build.py --out), e.g. the gate-less mirror.
-webapp/dist-*/
+# The deployment payloads (webapp/build.py): web/ is what gets uploaded to
+# deraison.ai/standpoint, web-sev7n/ the open mirror. Both are generated, and
+# web/ carries the ~640 MB distilled model.
+/web/
+/web-*/
+webapp/dist*/
 *.egg-info/
 .eggs/
 wheels/

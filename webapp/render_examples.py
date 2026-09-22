@@ -25,7 +25,7 @@ from pathlib import Path
 from playwright.sync_api import Page, sync_playwright
 
 WEBAPP = Path(__file__).resolve().parent
-DIST = WEBAPP / "dist"
+DIST = WEBAPP.parent / "web"
 OUT = DIST / "static" / "examples"
 PORT = 8794
 

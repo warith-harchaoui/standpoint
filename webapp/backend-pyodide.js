@@ -21,10 +21,12 @@
  *     of positive qualities (vocab/<lang>.json) and picks the nearest word;
  *     the engine's own `finalize_poles` still validates/dedupes, with the
  *     loading-derived words as the offline fallback.
- *   - "LAZINESS" AUTO-FILL (one direct LLM call): a small instruct model
- *     (WebLLM over WebGPU, ~1 GB, downloaded on the first Paresse click then
- *     cached) answers the engine's own localized ratings prompt with
- *     schema-constrained JSON and the blanks fill in — no panel, no copy-paste.
+ *   - "LAZINESS" AUTO-FILL (one direct LLM call): this project's own distilled
+ *     student (Qwen3-0.6B fine-tuned on Standpoint's three tasks, 4-bit, ~640 MB,
+ *     downloaded on the first Paresse click then cached) answers the engine's own
+ *     localized ratings prompt and the blanks fill in — no panel, no copy-paste.
+ *     It runs through transformers.js over WebGPU, the SAME runtime the axis
+ *     naming already uses: the page carries one inference engine, not two.
  */
 (() => {
   "use strict";
@@ -33,9 +35,15 @@
   // Pyodide-distribution packages the engine imports; vendored wheels come after.
   const PYODIDE_PACKAGES = ["numpy", "pandas", "scikit-learn", "pyyaml", "micropip"];
   // Same embedding stack as harchaoui.org's in-page semantic search: pinned
-  // transformers.js + the multilingual MiniLM (covers the GUI's en/fr/es).
-  const TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2";
+  // transformers.js + the multilingual MiniLM (covers the GUI's en/fr/es). v3,
+  // not the v2 this started on, because v3 is what can run the distilled student
+  // below on WebGPU — one library for both jobs.
+  const TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6";
   const EMBED_MODEL = "Xenova/paraphrase-multilingual-MiniLM-L12-v2";
+  // The distilled student, served from this deployment rather than a model hub:
+  // `llm-engine/` next to index.html, holding the tokenizer, the config and
+  // onnx/model_q4f16.onnx. Produced by distillation/scripts/05_export_browser.py.
+  const LLM_MODEL = "llm-engine";
   const LANGS = ["en", "fr", "es"];
 
   let py = null; // the Pyodide instance, once booted
@@ -121,6 +129,49 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
     return bootPromise;
   }
 
+  // --- the shared transformers.js runtime -----------------------------------------
+  // One library, two models, two different roots: the MiniLM comes from the
+  // model hub, the distilled student from this deployment. transformers.js keeps
+  // that root in a module-level `env`, so the only safe way to use both is to
+  // set it around each load and to let no two loads overlap — hence the lock.
+  //
+  // The rejected alternative was `allowLocalModels = true` with a shared
+  // `localModelPath`: the hub model is then looked for locally first, which
+  // costs four 404s in every visitor's console before the fallback succeeds.
+  let transformersPromise = null;
+  let pipelineLock = Promise.resolve();
+
+  function loadTransformers() {
+    if (transformersPromise) return transformersPromise;
+    transformersPromise = import(TRANSFORMERS_URL).catch((err) => {
+      transformersPromise = null; // transient network failures may recover later
+      throw err;
+    });
+    return transformersPromise;
+  }
+
+  // Build one pipeline with `env` pointed at `host`/`template`, restoring it
+  // after, and queued behind any load already in flight.
+  function withModelRoot(mod, host, template, build) {
+    const run = pipelineLock.then(async () => {
+      const prevHost = mod.env.remoteHost;
+      const prevTemplate = mod.env.remotePathTemplate;
+      mod.env.remoteHost = host;
+      mod.env.remotePathTemplate = template;
+      try {
+        return await build();
+      } finally {
+        mod.env.remoteHost = prevHost;
+        mod.env.remotePathTemplate = prevTemplate;
+      }
+    });
+    pipelineLock = run.catch(() => {}); // a failed load must not wedge the queue
+    return run;
+  }
+
+  const HUB_HOST = "https://huggingface.co/";
+  const HUB_TEMPLATE = "{model}/resolve/{revision}/";
+
   // --- axis naming: small embedding model + curated vocabulary ---------------------
   // `window.__embedder` is a test seam: headless CI answers with a canned pipeline
   // instead of downloading the real model.
@@ -128,10 +179,11 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
     if (embedderPromise) return embedderPromise;
     embedderPromise = (window.__embedder
       ? Promise.resolve(window.__embedder)
-      : import(TRANSFORMERS_URL).then((mod) => {
-          mod.env.allowLocalModels = false;
-          return mod.pipeline("feature-extraction", EMBED_MODEL);
-        })
+      : loadTransformers().then((mod) =>
+          withModelRoot(mod, HUB_HOST, HUB_TEMPLATE, () =>
+            mod.pipeline("feature-extraction", EMBED_MODEL)
+          )
+        )
     ).catch((err) => {
       embedderPromise = null; // transient network failures may recover later
       throw err;
@@ -270,37 +322,59 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
   }
 
   // --- "Laziness": ONE in-browser LLM call fills the empty cells, nothing else ----
-  // A small instruct model (WebLLM over WebGPU, ~1 GB, downloaded on the FIRST
-  // Paresse click then cached by the browser) answers the engine's own localized
-  // ratings prompt with schema-constrained JSON. No panel, no copy-paste: click,
-  // wait, the blanks fill in. The page then writes ONLY the still-empty cells, so
-  // nothing the user typed is ever overwritten. The pole naming stays on the
-  // lightweight embedding model — this heavier model loads only for Paresse.
-  const WEBLLM_URL = "https://esm.run/@mlc-ai/web-llm@0.2.85";
-  const WEBLLM_MODEL = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
-  let llmPromise = null; // single-flight engine load
+  // This project's own distilled student (see distillation/): Qwen3-0.6B
+  // fine-tuned on Standpoint's three tasks, 4-bit, ~640 MB, downloaded on the
+  // FIRST Paresse click then cached by the browser. It answers the engine's own
+  // localized ratings prompt; the page then writes ONLY the still-empty cells,
+  // so nothing the user typed is ever overwritten.
+  //
+  // It replaced a generic Qwen2.5-1.5B loaded through WebLLM: smaller, better on
+  // these three jobs specifically (the distillation README has the numbers), and
+  // it runs on the transformers.js the page already loads for the axis naming —
+  // so the page went from two in-browser inference engines to one.
+  let llmPromise = null; // single-flight generator load
 
-  // `window.__webllm` is a test seam: headless CI has no WebGPU, so the flow is
-  // exercised against a canned engine instead of the real download.
+  // `window.__webllm` is a test seam, kept under its original name so the
+  // existing headless checks still drive this path: CI has no WebGPU, so the
+  // flow runs against a canned generator instead of a 640 MB download.
   function ensureLLM() {
     if (llmPromise) return llmPromise;
     llmPromise = (async () => {
-      if (!window.__webllm && !navigator.gpu) {
+      if (window.__webllm) return window.__webllm;
+      if (!navigator.gpu) {
         throw new Error(t("flemme_nogpu", "this browser can't run the in-page AI model (WebGPU missing)."));
       }
-      const webllm = window.__webllm || (await import(WEBLLM_URL));
-      const engine = await webllm.CreateMLCEngine(WEBLLM_MODEL, {
-        initProgressCallback: (report) =>
-          badge(t("flemme_model", "Loading the AI model… ") + (report.text || "")),
-      });
+      const mod = await loadTransformers();
+      // rel("./") is the deployment DIRECTORY, not the page: rel("") would
+      // resolve to .../index.html and every model file under it would 404.
+      const generator = await withModelRoot(mod, rel("./"), "{model}/", () =>
+        mod.pipeline("text-generation", LLM_MODEL, {
+          dtype: "q4f16", // matches onnx/model_q4f16.onnx in the deployed folder
+          device: "webgpu",
+          progress_callback: (report) => {
+            const pct = report.progress ? ` ${Math.round(report.progress)}%` : "";
+            badge(t("flemme_model", "Loading the AI model… ") + (report.file || "") + pct);
+          },
+        })
+      );
       badge("", true);
-      return engine;
+      return generator;
     })().catch((err) => {
       llmPromise = null; // transient network / GPU hiccups may recover on retry
       badge("", true);
       throw err;
     });
     return llmPromise;
+  }
+
+  // Qwen3's chat template writes an empty <think></think> pair in front of every
+  // assistant turn, so the training targets carried it and the student
+  // reproduces it. Left in, JSON.parse fails on answers that are in fact
+  // correct. A ```json fence is stripped too, for the same reason.
+  function stripReasoning(text) {
+    const withoutThink = String(text).replace(/^\s*<think>[\s\S]*?<\/think>\s*/, "");
+    const fenced = withoutThink.match(/^\s*```(?:json)?\s*([\s\S]*?)\s*```\s*$/);
+    return (fenced ? fenced[1] : withoutThink).trim();
   }
 
   function buildRatingsPrompt(req) {
@@ -351,13 +425,28 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
       ),
       required: req.options || [],
     };
-    const engine = await ensureLLM();
-    const reply = await engine.chat.completions.create({
-      messages: [{ role: "user", content: buildRatingsPrompt(req) }],
-      temperature: 0,
-      response_format: { type: "json_object", schema: JSON.stringify(schema) },
-    });
-    const data = JSON.parse(reply.choices[0].message.content);
+    const generator = await ensureLLM();
+    // The test seam still speaks the old chat-completions shape; the real
+    // generator is a transformers.js text-generation pipeline.
+    let text;
+    if (generator.chat) {
+      const reply = await generator.chat.completions.create({
+        messages: [{ role: "user", content: buildRatingsPrompt(req) }],
+        temperature: 0,
+        response_format: { type: "json_object", schema: JSON.stringify(schema) },
+      });
+      text = reply.choices[0].message.content;
+    } else {
+      // max_new_tokens is sized for the matrix: the teacher's own answers ran to
+      // ~420 tokens, and a truncated answer is unparseable JSON, not a short one.
+      const out = await generator(
+        [{ role: "user", content: buildRatingsPrompt(req) }],
+        { max_new_tokens: 900, do_sample: false, return_full_text: false }
+      );
+      text = out[0].generated_text;
+      if (Array.isArray(text)) text = text[text.length - 1].content;
+    }
+    const data = JSON.parse(stripReasoning(text));
     // Clamp every rating and backfill gaps, so the grid always gets a full matrix.
     const out = {};
     for (const o of req.options || []) {
