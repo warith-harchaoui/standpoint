@@ -46,16 +46,15 @@ def _ensure_model() -> None:
         ollama.pull(model)  # one-time download; raises if the backend is down
 
 
-@pytest.fixture(autouse=True)
-def _guard_model(request: pytest.FixtureRequest) -> None:
-    """Guarantee the local model for ``needs_model`` tests; leave the rest untouched.
+def _ensure_model_or_skip() -> None:
+    """Shared gate: model confirmed present, or skip (CI) / re-raise (local).
 
-    A missing Ollama is treated as a prerequisite to install locally (the fixture
-    re-raises) but as an expected absence in CI (the test is skipped), which keeps the
-    model-free suite green on the hosted runner.
+    A missing Ollama is treated as a prerequisite to install locally (re-raise) but as
+    an expected absence in CI (skip), which keeps the model-free suite green on the
+    hosted runner.
     """
     global _MODEL_READY
-    if "needs_model" not in request.keywords or _MODEL_READY:
+    if _MODEL_READY:
         return
     try:
         _ensure_model()
@@ -64,3 +63,21 @@ def _guard_model(request: pytest.FixtureRequest) -> None:
         if os.environ.get("CI"):
             pytest.skip(f"local Ollama model unavailable in CI: {exc}")
         raise
+
+
+@pytest.fixture(autouse=True)
+def _guard_model(request: pytest.FixtureRequest) -> None:
+    """Guarantee the local model for ``needs_model`` tests; leave the rest untouched."""
+    if "needs_model" in request.keywords:
+        _ensure_model_or_skip()
+
+
+@pytest.fixture(scope="module")
+def model_guard() -> None:
+    """Same gate for MODULE-scoped fixtures that call the model (e.g. ``poles``).
+
+    Module fixtures are set up before the function-scoped autouse guard, so one that
+    reaches the model must request this fixture itself or a down Ollama surfaces as a
+    setup ERROR instead of the intended skip.
+    """
+    _ensure_model_or_skip()

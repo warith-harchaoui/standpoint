@@ -48,10 +48,11 @@ def roles(result) -> list[str]:
 
 
 @pytest.fixture(scope="module")
-def poles(result) -> list[str]:
+def poles(result, model_guard) -> list[str]:
     """Model-named poles for `result`, computed once and shared by every consumer.
 
-    Only requested by `@needs_model` tests, so the conftest guard still gates it; the
+    Requests `model_guard` itself: module fixtures are set up BEFORE the function-scoped
+    conftest guard, so without it a down Ollama errors here instead of skipping. The
     single shared call avoids re-running the (deterministic, temperature=0) axis
     naming for every test that needs a set of poles.
     """
