@@ -55,15 +55,18 @@ resolved against ``--base-url`` (default: https://deraison.ai/standpoint).
 
 Run from the repo root with the project env active::
 
-    python webapp/build.py --model distillation/checkpoints/llm-engine
+    python webapp/build.py --clean --no-gate --model distillation/checkpoints/llm-engine
 
 writes ``web/`` at the repo root: the whole upload payload for
 deraison.ai/standpoint, code and model together, nothing else to think about.
-Upload its CONTENTS (including the dotfiles ``.htaccess``) to /standpoint.
+Since 2026-09-23 the site is OPEN ACCESS (no email gate); on a host that still
+carries the old gate, delete the server-side ``.htaccess``, ``index.php`` and
+``gate/`` or every request keeps 302-ing to the login form.
 
-    python webapp/build.py --clean  # rebuild from scratch
+    # Gated variant (magic-link email wall), kept working but no longer deployed:
+    python webapp/build.py --clean --model distillation/checkpoints/llm-engine
 
-    # Open-access mirror (sev7n): no landing page, no PHP, no tracking.
+    # Open-access mirror (sev7n): same recipe, separate folder.
     python webapp/build.py --no-gate --clean --out web-sev7n \\
         --base-url https://deraison.ai/standpoint
 
@@ -481,9 +484,14 @@ def main() -> None:
     site_indexes(args.base_url)
     total = sum(f.stat().st_size for f in DIST.rglob("*") if f.is_file())
     print(f"\n{DIST.name}/ ready ({total / 1e6:.1f} MB before the CDN-served Pyodide runtime).")
-    print(f"Upload the CONTENTS of {DIST.name}/ to the web folder (e.g. /standpoint),")
-    print("dotfiles included (.htaccess). Do NOT use a mirroring sync that deletes")
-    print("remote files: private/ on the server holds the leads and the session secret.")
+    print(f"Upload the CONTENTS of {DIST.name}/ to the web folder (e.g. /standpoint).")
+    if args.no_gate:
+        print("Open access: if the server still carries the old gate, delete its")
+        print(".htaccess, index.php and gate/ there, or requests keep 302-ing to")
+        print("the login form. Leave private/ alone (it holds the collected leads).")
+    else:
+        print("Dotfiles included (.htaccess). Do NOT use a mirroring sync that deletes")
+        print("remote files: private/ on the server holds the leads and the session secret.")
 
 
 if __name__ == "__main__":
