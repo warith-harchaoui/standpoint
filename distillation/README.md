@@ -278,8 +278,8 @@ reproduced on `mlx-vlm` 0.6.10 and 0.6.13, a known unresolved upstream bug
 `vlm_assess` stays served by the English adapter for every language -- it's a
 geometric check on a rendered image, not really language-dependent, so it
 never needed a French-specific variant. 753 `vlm_assess_fr` examples were
-generated anyway (`fr_vlm_assess.py`, kept on disk unused, in case the
-upstream bug is fixed later). The pivot also made `fr_run_lora_with_clip.py`
+generated anyway (`fr_vlm_assess.py`, since deleted with the rest of the
+French track; recoverable from git history if the upstream bug is ever fixed). The pivot also made `fr_run_lora_with_clip.py`
 (a hand-rolled `mlx_lm` trainer fork with real grad-clip added, needed because
 `mlx_lm.lora` has none) unnecessary, so it was deleted entirely -- `mlx_vlm`'s
 trainer has its own `--grad-clip`, so the French track now shares
@@ -819,13 +819,10 @@ distillation/
                                  # SVG; see that script's own docstring for why)
     04_evaluate.py               # Phase 3: distilled vs teacher, per task/language
 
-    # Dead since the 2026-09-21 rearchitecture: the separate French track is
-    # gone, replaced by `03_train_lora.py --lang fr` on the same code path as
-    # English. Kept only until the branch merges.
-    fr_train_lora.py            # Qwen3-VL-2B French trainer
-    fr_evaluate.py              # its evaluator
-    fr_vlm_assess.py            # backfilled French vlm_assess examples; the task
-                                 # itself is out of scope now
+    # The separate French track (fr_train_lora.py, fr_evaluate.py,
+    # fr_vlm_assess.py) died with the 2026-09-21 rearchitecture -- replaced by
+    # `03_train_lora.py --lang fr` on the same code path as English -- and was
+    # deleted on 2026-09-24 (recoverable from git history if ever needed).
   data/                      # generated datasets (gitignored; regenerable)
   checkpoints/               # LoRA adapters + merged/converted models (gitignored)
 ```
