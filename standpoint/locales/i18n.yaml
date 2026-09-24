@@ -235,7 +235,7 @@ fr:
     upload: Importer CSV / XLSX
     download_csv: Télécharger CSV
     download_xlsx: Télécharger XLSX
-    hint_higher: Plus haut est meilleur par défaut.
+    hint_higher: Par défaut, le plus haut, le meilleur.
     hint_toggle: "Basculez ⬇️ / ⬆️ sur une colonne pour indiquer si le score le plus bas ou le plus haut est le meilleur."
     options_title: Options
     reference_label: Référence choisie (coin haut droit)
