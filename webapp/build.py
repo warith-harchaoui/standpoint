@@ -376,23 +376,35 @@ def site_indexes(base_url: str) -> None:
                 print(f"{name} written")
 
 
-# The shim that makes a `.json`-hostile host serve this app anyway. Injected
-# before backend-pyodide.js by --json-txt, so it is in place before the page
-# reads its i18n and before transformers.js builds the model's own file names.
-JSON_TXT_SHIM = """(() => {
+# Extensions deraison.ai's host refuses to serve: any URL ending in one of these
+# answers 403 with an HTML error body, whether or not the file exists. Measured
+# on 2026-09-25 by probing nonexistent names, so the list reflects the rule and
+# not this payload. `.txt`, `.csv`, `.js`, `.css`, `.html`, `.xml`, `.svg`,
+# images, `.whl`, `.wasm` and `.webmanifest` all pass.
+BLOCKED_EXTS = (
+    ".bak", ".db", ".env", ".ini", ".json", ".lock", ".log", ".md", ".old",
+    ".py", ".sh", ".sql", ".sqlite", ".toml", ".yaml", ".yml",
+)
+
+# Injected before backend-pyodide.js by --ext-txt, so it is in place before the
+# page reads its i18n, before Pyodide is handed py/glue.py, and before
+# transformers.js builds the model's own file names.
+EXT_TXT_SHIM = """(() => {
   "use strict";
-  // Some hosts refuse to serve *.json outright (deraison.ai answers 403 to any
-  // such URL, even one that does not exist). --json-txt ships every JSON payload
-  // as <name>.json.txt and this shim points same-origin reads at that twin --
-  // including the names transformers.js composes itself (config.json,
-  // tokenizer.json, ...), which is why it patches fetch rather than call sites.
-  // Cross-origin reads are left alone: the CDN that serves Pyodide and the
-  // embedding model has no such rule.
+  // Some hosts refuse whole families of extensions outright -- deraison.ai
+  // answers 403 to any .py/.json/.md/... URL, even one that points at no file,
+  // and the page then parses an HTML error body as code. --ext-txt ships every
+  // such payload as <name><ext>.txt and this shim points same-origin reads at
+  // that twin. It patches fetch rather than the call sites because
+  // transformers.js composes config.json, tokenizer.json and friends itself:
+  // there is no call site to edit. Cross-origin reads are left alone, the CDN
+  // serving Pyodide and the embedding model having no such rule.
+  const BLOCKED = __EXTS__;
   const swap = (u) => {
     try {
       const url = new URL(u, document.baseURI);
       if (url.origin !== location.origin) return null;
-      if (!url.pathname.endsWith(".json")) return null;
+      if (!BLOCKED.some((e) => url.pathname.endsWith(e))) return null;
       url.pathname += ".txt";
       return url.href;
     } catch (e) {
@@ -414,27 +426,46 @@ JSON_TXT_SHIM = """(() => {
 """
 
 
-def json_as_txt() -> None:
-    """Rename every dist JSON to <name>.json.txt and install the fetch shim.
+def ext_as_txt(base_url: str) -> None:
+    """Ship every blocked-extension file as <name><ext>.txt; install the shim.
 
-    A workaround for a host that forbids the .json extension, not a preference:
-    the bytes are unchanged and `Response.json()` ignores the content type, so
-    the only thing that moves is the URL the browser asks for.
+    A workaround for a hostile host, not a preference: the bytes are unchanged
+    and the readers (`Response.json()`, `.text()`) ignore the content type, so
+    the only thing that moves is the URL the browser asks for. The generated
+    indexes are rewritten too, or they would cite 403s -- but only where they
+    point at THIS deployment, leaving the GitHub links they also carry alone.
     """
-    (DIST / "json-txt.js").write_text(JSON_TXT_SHIM, encoding="utf-8")
+    shim = EXT_TXT_SHIM.replace("__EXTS__", json.dumps(list(BLOCKED_EXTS)))
+    (DIST / "ext-txt.js").write_text(shim, encoding="utf-8")
     index = DIST / "index.html"
     html = index.read_text(encoding="utf-8")
     anchor = '<script src="./backend-pyodide.js"></script>'
     if html.count(anchor) != 1:
-        raise SystemExit("backend-pyodide.js tag not found: cannot install the JSON shim")
-    html = html.replace(anchor, '<script src="./json-txt.js"></script>\n' + anchor, 1)
-    index.write_text(html, encoding="utf-8")
+        raise SystemExit("backend-pyodide.js tag not found: cannot install the ext shim")
+    index.write_text(
+        html.replace(anchor, '<script src="./ext-txt.js"></script>\n' + anchor, 1),
+        encoding="utf-8",
+    )
 
-    renamed = 0
-    for src in sorted(DIST.rglob("*.json")):
-        src.rename(src.with_suffix(".json.txt"))
-        renamed += 1
-    print(f"--json-txt: {renamed} JSON files shipped as .json.txt, fetch shim installed")
+    renamed = [f for f in sorted(DIST.rglob("*")) if f.is_file() and f.suffix in BLOCKED_EXTS]
+    for src in renamed:
+        src.rename(src.with_name(src.name + ".txt"))
+
+    # The SEO/GEO indexes cite the Markdown corpus by absolute URL; those URLs
+    # just moved. Scope the rewrite to this deployment's own prefix.
+    prefix = base_url.rstrip("/")
+    moved = {f.name for f in renamed}
+    for name in ("sitemap.xml", "llms.txt", "llms-full.txt", "humans.txt", "robots.txt"):
+        doc = DIST / name
+        if not doc.exists():
+            continue
+        text = doc.read_text(encoding="utf-8")
+        for basename in moved:
+            text = text.replace(f"{prefix}/{basename}", f"{prefix}/{basename}.txt")
+        doc.write_text(text, encoding="utf-8")
+
+    listing = ", ".join(sorted(moved)) or "none"
+    print(f"--ext-txt: {len(renamed)} files shipped as .txt twins ({listing})")
 
 
 def main() -> None:
@@ -502,12 +533,13 @@ def main() -> None:
         "mirror that is meant to be open)",
     )
     parser.add_argument(
-        "--json-txt",
+        "--ext-txt",
         action="store_true",
-        help="ship every JSON file as <name>.json.txt and rewrite same-origin "
-        ".json reads in the page. Needed on a host that forbids the .json "
-        "extension -- deraison.ai answers 403 to any *.json URL, which reaches "
-        "the visitor as \"Unexpected token '<' ... is not valid JSON\"",
+        help="ship every file whose extension the host refuses (.py, .json, "
+        ".md, .yaml, .toml, ...) as <name><ext>.txt, and rewrite same-origin "
+        "reads in the page. Needed on deraison.ai, which answers 403 to those "
+        "extensions across the whole domain -- reaching the visitor as "
+        "\"Unexpected token '<'\" or a SyntaxError on an HTML error body",
     )
     parser.add_argument(
         "--out",
@@ -551,8 +583,8 @@ def main() -> None:
     else:
         gate_assets(args.base_url)
     site_indexes(args.base_url)
-    if args.json_txt:
-        json_as_txt()
+    if args.ext_txt:
+        ext_as_txt(args.base_url)
     total = sum(f.stat().st_size for f in DIST.rglob("*") if f.is_file())
     print(f"\n{DIST.name}/ ready ({total / 1e6:.1f} MB before the CDN-served Pyodide runtime).")
     print(f"Upload the CONTENTS of {DIST.name}/ to the web folder (e.g. /standpoint).")
