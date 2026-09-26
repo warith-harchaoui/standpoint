@@ -208,6 +208,9 @@ GUI_HTML = r"""<!doctype html>
     <div>
       <p class="eyebrow text-sm text-neutral-500">standpoint</p>
       <h1 class="headline mt-1 text-4xl sm:text-5xl font-bold tracking-tight text-neutral-900" data-i18n="baseline">Where do you stand?</h1>
+      <!-- What the app does, before how to drive it: darker and wider-set than
+           the guide lines below, so the promise reads first (wording by Warith). -->
+      <p class="mt-4 max-w-3xl text-lg leading-relaxed text-neutral-700" data-i18n="pitch">Give any table of options scored against criteria and it will place each one on a quadrant, with axes derived from your data and labeled in plain language, so you can see at a glance where the option you care about stands.</p>
       <!-- The whole user guide, in two lines (wording by Warith). -->
       <p class="mt-3 text-neutral-600" data-i18n="guide_1">Fill out the table (or import it as a CSV/XLSX file), then select the row you want to promote.</p>
       <p class="text-neutral-600" data-i18n="guide_2">Click “Generate Quadrant”.</p>

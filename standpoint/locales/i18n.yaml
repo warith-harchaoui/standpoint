@@ -73,6 +73,7 @@ en:
   gui:
     lang_name: English
     baseline: Where do you stand?
+    pitch: Give any table of options scored against criteria and it will place each one on a quadrant, with axes derived from your data and labeled in plain language, so you can see at a glance where the option you care about stands.
     guide_1: Fill out the table (or import it as a CSV/XLSX file), then select the row you want to promote.
     guide_2: Click “Generate Quadrant”.
     github: ⭐️ on GitHub
@@ -214,6 +215,7 @@ fr:
   gui:
     lang_name: Français
     baseline: Sachez où vous en êtes
+    pitch: "Partez de n'importe quel tableau d'options notées selon des critères : chacune est placée sur un quadrant dont les axes sont déduits de vos données et nommés en langage clair, pour voir d'un coup d'œil où se situe l'option qui vous intéresse."
     guide_1: Remplir le tableau (ou l'importer en CSV/XLSX) puis choisir la ligne à promouvoir.
     guide_2: Cliquer sur « Générer le quadrant ».
     github: ⭐️ sur GitHub
@@ -354,6 +356,7 @@ es:
   gui:
     lang_name: Español
     baseline: ¿Dónde te sitúas?
+    pitch: "Parte de cualquier tabla de opciones puntuadas según criterios: cada una se sitúa en un cuadrante cuyos ejes se derivan de tus datos y se nombran en lenguaje claro, para ver de un vistazo dónde queda la opción que te interesa."
     guide_1: Rellena la tabla (o impórtala en CSV/XLSX) y elige la fila a promover.
     guide_2: Haz clic en «Generar el cuadrante».
     github: ⭐️ en GitHub
