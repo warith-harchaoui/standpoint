@@ -1,5 +1,67 @@
 # Distilling Standpoint's local VLM to a 0.6B engine
 
+## One engine, half the bytes (2026-09-26): vocabulary pruning + int8 embeddings
+
+The webapp stopped splitting its brain (MiniLM embeddings named the axes, the
+student only answered "Laziness", noun forms got a neutral fallback): every
+engine model call now reaches the SAME student through the replay shim, with
+the engine's own prompt — see `webapp/backend-pyodide.js` and the changelog.
+That made the student's download weight the whole webapp's first impression,
+so the bundle went on a diet, with an eval gate on the exact deployed
+artifact at each step.
+
+**`06_evaluate_onnx.py` — score what visitors download, not what training
+produced.** Same held-out split and checks as `04_evaluate.py`, but generation
+runs through onnxruntime on the q4f16 ONNX graph. The deployed 637 MB bundle's
+reference report (`data/eval_report_onnx.json`) sits close to the MLX
+checkpoint's: `noun_forms` 100%/100%, `pole_naming` 100% en / 98% fr, ratings
+MAD 0.74/0.76 — the q4 quantisation costs a few well-formed matrices (91%/83%
+vs 98%/92% on MLX) and nothing else.
+
+**`07_prune_vocab.py` — 151,936 → 43,190 tokens, tokenization provably
+unchanged.** The corpus (train + validation, through the training chat
+template) reaches only 9,332 distinct tokens; the keep set adds the results
+of the 40,000 most frequent BPE merges (robustness for out-of-corpus words —
+merges are frequency-ordered, and a merge's inputs are earlier results, so
+the set is derivation-closed for free), the 256 byte-alphabet tokens (any
+string stays tokenizable) and the 26 added tokens, then closes over BPE
+derivation ("which merge builds this token"), because a kept token is only
+reachable if its whole merge path survives. With that closure, any merge that
+ever fired on corpus text produced an ancestor of a kept token, so corpus
+tokenization is invariant — asserted over all 2,908 corpus texts before the
+script writes a byte. Ids are remapped, the one vocab-sized tensor
+(embeddings; the LM head is tied) is row-permuted, special-token ids
+rewritten. No retraining.
+
+**`08_export_pruned.py` — the embedding table stops shipping fp16.**
+`MatMulNBitsQuantizer` only sees MatMuls, and the embedding table is read by
+a `Gather`, so 05's export shipped it at fp16 — 311 MB, half the bundle. The
+pruned table (43,190 × 1024) is quantised to int8 with per-row symmetric
+scales via plain graph surgery: `Gather(int8) → Cast(fp16) → Mul(gathered
+scales)` — vanilla ops only, so onnxruntime-web has nothing to reject, and
+dequantisation touches only the gathered rows.
+
+**Gate (both bundles scored on the full 434-example split, real artifacts):**
+
+| task | deployed 637 MB | pruned+int8 324 MB |
+|---|---|---|
+| `noun_forms` en / fr | 100% / 100% | **100% / 100%** |
+| `pole_naming` en | 100% (54/54) | 98% (53/54) |
+| `pole_naming` fr | 98% (58/59) | **98% (58/59)** |
+| `suggest_ratings` en | pass 43%, MAD 0.74, 42 wf | **pass 46%, MAD 0.74, 43 wf** |
+| `suggest_ratings` fr | pass 32%, MAD 0.76, 44 wf | **pass 40%, MAD 0.76, 48 wf** |
+
+Net: one pole_naming example lost (a benign duplicate-word answer that
+`finalize_poles` degrades gracefully), five ratings examples gained. Parity
+at half the size; the consolidation LoRA that was held in reserve for a
+regression stays unfired. Out-of-corpus robustness spot-checked separately:
+byte fallback round-trips everything (accents, emoji, CJK), en/fr sequences
+inflate 0–20%, exotic scripts more — out of scope by design.
+
+`checkpoints/llm-engine/` (what `webapp/build.py --model` ships) now holds
+this 324 MB bundle; the previous 637 MB export stays at
+`checkpoints/standpoint-qwen3-0.6b-browser/`.
+
 ## Rearchitecture (2026-09-21): no vision, one 0.6B text model per language
 
 ### Results: the bilingual control wins, on both languages
@@ -818,6 +880,10 @@ distillation/
     make_loss_figure.py         # CSV -> data/training_loss.svg (pure hand-authored
                                  # SVG; see that script's own docstring for why)
     04_evaluate.py               # Phase 3: distilled vs teacher, per task/language
+    05_export_browser.py         # Phase 4: fuse + ONNX fp16 + q4 MatMuls + browser layout
+    06_evaluate_onnx.py          # the go/no-go gate on the BROWSER bundle itself
+    07_prune_vocab.py            # 151,936 -> 43,190 tokens, derivation-closed, verified
+    08_export_pruned.py          # pruned export + int8 embedding Gather (324 MB)
 
     # The separate French track (fr_train_lora.py, fr_evaluate.py,
     # fr_vlm_assess.py) died with the 2026-09-21 rearchitecture -- replaced by
