@@ -25,8 +25,6 @@ What lands in ``dist/``:
                           (langdetect, et_xmlfile, openpyxl)
 - ``i18n/<lang>.json``    the GUI string tables, exported so localization
                           needs no Python at page load
-- ``vocab/<lang>.json``   candidate pole names for the embedding-based axis
-                          naming (transformers.js MiniLM, loaded lazily)
 - ``examples/*.csv``      the tracked example tables (one per example button)
 - ``static/*``            icons + webmanifest (paths rewritten to relative),
                           incl. the sprezzature favicon/PWA set generated from
@@ -156,10 +154,6 @@ def export_i18n() -> None:
     out.mkdir(parents=True, exist_ok=True)
     for lang in sorted(sp.SUPPORTED_LANGS):
         strings = dict(sp.i18n(lang).get("gui") or sp.i18n("en")["gui"])
-        # The static build's "Laziness" panel formats the engine's own ratings
-        # prompt client-side (no Pyodide wait), so ship the template alongside
-        # the GUI strings.
-        strings["ratings_prompt"] = sp.i18n(lang)["ratings_prompt"]
         (out / f"{lang}.json").write_text(
             json.dumps(strings, ensure_ascii=False, indent=1), encoding="utf-8"
         )
@@ -270,12 +264,6 @@ def copy_assets(wheel_names: list[str]) -> None:
             if not variant.exists():
                 shutil.copy2(examples_dst / f"{base_id}.csv", variant)
 
-    # The candidate pole-name vocabularies the embedding-based axis naming
-    # scores against (one list of positive qualities per GUI language).
-    vocab_dst = DIST / "vocab"
-    if vocab_dst.exists():
-        shutil.rmtree(vocab_dst)
-    shutil.copytree(WEBAPP / "vocab", vocab_dst)
     print("assets copied")
 
 
@@ -382,8 +370,22 @@ def site_indexes(base_url: str) -> None:
 # not this payload. `.txt`, `.csv`, `.js`, `.css`, `.html`, `.xml`, `.svg`,
 # images, `.whl`, `.wasm` and `.webmanifest` all pass.
 BLOCKED_EXTS = (
-    ".bak", ".db", ".env", ".ini", ".json", ".lock", ".log", ".md", ".old",
-    ".py", ".sh", ".sql", ".sqlite", ".toml", ".yaml", ".yml",
+    ".bak",
+    ".db",
+    ".env",
+    ".ini",
+    ".json",
+    ".lock",
+    ".log",
+    ".md",
+    ".old",
+    ".py",
+    ".sh",
+    ".sql",
+    ".sqlite",
+    ".toml",
+    ".yaml",
+    ".yml",
 )
 
 # Injected before backend-pyodide.js by --ext-txt, so it is in place before the
@@ -398,7 +400,7 @@ EXT_TXT_SHIM = """(() => {
   // that twin. It patches fetch rather than the call sites because
   // transformers.js composes config.json, tokenizer.json and friends itself:
   // there is no call site to edit. Cross-origin reads are left alone, the CDN
-  // serving Pyodide and the embedding model having no such rule.
+  // serving Pyodide and transformers.js having no such rule.
   const BLOCKED = __EXTS__;
   const swap = (u) => {
     try {
@@ -521,9 +523,9 @@ def main() -> None:
         type=Path,
         default=None,
         help="copy this folder in as dist/llm-engine/ (the distilled student the "
-        "Laziness button downloads, produced by "
-        "distillation/scripts/05_export_browser.py). ~640 MB, so it is opt-in: "
-        "without it the bundle expects the folder to be uploaded separately",
+        "page downloads at load, produced by "
+        "distillation/scripts/05_export_browser.py). Several hundred MB, so it "
+        "is opt-in: without it the bundle expects the folder uploaded separately",
     )
     parser.add_argument(
         "--no-gate",

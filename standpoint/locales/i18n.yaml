@@ -111,15 +111,14 @@ en:
     err_flemme: "Auto-fill failed: "
     err_generic: "Error: "
     err_image: "Image export failed: "
-    # Static (in-browser) build only: axis naming runs on a small embedding
-    # model by default, and "Laziness" delegates to the user's own AI via a
-    # copy-the-prompt / paste-the-JSON panel (webapp/backend-pyodide.js).
+    # Static (in-browser) build only: ONE distilled model, downloaded at page
+    # load, answers every engine call — pole naming, noun forms, the
+    # "Laziness" ratings fill (webapp/backend-pyodide.js).
     # The server GUI never shows these keys.
-    naming_loading: "Naming the axes… (first-time model load, a few seconds)"
-    naming_offline: "Naming model unavailable; axes named from the criteria."
     flemme_none: "no empty cells to fill — add an option, a criterion, or clear a cell first."
-    flemme_model: "Loading the AI model (about 650 MB, downloaded once then cached)… "
-    flemme_server: "Filled by the shared AI server. Your table was sent to it, not kept in this page."
+    model_loading: "Downloading the AI model (about 330 MB, once — it stays cached for later visits)… "
+    model_offline: "AI model unavailable; axes and names fall back to the built-in heuristics."
+    flemme_server: "Answered by the shared AI server. Your table's data was sent to it, not kept in this page."
     flemme_server_login: "Sign in to the shared AI server for the fast path. Using the in-page model meanwhile."
     flemme_server_login_link: "Sign in"
     flemme_nogpu: "this browser can't run the in-page AI model (WebGPU missing); try a recent Chrome, Edge or Safari."
@@ -253,15 +252,14 @@ fr:
     err_flemme: "Échec du remplissage : "
     err_generic: "Erreur : "
     err_image: "Échec de l'export de l'image : "
-    # Build statique (navigateur) uniquement : le nommage des axes tourne par
-    # défaut sur un petit modèle d'embeddings, et « Paresse » délègue à l'IA de
-    # l'utilisateur via un panneau copier le prompt / coller le JSON
+    # Build statique (navigateur) uniquement : UN seul modèle distillé,
+    # téléchargé au chargement de la page, répond à tous les appels du moteur —
+    # nommage des pôles, formes du nom, remplissage « Paresse »
     # (webapp/backend-pyodide.js). Le GUI serveur ne montre jamais ces clés.
-    naming_loading: "Nommage des axes… (premier chargement du modèle, quelques secondes)"
-    naming_offline: "Modèle de nommage indisponible ; axes nommés depuis les critères."
     flemme_none: "aucune cellule vide à remplir — ajoutez une option, un critère, ou videz une cellule d'abord."
-    flemme_model: "Chargement du modèle IA (environ 650 Mo, téléchargé une seule fois puis en cache)… "
-    flemme_server: "Rempli par le serveur IA partagé. Votre tableau lui a été envoyé, il n'est pas resté dans cette page."
+    model_loading: "Téléchargement du modèle IA (environ 330 Mo, une seule fois — il reste en cache pour les prochaines visites)… "
+    model_offline: "Modèle IA indisponible ; axes et noms retombent sur les heuristiques intégrées."
+    flemme_server: "Réponses fournies par le serveur IA partagé. Les données de votre tableau lui ont été envoyées, elles ne restent pas dans cette page."
     flemme_server_login: "Connectez-vous au serveur IA partagé pour la voie rapide. En attendant, le modèle embarqué prend le relais."
     flemme_server_login_link: "Se connecter"
     flemme_nogpu: "ce navigateur ne peut pas exécuter le modèle IA dans la page (WebGPU absent) ; essayez un Chrome, Edge ou Safari récent."
@@ -394,15 +392,14 @@ es:
     err_flemme: "Error al rellenar: "
     err_generic: "Error: "
     err_image: "Error al exportar la imagen: "
-    # Solo para la versión estática (navegador): el nombrado de los ejes corre
-    # por defecto sobre un pequeño modelo de embeddings, y «Pereza» delega en la
-    # IA del usuario mediante un panel copiar el prompt / pegar el JSON
+    # Solo para la versión estática (navegador): UN solo modelo destilado,
+    # descargado al cargar la página, responde a todas las llamadas del motor —
+    # nombrado de polos, formas del sustantivo, relleno «Pereza»
     # (webapp/backend-pyodide.js). La GUI del servidor nunca muestra estas claves.
-    naming_loading: "Nombrando los ejes… (primera carga del modelo, unos segundos)"
-    naming_offline: "Modelo de nombrado no disponible; ejes nombrados desde los criterios."
     flemme_none: "no hay celdas vacías que rellenar — añade una opción, un criterio, o vacía una celda primero."
-    flemme_model: "Cargando el modelo de IA (aprox. 650 MB, descargado una sola vez y luego en caché)… "
-    flemme_server: "Rellenado por el servidor de IA compartido. Tu tabla se le envió, no se quedó en esta página."
+    model_loading: "Descargando el modelo de IA (aprox. 330 MB, una sola vez — queda en caché para próximas visitas)… "
+    model_offline: "Modelo de IA no disponible; ejes y nombres recurren a las heurísticas integradas."
+    flemme_server: "Respondido por el servidor de IA compartido. Los datos de tu tabla se le enviaron, no se quedaron en esta página."
     flemme_server_login: "Inicia sesión en el servidor de IA compartido para la vía rápida. Mientras tanto, se usa el modelo integrado."
     flemme_server_login_link: "Iniciar sesión"
     flemme_nogpu: "este navegador no puede ejecutar el modelo de IA en la página (falta WebGPU); prueba un Chrome, Edge o Safari reciente."

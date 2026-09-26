@@ -119,27 +119,25 @@ the local-first promise gets even stronger, since there is no server at all.
 
 Blue nodes run in the **browser page**; purple nodes are the **in-browser
 engines** (WebAssembly) that replace the green server nodes of the diagram
-above. The AI strategy keeps every model lazy and local: the always-on path
-(axis naming) uses the same small embedding model + curated static data as
-[harchaoui.org's in-page RAG](https://harchaoui.org/warith/livre-elephant/rag.html),
-and the heavier generative model loads only when its one feature ("Laziness"
-auto-fill) is explicitly clicked.
+above. The AI strategy is ONE model for every language job: this project's own
+distilled student (`distillation/` — Qwen3-0.6B fine-tuned on Standpoint's
+three tasks: pole naming, noun forms, ratings), downloaded once at page load
+with a visible progress badge, then browser-cached and run through
+transformers.js over WebGPU.
 
 ```mermaid
 flowchart LR
     grid["🖥️ Editable grid"] ==>|"backend.position(csv)"| glue["glue.py<br/>positioning(csv, …)"]
     glue --> lib["core library, unchanged<br/>Pyodide · numpy · pandas · scikit-learn"]
     lib -->|"SVG string"| embed["🖥️ innerHTML<br/>live quadrant"]
-    glue -.->|"pending naming call<br/>(memoized replay)"| emb["transformers.js MiniLM<br/>+ vocab/&lt;lang&gt;.json"]
-    emb -.->|"nearest quality word<br/>per pole"| glue
-    grid -.->|"😴 Paresse: one LLM call"| llm["WebLLM (WebGPU)<br/>Qwen2.5-1.5B, lazy"]
-    llm -.->|"schema-valid ratings<br/>fill the empty cells"| grid
+    glue -.->|"pending model call<br/>(memoized replay)"| llm["distilled student<br/>transformers.js · WebGPU"]
+    llm -.->|"schema-shaped answer<br/>(poles, noun forms, ratings)"| glue
 
     %% "Good Colors" palette: https://harchaoui.org/warith/colors/
     classDef browser fill:#CCE4FF,stroke:#007AFF,color:#000000,stroke-width:2px;
     classDef wasm fill:#EAD6FF,stroke:#AF52DE,color:#000000,stroke-width:2px;
     class grid,embed browser;
-    class glue,lib,emb,llm wasm;
+    class glue,lib,llm wasm;
 ```
 
 - **Same engine, byte for byte.** The bundle vendors the `standpoint` wheel
@@ -148,25 +146,23 @@ flowchart LR
   logic of `api.py`, same behaviours and error messages.
 - **LLM calls become a memoized replay.** `webapp/beh_shim.py` stands in for
   `best-engine-ai-helper`: a model call either hits a seeded answer cache or
-  reports the one prompt it is blocked on; the JS driver answers it and re-runs.
-  Whatever answers fail, schema-shaped neutral defaults push the engine onto
-  its built-in fallbacks (loading-derived pole words, naive plural), so
-  **Generate always completes**.
-- **Axis naming is on by default, via embeddings, not generation.** The first
-  Generate lazily loads the multilingual MiniLM used by harchaoui.org's
-  semantic search (transformers.js, a few dozen MB, then browser-cached),
-  embeds each pole's criteria as one phrase, and picks the nearest word from a
-  curated vocabulary of positive qualities (`webapp/vocab/<lang>.json`;
-  confusable entries carry a disambiguating gloss that is what actually gets
-  embedded). The engine's `finalize_poles` still validates and dedupes.
-- **"Laziness" auto-fill is one direct in-browser LLM call.** The click loads
-  a small instruct model once (WebLLM over WebGPU, `Qwen2.5-1.5B`, ~1 GB,
-  then browser-cached), sends the engine's own localized `ratings_prompt`
-  with schema-constrained JSON output, and fills ONLY the still-empty cells —
-  no panel, no copy-paste, no key, nothing leaves the machine. A full table
-  gets a clear "nothing to fill" message; a browser without WebGPU gets told
-  so. This heavier model never loads unless Paresse is clicked; axis naming
-  stays on the lightweight embedding model.
+  reports the one prompt it is blocked on — byte for byte the prompt the
+  server-side model would see; the JS driver answers it and re-runs. Whatever
+  answers fail, schema-shaped neutral defaults push the engine onto its
+  built-in fallbacks (loading-derived pole words, naive plural), so
+  **Generate always completes** — only the ratings fill errors honestly
+  instead of inventing a neutral matrix.
+- **One distilled model answers everything.** Pole naming, noun forms and the
+  "Laziness" ratings fill all go through the same student, which was distilled
+  from the server engine's own captured prompts (100% pole naming on the
+  held-out split in both languages — see `distillation/README.md`). The
+  engine's `finalize_poles` still validates and dedupes behind it. An optional
+  build-time `--llm-server` gateway answers the same calls first when it is
+  reachable and the visitor is signed in: a big model on real hardware beats a
+  0.6B on a laptop, and the page falls back seamlessly.
+- **"Laziness" fills ONLY the still-empty cells** — no panel, no copy-paste,
+  no key; with the default build nothing leaves the machine. A full table gets
+  a clear "nothing to fill" message; a browser without WebGPU gets told so.
 
 ```bash
 python webapp/build.py            # writes webapp/dist/ (~4 MB + CDN runtime)
@@ -175,14 +171,15 @@ python webapp/build.py            # writes webapp/dist/ (~4 MB + CDN runtime)
 ```
 
 Static-build limitations: the first visit downloads the Pyodide runtime and
-wheels from the jsDelivr CDN (~15–20 MB, then browser-cached) and the first
-Generate adds the MiniLM download (a few dozen MB, a few seconds); offline or
-CDN-blocked, axes fall back to loading-derived words. A forced cross-language
-run (FR toggle on an English table) keeps the noun untranslated in the title —
-translating it is the one thing only the server's local LLM does. Verified
-headless (Playwright + Chromium, with an embedding seam for determinism plus a
-real-model spot check): boot, generate, FR/EN + theme toggles, XLSX
-round-trip, embedding-named poles, the delegation panel end to end.
+wheels from the jsDelivr CDN (~15–20 MB) plus the distilled student (a few
+hundred MB, announced in the page's progress badge) — all browser-cached, so
+later visits start instantly. Offline or CDN-blocked, axes fall back to
+loading-derived words. A forced cross-language run (FR toggle on an English
+table) keeps the noun untranslated in the title — translating it is the one
+thing only the server's local LLM does. Verified headless (Playwright +
+Chromium, with a model seam for determinism plus a real-model spot check):
+boot, generate, FR/EN + theme toggles, XLSX round-trip, model-named poles,
+the Laziness fill end to end.
 
 ## Limitations
 

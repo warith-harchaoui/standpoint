@@ -11,8 +11,9 @@ this shim implements it with a *memoized replay* contract instead:
 
 The JavaScript driver (``backend-pyodide.js``) catches the pending call —
 surfaced by ``glue.py`` as a ``{"pending": ...}`` payload — generates an answer
-(an in-browser WebLLM model, or the schema's neutral defaults when no model is
-available), seeds the cache with :func:`seed`, and re-runs the whole call.
+(the shared inference server when one is configured, the in-page distilled
+student otherwise, or the schema's neutral defaults when neither is available),
+seeds the cache with :func:`seed`, and re-runs the whole call.
 Runs are cheap (small tables, deterministic geometry) and a Generate makes at
 most a handful of model calls, so the replay converges in a few iterations
 while the engine's code path stays byte-for-byte the one the server runs.
@@ -79,7 +80,7 @@ def ensure(pkg_dir: object = None) -> dict:
     The engine dict is only threaded through to ``llm.chat`` by standpoint, and
     this shim's ``chat`` ignores it, so a minimal marker dict is enough.
     """
-    return {"backend": "browser", "resolved": "in-browser (WebLLM / fallback)"}
+    return {"backend": "browser", "resolved": "in-browser (distilled student / fallback)"}
 
 
 class _Llm:

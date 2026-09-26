@@ -279,10 +279,10 @@ docker run --rm -p 8000:8000 standpoint
 ```
 
 Sans serveur du tout ? `python webapp/build.py` compose la même GUI en **dossier
-statique** : le moteur tourne dans le navigateur du visiteur via Pyodide, les
-axes sont nommés par défaut par un petit modèle d'embeddings dans la page, et
-un clic sur l'auto-remplissage fait remplir les cases vides par un LLM dans le
-navigateur (WebLLM, chargé paresseusement) — sans serveur, sans clé. Il suffit
+statique** : le moteur tourne dans le navigateur du visiteur via Pyodide, et un
+seul modèle dans la page — le student distillé de Standpoint, téléchargé une
+fois au chargement puis en cache — nomme les axes et remplit les cases vides à
+l'auto-remplissage : sans serveur, sans clé. Il suffit
 d'uploader `web/` dans un dossier web statique et tout fonctionne.
 Détails dans [GUI.md](GUI.md) § Static build.
 

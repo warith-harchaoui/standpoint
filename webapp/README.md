@@ -2,10 +2,12 @@
 
 The same single-page GUI the server serves at `/gui`, composed into a folder
 any static host can serve: the engine runs in the visitor's browser (Pyodide /
-WebAssembly), axes are named by default by a small in-page embedding model
-(transformers.js MiniLM + curated vocabularies), and one click on "Laziness"
-has an in-browser LLM (WebLLM, lazy ~1 GB download, then cached) fill the
-empty cells. Full architecture, diagram and limitations:
+WebAssembly), and ONE model answers every language job — pole naming, noun
+forms, the "Laziness" ratings fill. It is this project's own distilled student
+(`distillation/`), downloaded once at page load (visible progress badge, then
+browser-cached) and run through transformers.js over WebGPU; a build-time
+`--llm-server` gateway, when configured and reachable, answers the same calls
+faster. Full architecture, diagram and limitations:
 [GUI.md § Static build](../GUI.md).
 
 ## Build and deploy
@@ -47,7 +49,7 @@ ignore the content type) and injects `ext-txt.js`, which rewrites
 *same-origin* reads to that twin. Patching `fetch` rather than the call sites
 is deliberate: transformers.js composes `config.json`, `tokenizer.json` and
 friends itself, so there is no call site to edit. Cross-origin reads are left
-alone — the CDN serving Pyodide and the embedding model has no such rule. The
+alone — the CDN serving Pyodide and transformers.js has no such rule. The
 generated SEO indexes are rewritten too, but only where they cite this
 deployment, so the GitHub links they also carry survive.
 
@@ -65,10 +67,9 @@ journey and Laziness, asserting that no 403 reaches the page).
 | File                 | Role                                                                        |
 | -------------------- | --------------------------------------------------------------------------- |
 | `build.py`           | Composes `dist/` from `standpoint.webgui.GUI_HTML` + these files            |
-| `backend-pyodide.js` | The `window.backend` transport: Pyodide boot, replay driver, embedding namer, delegation panel |
-| `glue.py`            | Endpoint logic mirrored from `standpoint.api` (+ `pole_context`), in Pyodide |
+| `backend-pyodide.js` | The `window.backend` transport: Pyodide boot, replay driver, the one answering model (server / in-page student) |
+| `glue.py`            | Endpoint logic mirrored from `standpoint.api`, in Pyodide                   |
 | `beh_shim.py`        | Memoized-replay stand-in for `best-engine-ai-helper`                        |
-| `vocab/<lang>.json`  | Candidate pole names (positive qualities; confusable entries glossed)       |
 | `ext-txt.js`         | Emitted by `--ext-txt`: rewrites same-origin reads of host-blocked extensions to their `.txt` twins |
 | `seo/head-seo.html`  | Deployment head block: canonical, Open Graph/Twitter card, JSON-LD          |
 | `seo/icons/`         | Favicon/PWA set generated from `assets/logo.png` (sprezzature-publish)      |

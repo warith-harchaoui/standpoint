@@ -1,20 +1,17 @@
 """Model-free tests for the static build's Python halves (webapp/).
 
-The in-browser journeys (Pyodide boot, embedding naming, WebLLM auto-fill) are
-exercised by Playwright out-of-repo; what belongs in CI is the deterministic
-Python that ships to the browser:
+The in-browser journeys (Pyodide boot, the distilled student answering the
+engine's calls) are exercised by Playwright out-of-repo; what belongs in CI is
+the deterministic Python that ships to the browser:
 
 - ``beh_shim.py`` — the memoized-replay stand-in for best-engine-ai-helper.
   Its whole contract is subtle enough to guard: a miss must raise
   :class:`PendingLLM`, which must NOT be an ``Exception`` (``noun_forms`` wraps
   its model call in ``except Exception`` and would silently swallow the pending
   signal), and a seeded key must replay to a hit.
-- ``glue.py::pole_context`` — the deterministic per-pole criteria the
-  embedding-based axis namer scores; it must mirror ``axis_poles``'s own
-  selection rules (|weight| > 0.05, benefit-phrased lower-is-better).
 
-Both modules are loaded from ``webapp/`` by path: they are shipped source, not
-an installed package.
+The module is loaded from ``webapp/`` by path: it is shipped source, not an
+installed package.
 
 The lead-magnet gate (``webapp/gate/``, PHP) is exercised end-to-end by
 Playwright out-of-repo; here CI guards its deterministic contracts: the
@@ -82,42 +79,6 @@ def test_shim_seeded_answer_replays_as_a_hit(beh_shim: ModuleType) -> None:
     # A different prompt is a different key: still pending, not a stale hit.
     with pytest.raises(beh_shim.PendingLLM):
         beh_shim.llm.chat("rate other things", json_schema=schema)
-
-
-@pytest.fixture(scope="module")
-def glue() -> ModuleType:
-    """The endpoint glue, imported from webapp/glue.py against the real engine.
-
-    glue imports `best_engine_ai_helper`; in the browser that resolves to the
-    shim, here to the real installed helper — fine for `pole_context`, which is
-    deterministic and never reaches `llm.chat`.
-    """
-    return _load("_test_glue", _WEBAPP / "glue.py")
-
-
-def test_pole_context_mirrors_axis_poles_selection(glue: ModuleType) -> None:
-    """pole_context returns benefit-phrased, strongest-first criteria per pole."""
-    table = "Laptop,Performance,Battery,Price (↓)\nA,5,4,1\nB,1,2,5\nC,4,5,2\nD,2,1,4\n"
-    ctx = glue.pole_context(table, reference="0", lang="en")
-    assert ctx["lang"] == "en"
-    assert set(ctx["poles"]) == {"left", "right", "bottom", "top"}
-    all_crits = [c for crits in ctx["poles"].values() for c in crits]
-    assert all_crits, "at least one pole must carry criteria"
-    for crits in ctx["poles"].values():
-        # Strongest-first ordering, and the axis_poles |w| > 0.05 cutoff.
-        weights = [c["weight"] for c in crits]
-        assert weights == sorted(weights, reverse=True)
-        assert all(w > 0.05 for w in weights)
-    # The lower-is-better column is presented as its benefit ("low Price"),
-    # exactly like the prompt `axis_poles` builds for the server-side model.
-    assert any(c["text"] == "low Price" for c in all_crits)
-    assert not any(c["text"] == "Price" for c in all_crits)
-
-
-def test_pole_context_rejects_an_empty_table(glue: ModuleType) -> None:
-    """Same clean ValueError contract as the API endpoint."""
-    with pytest.raises(ValueError):
-        glue.pole_context("   ")
 
 
 def test_gate_blocklist_separates_generic_from_professional() -> None:

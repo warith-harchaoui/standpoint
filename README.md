@@ -264,10 +264,10 @@ docker run --rm -p 8000:8000 standpoint
 ```
 
 No server at all? `python webapp/build.py` composes the same GUI as a **static
-bundle**: the engine runs in the visitor's browser via Pyodide, axes are named
-by a small in-page embedding model by default, and one click on auto-fill has
-an in-browser LLM (WebLLM, loaded lazily) fill the empty cells — no server, no
-key. Upload `web/` to any static
+bundle**: the engine runs in the visitor's browser via Pyodide, and one
+in-page model — Standpoint's own distilled student, downloaded once at page
+load then cached — names the axes and fills the empty cells on auto-fill: no
+server, no key. Upload `web/` to any static
 web folder and it just works. Details in [GUI.md](GUI.md) § Static build.
 
 For local library work, a thin conda env wraps the same `requirements.txt`:

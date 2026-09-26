@@ -121,67 +121,6 @@ def position(
     }
 
 
-# How a lower-is-better criterion reads as a benefit, per language, for the
-# embedding-based axis naming (mirrors `show()` inside `axis_poles`, which
-# presents "low Price" to the LLM so it names the benefit, not the drawback).
-_LOW_TEMPLATES = {"en": "low {f}", "fr": "{f} faible", "es": "{f} bajo"}
-
-
-def pole_context(
-    table: str,
-    reference: str = "0",
-    lower: str = "",
-    lang: str = "",
-    model: str = "",
-) -> dict:
-    """The structured per-pole criteria the browser names the axes from.
-
-    Runs the deterministic front half of `positioning` (parse, polarity, PCA)
-    and returns, for each pole, the criteria that load on it — the same
-    ``|weight| > 0.05`` selection and lower-is-better presentation
-    ``axis_poles`` builds its LLM prompt from — so the embedding-based namer in
-    ``backend-pyodide.js`` scores exactly the evidence the model would have
-    seen. No LLM call happens here, so this never goes pending.
-
-    Returns
-    -------
-    dict
-        ``{"lang": ..., "poles": {left|right|bottom|top: [{"text", "weight"}]}}``
-        with each pole's criteria strongest-first.
-    """
-    if not table.strip():
-        raise ValueError("The table is empty.")
-    ref: int | str = int(reference) if str(reference).lstrip("-").isdigit() else reference
-    lower_cols = [c.strip() for c in lower.split(",") if c.strip()]
-    df, lower_set = sp.resolve_polarity(sp.parse_table(table), lower_cols)
-    result = sp.analyze(df, reference=ref, lower_is_better=list(lower_set))
-    lang_final = lang if lang in sp.SUPPORTED_LANGS else sp.detect_language(result.features)
-    low_tpl = _LOW_TEMPLATES.get(lang_final, _LOW_TEMPLATES["en"])
-
-    def pole(k: int, sign: int) -> list[dict]:
-        """Criteria (benefit-phrased, strongest-first) defining one end of axis `k`."""
-        pairs = [
-            (f, w)
-            for f, w in zip(result.features, result.components[k], strict=False)
-            if (w > 0) == (sign > 0) and abs(w) > 0.05
-        ]
-        pairs.sort(key=lambda t: -abs(t[1]))
-        return [
-            {"text": low_tpl.format(f=f) if f in result.lower else f, "weight": abs(w)}
-            for f, w in pairs
-        ]
-
-    return {
-        "lang": lang_final,
-        "poles": {
-            "left": pole(0, -1),
-            "right": pole(0, +1),
-            "bottom": pole(1, -1),
-            "top": pole(1, +1),
-        },
-    }
-
-
 # The callable surface backend-pyodide.js dispatches on (name -> function).
 _FUNCS: dict[str, Callable[..., Any]] = {
     "i18n": i18n_strings,
@@ -189,7 +128,6 @@ _FUNCS: dict[str, Callable[..., Any]] = {
     "xlsx": to_xlsx,
     "autofill": autofill,
     "position": position,
-    "pole_context": pole_context,
 }
 
 

@@ -10,23 +10,28 @@
  *   - upload / xlsx / position / autofill -> the real standpoint package running
  *     in Pyodide (WebAssembly CPython + numpy/pandas/scikit-learn).
  *
- * Model calls use the memoized-replay contract of `beh_shim.py`: a run either
- * returns a result or reports the one LLM call it is blocked on; we answer it,
- * seed the cache, and run again (see glue.py). Two model tiers, each loaded
- * only when its feature is first used:
+ * ONE model answers every language job. The engine funnels each model call
+ * through the memoized-replay contract of `beh_shim.py`: a run either returns
+ * a result or reports the one LLM call it is blocked on -- prompt and JSON
+ * schema included, byte-for-byte the prompt the server-side model would see.
+ * `answerLLM` generates the answer, the cache is seeded, the run replays
+ * (see glue.py). The answering model, in order of preference:
  *
- *   - AXIS NAMING (default, automatic): a small multilingual embedding model
- *     (transformers.js MiniLM, a few dozen MB, loaded on first Generate and
- *     browser-cached) scores each pole's criteria against a curated vocabulary
- *     of positive qualities (vocab/<lang>.json) and picks the nearest word;
- *     the engine's own `finalize_poles` still validates/dedupes, with the
- *     loading-derived words as the offline fallback.
- *   - "LAZINESS" AUTO-FILL (one direct LLM call): this project's own distilled
- *     student (Qwen3-0.6B fine-tuned on Standpoint's three tasks, 4-bit, ~640 MB,
- *     downloaded on the first Paresse click then cached) answers the engine's own
- *     localized ratings prompt and the blanks fill in — no panel, no copy-paste.
- *     It runs through transformers.js over WebGPU, the SAME runtime the axis
- *     naming already uses: the page carries one inference engine, not two.
+ *   1. the OPTIONAL shared inference server (build-time `--llm-server`),
+ *      a far larger model on real hardware, when it is reachable at all;
+ *   2. this project's own distilled student (Qwen3-0.6B fine-tuned on
+ *      Standpoint's three tasks -- pole naming, noun forms, ratings --
+ *      quantised for the browser), through transformers.js over WebGPU.
+ *      It downloads ONCE, up front at page load with a visible progress
+ *      badge, then lives in the browser cache;
+ *   3. the engine's own deterministic fallbacks (loading-derived pole words,
+ *      naive plural) when neither is available -- except the ratings matrix,
+ *      where a made-up neutral answer would be worse than an honest error.
+ *
+ * Earlier versions ran a second in-page model (a MiniLM embedder scoring pole
+ * names against curated vocabularies). That split brain is gone: the student
+ * was distilled on the pole-naming task too (100% on the held-out split, both
+ * languages), so the page carries one inference engine and one behaviour.
  */
 (() => {
   "use strict";
@@ -34,12 +39,8 @@
   const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.29.0/full/pyodide.js";
   // Pyodide-distribution packages the engine imports; vendored wheels come after.
   const PYODIDE_PACKAGES = ["numpy", "pandas", "scikit-learn", "pyyaml", "micropip"];
-  // Same embedding stack as harchaoui.org's in-page semantic search: pinned
-  // transformers.js + the multilingual MiniLM (covers the GUI's en/fr/es). v3,
-  // not the v2 this started on, because v3 is what can run the distilled student
-  // below on WebGPU — one library for both jobs.
+  // Pinned transformers.js: the inference runtime for the distilled student.
   const TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6";
-  const EMBED_MODEL = "Xenova/paraphrase-multilingual-MiniLM-L12-v2";
   // The distilled student, served from this deployment rather than a model hub:
   // `llm-engine/` next to index.html, holding the tokenizer, the config and
   // onnx/model_q4f16.onnx. Produced by distillation/scripts/05_export_browser.py.
@@ -47,8 +48,9 @@
 
   // An OPTIONAL shared inference server, injected at build time by
   // `build.py --llm-server` (absent from the default build, which stays purely
-  // in-browser). When present and usable it answers Laziness instead of the
-  // in-page model: a large model on real hardware beats a 0.6B on a laptop.
+  // in-browser). When present and usable it answers the engine's model calls
+  // instead of the in-page student: a large model on real hardware beats a
+  // 0.6B on a laptop.
   //
   // "Usable" is narrower than "configured", and the page decides rather than
   // guessing. A browser refuses to let an https:// page call an http:// server
@@ -71,14 +73,9 @@
     return !(endpointIsHttp && location.protocol === "https:");
   }
 
-  const LANGS = ["en", "fr", "es"];
-
   let py = null; // the Pyodide instance, once booted
   let bootPromise = null; // single-flight boot guard
-  let embedderPromise = null; // single-flight embedding-pipeline load
-  let strings = {}; // last i18n table fetched, for the panel + badge messages
-  let lastPoleCtx = null; // per-pole criteria of the position run in flight
-  const vocabCache = {}; // lang -> {words, vecs} (session memo over localStorage)
+  let strings = {}; // last i18n table fetched, for the badge messages
 
   // Resolve a bundle-relative path against the page URL, so the app works at any
   // mount point (e.g. https://deraison.ai/standpoint/) without a <base> tag.
@@ -179,17 +176,12 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
     return bootPromise;
   }
 
-  // --- the shared transformers.js runtime -----------------------------------------
-  // One library, two models, two different roots: the MiniLM comes from the
-  // model hub, the distilled student from this deployment. transformers.js keeps
-  // that root in a module-level `env`, so the only safe way to use both is to
-  // set it around each load and to let no two loads overlap — hence the lock.
-  //
-  // The rejected alternative was `allowLocalModels = true` with a shared
-  // `localModelPath`: the hub model is then looked for locally first, which
-  // costs four 404s in every visitor's console before the fallback succeeds.
+  // --- the in-page model: this project's own distilled student --------------------
+  // Qwen3-0.6B fine-tuned on Standpoint's three tasks (see distillation/),
+  // quantised, downloaded ONCE at page load then cached by the browser. It runs
+  // through transformers.js over WebGPU.
   let transformersPromise = null;
-  let pipelineLock = Promise.resolve();
+  let llmPromise = null; // single-flight generator load
 
   function loadTransformers() {
     if (transformersPromise) return transformersPromise;
@@ -200,193 +192,9 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
     return transformersPromise;
   }
 
-  // Build one pipeline with `env` pointed at `host`/`template`, restoring it
-  // after, and queued behind any load already in flight.
-  function withModelRoot(mod, host, template, build) {
-    const run = pipelineLock.then(async () => {
-      const prevHost = mod.env.remoteHost;
-      const prevTemplate = mod.env.remotePathTemplate;
-      mod.env.remoteHost = host;
-      mod.env.remotePathTemplate = template;
-      try {
-        return await build();
-      } finally {
-        mod.env.remoteHost = prevHost;
-        mod.env.remotePathTemplate = prevTemplate;
-      }
-    });
-    pipelineLock = run.catch(() => {}); // a failed load must not wedge the queue
-    return run;
-  }
-
-  const HUB_HOST = "https://huggingface.co/";
-  const HUB_TEMPLATE = "{model}/resolve/{revision}/";
-
-  // --- axis naming: small embedding model + curated vocabulary ---------------------
-  // `window.__embedder` is a test seam: headless CI answers with a canned pipeline
-  // instead of downloading the real model.
-  function ensureEmbedder() {
-    if (embedderPromise) return embedderPromise;
-    embedderPromise = (window.__embedder
-      ? Promise.resolve(window.__embedder)
-      : loadTransformers().then((mod) =>
-          withModelRoot(mod, HUB_HOST, HUB_TEMPLATE, () =>
-            mod.pipeline("feature-extraction", EMBED_MODEL)
-          )
-        )
-    ).catch((err) => {
-      embedderPromise = null; // transient network failures may recover later
-      throw err;
-    });
-    return embedderPromise;
-  }
-
-  // Normalized embedding of one text (unit vector, so cosine = dot product).
-  async function embedOne(pipe, text) {
-    const out = await pipe(text, { pooling: "mean", normalize: true });
-    return Array.from(out.data);
-  }
-
-  const dot = (a, b) => {
-    let s = 0;
-    for (let i = 0; i < a.length; i++) s += a[i] * b[i];
-    return s;
-  };
-
-  // djb2 over the embedded texts, to key the localStorage embedding cache:
-  // editing the vocabulary (or bumping the model) invalidates the cached vectors.
-  function vocabKey(lang, texts) {
-    let h = 5381;
-    for (const c of texts.join(" ") + EMBED_MODEL) h = ((h << 5) + h + c.charCodeAt(0)) | 0;
-    return "sp-vocab-" + lang + "-" + (h >>> 0).toString(36);
-  }
-
-  // The vocabulary of candidate pole names for `lang`, with embeddings: computed
-  // once (a few seconds), then kept in localStorage so later visits skip it.
-  // Entries are either a plain word or {w, g}: `w` is the label shown on the map,
-  // `g` a disambiguating gloss that is what actually gets embedded (a curated
-  // index: e.g. "Ecological" is glossed toward emissions, so a software
-  // "Ecosystem" pole can't fall into it on lexical similarity alone).
-  async function vocabFor(lang) {
-    if (vocabCache[lang]) return vocabCache[lang];
-    const raw = await (await fetch(rel("vocab/" + lang + ".json"))).json();
-    const words = raw.map((e) => (typeof e === "string" ? e : e.w));
-    const texts = raw.map((e) => (typeof e === "string" ? e : e.g || e.w));
-    const key = vocabKey(lang, texts);
-    let vecs = null;
-    try {
-      vecs = JSON.parse(localStorage.getItem(key) || "null");
-    } catch (e) {
-      /* corrupted cache -> recompute */
-    }
-    if (!vecs || vecs.length !== texts.length) {
-      const pipe = await ensureEmbedder();
-      vecs = [];
-      for (const g of texts) vecs.push((await embedOne(pipe, g)).map((v) => +v.toFixed(5)));
-      try {
-        localStorage.setItem(key, JSON.stringify(vecs));
-      } catch (e) {
-        /* quota exceeded -> fine, the session memo below still applies */
-      }
-    }
-    vocabCache[lang] = { words, vecs };
-    return vocabCache[lang];
-  }
-
-  // Name the four poles from the run's per-pole criteria (see glue.pole_context):
-  // each pole becomes ONE text (its criteria, strongest first, joined) embedded as
-  // a phrase — context disambiguates better than averaging single-word vectors
-  // ("Ecosystem, Job Market, Tooling" reads as software maturity, where the bare
-  // word "Ecosystem" drifts toward "Ecological"). The nearest vocabulary word
-  // wins; a greedy strongest-claim-first pass keeps the four names distinct.
-  // Empty answers ("" on a pole with no criteria) fall through to the engine's
-  // loading-derived fallback via `finalize_poles`.
-  async function nameAxes(ctx) {
-    const lang = LANGS.includes(ctx.lang) ? ctx.lang : "en";
-    const { words, vecs } = await vocabFor(lang);
-    const pipe = await ensureEmbedder();
-
-    // One phrase per pole: its top criteria (already strongest-first) joined.
-    const poleIds = ["left", "right", "bottom", "top"];
-    const poleVecs = {};
-    for (const id of poleIds) {
-      const crits = (ctx.poles[id] || []).slice(0, 4); // keep the phrase focused
-      if (!crits.length) continue; // nothing loads there -> let the engine fall back
-      poleVecs[id] = await embedOne(pipe, crits.map((c) => c.text).join(", "));
-    }
-
-    // Greedy assignment, strongest claim first, each word used at most once.
-    const answer = { left: "", right: "", bottom: "", top: "" };
-    const taken = new Set();
-    const pending = Object.keys(poleVecs);
-    while (pending.length) {
-      let best = null;
-      for (const id of pending) {
-        for (let j = 0; j < words.length; j++) {
-          if (taken.has(j)) continue;
-          const s = dot(poleVecs[id], vecs[j]);
-          if (!best || s > best.s) best = { id, j, s };
-        }
-      }
-      if (!best) break;
-      answer[best.id] = words[best.j];
-      taken.add(best.j);
-      pending.splice(pending.indexOf(best.id), 1);
-    }
-    return answer;
-  }
-
-  // --- "Laziness" delegation panel --------------------------------------------------
-  // --- model answers -----------------------------------------------------------------
-  // Schema-shaped neutral defaults: empty strings push finalize_poles / noun_forms
-  // onto their built-in fallbacks (loading-derived pole words, naive plural); the
-  // neutral 3 matches the engine's own backfill for unrated cells.
-  function neutralAnswer(schema) {
-    if (!schema || schema.type !== "object") return {};
-    const out = {};
-    for (const [k, sub] of Object.entries(schema.properties || {})) {
-      out[k] = sub.type === "object" ? neutralAnswer(sub) : sub.type === "integer" ? 3 : "";
-    }
-    return out;
-  }
-
-  // One pending model call -> one answer object matching its JSON schema. The
-  // schema's shape says which engine call this is: the four pole keys -> embedding
-  // naming (default-on); anything else (noun forms) -> neutral, i.e. the engine's
-  // built-in fallback. Auto-fill never reaches here: it is fully client-side.
-  async function answerLLM(pending) {
-    const props = (pending.schema || {}).properties || {};
-    const keys = Object.keys(props);
-    if (["left", "right", "bottom", "top"].every((k) => keys.includes(k)) && lastPoleCtx) {
-      try {
-        badge(t("naming_loading", "Naming the axes… (first-time model load, a few seconds)"));
-        const names = await nameAxes(lastPoleCtx);
-        badge("", true);
-        return names;
-      } catch (err) {
-        badge(t("naming_offline", "Naming model unavailable; axes named from the criteria."), true);
-        return neutralAnswer(pending.schema);
-      }
-    }
-    return neutralAnswer(pending.schema); // noun forms and anything unforeseen
-  }
-
-  // --- "Laziness": ONE in-browser LLM call fills the empty cells, nothing else ----
-  // This project's own distilled student (see distillation/): Qwen3-0.6B
-  // fine-tuned on Standpoint's three tasks, 4-bit, ~640 MB, downloaded on the
-  // FIRST Paresse click then cached by the browser. It answers the engine's own
-  // localized ratings prompt; the page then writes ONLY the still-empty cells,
-  // so nothing the user typed is ever overwritten.
-  //
-  // It replaced a generic Qwen2.5-1.5B loaded through WebLLM: smaller, better on
-  // these three jobs specifically (the distillation README has the numbers), and
-  // it runs on the transformers.js the page already loads for the axis naming —
-  // so the page went from two in-browser inference engines to one.
-  let llmPromise = null; // single-flight generator load
-
   // `window.__webllm` is a test seam, kept under its original name so the
   // existing headless checks still drive this path: CI has no WebGPU, so the
-  // flow runs against a canned generator instead of a 640 MB download.
+  // flow runs against a canned generator instead of a real download.
   function ensureLLM() {
     if (llmPromise) return llmPromise;
     llmPromise = (async () => {
@@ -395,18 +203,19 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
         throw new Error(t("flemme_nogpu", "this browser can't run the in-page AI model (WebGPU missing)."));
       }
       const mod = await loadTransformers();
-      // rel("./") is the deployment DIRECTORY, not the page: rel("") would
-      // resolve to .../index.html and every model file under it would 404.
-      const generator = await withModelRoot(mod, rel("./"), "{model}/", () =>
-        mod.pipeline("text-generation", LLM_MODEL, {
-          dtype: "q4f16", // matches onnx/model_q4f16.onnx in the deployed folder
-          device: "webgpu",
-          progress_callback: (report) => {
-            const pct = report.progress ? ` ${Math.round(report.progress)}%` : "";
-            badge(t("flemme_model", "Loading the AI model… ") + (report.file || "") + pct);
-          },
-        })
-      );
+      // The student is served from this deployment, not a model hub. rel("./")
+      // is the deployment DIRECTORY, not the page: rel("") would resolve to
+      // .../index.html and every model file under it would 404.
+      mod.env.remoteHost = rel("./");
+      mod.env.remotePathTemplate = "{model}/";
+      const generator = await mod.pipeline("text-generation", LLM_MODEL, {
+        dtype: "q4f16", // matches onnx/model_q4f16.onnx in the deployed folder
+        device: "webgpu",
+        progress_callback: (report) => {
+          const pct = report.progress ? ` ${Math.round(report.progress)}%` : "";
+          badge(t("model_loading", "Downloading the AI model (once, then cached)… ") + (report.file || "") + pct);
+        },
+      });
       badge("", true);
       return generator;
     })().catch((err) => {
@@ -418,8 +227,8 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
   }
 
   // One OpenAI-compatible chat call against the shared server. `response_format`
-  // carries the same JSON schema the in-browser path builds, so both paths are
-  // held to the same contract: the answer is schema-valid or it is an error.
+  // carries the engine's own JSON schema, so both paths are held to the same
+  // contract: the answer is schema-valid or it is an error.
   async function serverAnswer(prompt, schema, signal) {
     const endpoint =
       LLM_SERVER.url.replace(/\/+$/, "") + (LLM_SERVER.path || "/v1/chat/completions");
@@ -435,7 +244,7 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
         messages: [{ role: "user", content: prompt }],
         temperature: 0,
         max_tokens: 900,
-        response_format: { type: "json_schema", json_schema: { name: "ratings", schema } },
+        response_format: { type: "json_schema", json_schema: { name: "answer", schema } },
       }),
       signal,
     });
@@ -466,8 +275,8 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
     );
   }
 
-  // Asked once at boot, so the prompt is up before anyone clicks Laziness and
-  // waits on it. Deliberately cheap and deliberately silent on failure: an
+  // Asked once at boot, so the prompt is up before anyone waits on a model
+  // call. Deliberately cheap and deliberately silent on failure: an
   // unreachable gateway is the in-page model's cue, not an error to report.
   function probeServerSession() {
     if (!serverUsable() || !LLM_SERVER.loginUrl) return;
@@ -488,72 +297,96 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
     return (fenced ? fenced[1] : withoutThink).trim();
   }
 
-  function buildRatingsPrompt(req) {
-    const tpl = strings.ratings_prompt || "";
-    return tpl
-      .replace("{noun}", req.noun || "Option")
-      .replace("{options}", (req.options || []).join(", "))
-      .replace("{criteria}", (req.criteria || []).join(", "))
-      .replace(/\{\{/g, "{")
-      .replace(/\}\}/g, "}"); // {{ }} are literal braces in the template's example
-  }
-
-  function gridHasEmptyCell() {
-    // The grid's value inputs (not the name/criterion header inputs): one per
-    // rating cell, exactly what "Laziness" is allowed to fill.
-    return [...document.querySelectorAll("#grid td input:not(.cell-name)")].some(
-      (i) => !i.value.trim()
-    );
-  }
-
   // 1..5 integer, neutral 3 on anything odd — mirrors the engine's _clamp_rating.
   const clampRating = (v) => {
     const n = Math.round(Number(v));
     return Number.isFinite(n) ? Math.max(1, Math.min(5, n)) : 3;
   };
 
-  async function llmAutofill(req) {
-    if (!gridHasEmptyCell()) {
-      throw new Error(
-        t("flemme_none", "no empty cells to fill — add an option, a criterion, or clear a cell first.")
-      );
+  // Schema-shaped neutral defaults: empty strings push finalize_poles /
+  // noun_forms onto their built-in fallbacks (loading-derived pole words, naive
+  // plural); the neutral 3 matches the engine's own backfill for unrated cells.
+  function neutralAnswer(schema) {
+    if (!schema || schema.type !== "object") return {};
+    const out = {};
+    for (const [k, sub] of Object.entries(schema.properties || {})) {
+      out[k] = sub.type === "object" ? neutralAnswer(sub) : sub.type === "integer" ? 3 : "";
     }
-    // Same shape the server engine constrains its model with: every option maps
-    // to an object of its criteria, each an integer.
-    const schema = {
-      type: "object",
-      properties: Object.fromEntries(
-        (req.options || []).map((o) => [
-          o,
-          {
-            type: "object",
-            properties: Object.fromEntries(
-              (req.criteria || []).map((c) => [c, { type: "integer" }])
-            ),
-            required: req.criteria || [],
-          },
-        ])
-      ),
-      required: req.options || [],
-    };
-    // The shared server first when it can be reached at all: it is a far larger
-    // model and it answers in seconds, where the in-page one takes minutes on a
-    // CPU fallback. A failure here is not fatal -- the in-page model is still
-    // there, and the user gets an answer either way.
+    return out;
+  }
+
+  // Force a model answer into the schema's exact shape: extra keys dropped,
+  // missing or mistyped values replaced by the neutral default for their slot.
+  // The engine re-validates behind this (finalize_poles, _clamp_rating), so the
+  // coercion only has to guarantee the shape, never the taste.
+  function coerce(schema, data) {
+    if (!schema || schema.type !== "object") return data;
+    if (typeof data !== "object" || data === null) return neutralAnswer(schema);
+    const out = {};
+    for (const [k, sub] of Object.entries(schema.properties || {})) {
+      const v = data[k];
+      if (sub.type === "object") out[k] = coerce(sub, v);
+      else if (sub.type === "integer") out[k] = clampRating(v);
+      else out[k] = typeof v === "string" ? v : "";
+    }
+    return out;
+  }
+
+  // The ratings matrix is the one call where a neutral fallback would be a lie:
+  // a grid quietly filled with 3s looks like an answer and isn't. Its schema is
+  // the only nested one (option -> {criterion -> integer}), which is how this
+  // tells it apart without naming tasks.
+  const needsRealModel = (schema) =>
+    Object.values((schema || {}).properties || {}).some((p) => p.type === "object");
+
+  // Ask the in-page student for one answer to the engine's prompt. The test
+  // seam still speaks the old chat-completions shape; the real generator is a
+  // transformers.js text-generation pipeline.
+  async function studentAnswer(prompt, schema) {
+    const generator = await ensureLLM();
+    let text;
+    if (generator.chat) {
+      const reply = await generator.chat.completions.create({
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0,
+        response_format: { type: "json_object", schema: JSON.stringify(schema) },
+      });
+      text = reply.choices[0].message.content;
+    } else {
+      // max_new_tokens is sized for the largest answer (a full ratings matrix
+      // runs to ~420 tokens); greedy decoding stops at EOS long before that on
+      // the short ones. A truncated answer is unparseable JSON, not a short one.
+      const out = await generator(
+        [{ role: "user", content: prompt }],
+        { max_new_tokens: 900, do_sample: false, return_full_text: false }
+      );
+      text = out[0].generated_text;
+      if (Array.isArray(text)) text = text[text.length - 1].content;
+    }
+    return text;
+  }
+
+  let serverAnnounced = false; // the "answered by the shared server" note, once
+
+  // One pending model call -> one answer object matching its JSON schema.
+  // EVERY engine call lands here -- pole naming, noun forms, the ratings
+  // matrix -- and every one is answered from the engine's own prompt: the
+  // shared server when usable, the in-page student otherwise, the neutral
+  // fallback as a last resort (except the ratings matrix, which errors
+  // honestly instead).
+  async function answerLLM(pending) {
     if (serverUsable()) {
       try {
-        const answer = JSON.parse(stripReasoning(await serverAnswer(buildRatingsPrompt(req), schema)));
-        badge(t("flemme_server", "Filled by the shared AI server."), false, 6000);
-        setTimeout(() => {
-          badgeHeldUntil = 0;
-          badge("", true);
-        }, 6000);
-        const filled = {};
-        for (const o of req.options || []) {
-          const row = answer[o] || {};
-          filled[o] = Object.fromEntries((req.criteria || []).map((c) => [c, clampRating(row[c])]));
+        const text = await serverAnswer(pending.prompt, pending.schema);
+        if (!serverAnnounced) {
+          serverAnnounced = true;
+          badge(t("flemme_server", "Answered by the shared AI server."), false, 4000);
+          setTimeout(() => {
+            badgeHeldUntil = 0;
+            badge("", true);
+          }, 4000);
         }
-        return filled;
+        return coerce(pending.schema, JSON.parse(stripReasoning(text)));
       } catch (err) {
         // Server unreachable, slow, off-contract, or simply not signed in: say
         // so once and carry on with the model that ships in the page.
@@ -563,41 +396,20 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
         console.warn("shared AI server unavailable, using the in-page model:", err);
       }
     }
-
-    const generator = await ensureLLM();
-    // The test seam still speaks the old chat-completions shape; the real
-    // generator is a transformers.js text-generation pipeline.
-    let text;
-    if (generator.chat) {
-      const reply = await generator.chat.completions.create({
-        messages: [{ role: "user", content: buildRatingsPrompt(req) }],
-        temperature: 0,
-        response_format: { type: "json_object", schema: JSON.stringify(schema) },
-      });
-      text = reply.choices[0].message.content;
-    } else {
-      // max_new_tokens is sized for the matrix: the teacher's own answers ran to
-      // ~420 tokens, and a truncated answer is unparseable JSON, not a short one.
-      const out = await generator(
-        [{ role: "user", content: buildRatingsPrompt(req) }],
-        { max_new_tokens: 900, do_sample: false, return_full_text: false }
-      );
-      text = out[0].generated_text;
-      if (Array.isArray(text)) text = text[text.length - 1].content;
+    try {
+      const text = await studentAnswer(pending.prompt, pending.schema);
+      return coerce(pending.schema, JSON.parse(stripReasoning(text)));
+    } catch (err) {
+      if (needsRealModel(pending.schema)) throw err; // ratings: error, don't invent
+      badge(t("model_offline", "AI model unavailable; using the built-in fallbacks."), true);
+      return neutralAnswer(pending.schema);
     }
-    const data = JSON.parse(stripReasoning(text));
-    // Clamp every rating and backfill gaps, so the grid always gets a full matrix.
-    const out = {};
-    for (const o of req.options || []) {
-      const row = data[o] || {};
-      out[o] = Object.fromEntries((req.criteria || []).map((c) => [c, clampRating(row[c])]));
-    }
-    return out;
   }
 
   // --- the replay driver ----------------------------------------------------------
-  // Run one glue call; on {"pending"}, answer + seed + rerun. A Generate makes at
-  // most a handful of model calls, so the bound is generous, not load-bearing.
+  // Run one glue call; on {"pending"}, answer + seed + rerun. A run makes at
+  // most a handful of model calls (noun forms + pole naming, or one ratings
+  // matrix), so the bound is generous, not load-bearing.
   async function call(fn, args) {
     await boot();
     for (let round = 0; round < 8; round++) {
@@ -615,6 +427,14 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
       return out.ok;
     }
     throw new Error("engine did not converge (too many pending model calls)");
+  }
+
+  // The grid's value inputs (not the name/criterion header inputs): one per
+  // rating cell, exactly what "Laziness" is allowed to fill.
+  function gridHasEmptyCell() {
+    return [...document.querySelectorAll("#grid td input:not(.cell-name)")].some(
+      (i) => !i.value.trim()
+    );
   }
 
   // Binary-safe file -> base64 (the transport glue.py decodes).
@@ -651,7 +471,7 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
       const table = res.ok
         ? await res.json()
         : await (await fetch(rel("i18n/en.json"))).json(); // unknown lang -> English
-      strings = table; // keep for the delegation panel + badge messages
+      strings = table; // keep for the badge messages
       return table;
     },
     upload: async (file) => call("upload", { b64: await fileToB64(file), name: file.name || "" }),
@@ -660,26 +480,33 @@ import standpoint_glue  # imports standpoint -> fails loudly here if anything is
         await call("xlsx", { table: csv }),
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       ),
-    autofill: llmAutofill, // one in-browser LLM call fills the blanks, nothing else
-    // A position run first fetches its per-pole criteria (deterministic, never
-    // pending), so the embedding namer can answer the pole call it will trigger.
-    position: async (req) => {
-      try {
-        lastPoleCtx = await call("pole_context", req);
-      } catch (e) {
-        lastPoleCtx = null; // context is best-effort; fallback naming still works
+    // "Laziness" runs through the ENGINE's own suggest_ratings (same prompt,
+    // parsing and clamping as the server build); the model call it blocks on
+    // is answered by answerLLM like every other one.
+    autofill: async (req) => {
+      if (!gridHasEmptyCell()) {
+        throw new Error(
+          t("flemme_none", "no empty cells to fill — add an option, a criterion, or clear a cell first.")
+        );
       }
-      return call("position", req);
+      return call("autofill", req);
     },
+    position: async (req) => call("position", req),
   };
 
   window.addEventListener("DOMContentLoaded", () => {
-    // Boot in the background so the engine is usually ready before the first
-    // Generate; failures surface in the badge and again on the first real call.
+    // Everything downloads up front, not on first click: the Python engine and
+    // the model, each with visible progress, so the first Generate is instant
+    // and the visitor knows what is being fetched and that it happens once.
     boot().catch(() => {});
     // ...and ask the shared gateway whether this visitor has a session, so the
-    // sign-in prompt is up before they click Laziness rather than after it has
-    // already fallen back.
+    // sign-in prompt is up before any model call falls back.
     probeServerSession();
+    if (window.spBusy) window.spBusy.start();
+    ensureLLM()
+      .catch((err) => badge(String(err.message || err), true)) // said once; retried on first use
+      .finally(() => {
+        if (window.spBusy) window.spBusy.end();
+      });
   });
 })();

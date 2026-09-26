@@ -3,7 +3,7 @@
 The lead-magnet landing (webapp/gate/landing.php) shows non-editable previews
 of the four example datasets. Rather than drawing separate marketing images,
 this script drives the ACTUAL built app headlessly (Playwright over a local
-server on ``dist/``, Pyodide engine, CDN embeddings for the pole names) and
+server on ``dist/``, Pyodide engine, the in-page student for the pole names) and
 saves each generated map as ``dist/static/examples/<id>.<lang>.svg`` — so the
 public previews are pixel-honest about what the gated app produces.
 

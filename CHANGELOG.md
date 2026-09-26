@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The static web app runs on ONE model — the distilled student answers
+  everything.** The split brain (a MiniLM embedder + curated vocabularies
+  naming the axes, neutral fallbacks for noun forms, the student only behind
+  "Laziness") is gone: every engine model call — pole naming, noun forms, the
+  ratings fill — now surfaces through the memoized-replay shim with the
+  engine's own prompt and schema, and the same in-page student answers it
+  (`webapp/backend-pyodide.js`); the optional `--llm-server` gateway, when
+  reachable, answers the same calls first. "Laziness" goes through the
+  engine's own `suggest_ratings` (glue) instead of a client-side prompt
+  rebuild. The embedding machinery (`webapp/vocab/`, `glue.pole_context`, the
+  MiniLM download) is deleted. The model now downloads **up front at page
+  load** with a visible progress badge saying it happens once, instead of
+  ambushing the first click.
+- **The browser student shrank from 637 MB to 324 MB, same tasks, no
+  retraining.** `07_prune_vocab.py` rebuilds the checkpoint around the
+  vocabulary the three tasks can reach (151,936 → 43,190 tokens:
+  corpus-closed + the 40k most frequent BPE merges + the byte alphabet, with
+  BPE derivation closure so corpus tokenization is provably — and verifiedly —
+  bit-identical), and `08_export_pruned.py` closes 05's blind spot by
+  quantising the embedding `Gather` table to int8 with per-row scales (plain
+  Gather/Cast/Mul ops, browser-runtime-safe). Gate: `06_evaluate_onnx.py`
+  scores the exact deployed artifact on the held-out split, before and after.
+
 - **`--check` no longer asks a vision model; it reads the geometry.** The new
   `assess_layout()` returns the same verdict keys `vlm_assess()` does
   (`leader_top_right`, `readable`, `axis_labels_visible`, `notes`, localized)
