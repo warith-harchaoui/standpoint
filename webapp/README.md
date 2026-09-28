@@ -4,10 +4,10 @@ The same single-page GUI the server serves at `/gui`, composed into a folder
 any static host can serve: the engine runs in the visitor's browser (Pyodide /
 WebAssembly), and ONE model answers every language job — pole naming, noun
 forms, the "Laziness" ratings fill. It is this project's own distilled student
-(`distillation/`), downloaded once at page load (visible progress badge, then
-browser-cached) and run through transformers.js over WebGPU; a build-time
-`--llm-server` gateway, when configured and reachable, answers the same calls
-faster. Full architecture, diagram and limitations:
+(`distillation/`), downloaded once at page load (visible progress badge behind
+a full-screen `Patience…` veil, then browser-cached) and run through
+transformers.js over WebGPU; a build-time `--llm-server` gateway, when
+configured and reachable, answers the same calls faster. Full architecture, diagram and limitations:
 [GUI.md § Static build](../GUI.md).
 
 ## Build and deploy
@@ -74,7 +74,7 @@ journey and Laziness, asserting that no 403 reaches the page).
 
 | File                 | Role                                                                        |
 | -------------------- | --------------------------------------------------------------------------- |
-| `build.py`           | Composes `dist/` from `standpoint.webgui.GUI_HTML` + these files            |
+| `build.py`           | Composes the build folder from `standpoint.webgui.GUI_HTML` + these files  |
 | `backend-pyodide.js` | The `window.backend` transport: Pyodide boot, replay driver, the one answering model (server / in-page student) |
 | `glue.py`            | Endpoint logic mirrored from `standpoint.api`, in Pyodide                   |
 | `beh_shim.py`        | Memoized-replay stand-in for `best-engine-ai-helper`                        |
@@ -84,7 +84,8 @@ journey and Laziness, asserting that no 403 reaches the page).
 | `seo/make_og_card.py`| Regenerates `seo/og-card.png` (the 1200×630 Open Graph card)                |
 
 The build also emits `robots.txt`, `sitemap.xml`, `llms.txt`, `llms-full.txt`
-and `humans.txt` into `dist/` (sprezzature-publish `site_indexes.py`), plus the
+and `humans.txt` into the build folder (sprezzature-publish
+`site_indexes.py`), plus the
 curated Markdown corpus those indexes cite. Note for the deployer: crawlers
 only honor a `robots.txt` served at the DOMAIN root, so reference
 `https://deraison.ai/standpoint/sitemap.xml` from deraison.ai's own

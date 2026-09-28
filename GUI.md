@@ -48,6 +48,15 @@ including the model output: pole names and title) and
 **🌞 / 🌛 theme** (light / dark, remembered across visits). GUI strings and LLM prompts
 live together in `standpoint/locales/i18n.yaml`.
 
+**While it works**: anything that takes time — the engine booting, the model
+downloading on a first visit, a generate, an auto-fill — spins a small ring
+next to the header toggles AND lays a translucent light-grey veil over the
+whole page, one dark-grey word at its centre: `Patience…`. It is spelled the
+same in French and in English, so it is hardcoded rather than localized (the
+veil can be up before the string table has landed). The veil swallows stray
+clicks until the answer is there, and the model's download badge stays
+readable above it.
+
 **Colour discipline**: the ["Good Colors"](https://harchaoui.org/warith/colors/)
 palette is reserved for **data only**: the dots on the map, rendered server-side by
 `gradient_colors()`. The UI chrome (buttons, accents, headings) stays neutral
@@ -165,15 +174,23 @@ flowchart LR
   a clear "nothing to fill" message; a browser without WebGPU gets told so.
 
 ```bash
-python webapp/build.py            # writes webapp/dist/ (~4 MB + CDN runtime)
-# then upload the CONTENTS of webapp/dist/ to the web folder, e.g. via SFTP:
-#   sftp> put -r webapp/dist/* /path/to/htdocs/standpoint/
+python webapp/build.py            # writes ~/web/deraison/standpoint/
+# that folder IS the SFTP payload; upload its CONTENTS to the web folder:
+#   sftp> put -r ~/web/deraison/standpoint/* /path/to/htdocs/standpoint/
 ```
+
+The default output is the `standpoint/` sub-folder of the local deraison.ai
+mirror, so what you build already sits where it gets uploaded from: 5 MB of
+code and assets plus the distilled student (~325 MB), which only moves when it
+changes. That one sub-folder is all the build owns — it refuses an `--out`
+aimed at the mirror itself, at an ancestor of it, or at any other folder inside
+it, and refuses to `--clean` anything that is not a previous build of this app.
 
 Static-build limitations: the first visit downloads the Pyodide runtime and
 wheels from the jsDelivr CDN (~15–20 MB) plus the distilled student (a few
-hundred MB, announced in the page's progress badge) — all browser-cached, so
-later visits start instantly. Offline or CDN-blocked, axes fall back to
+hundred MB, announced in the page's progress badge, the page veiled behind
+`Patience…` until the engine can answer) — all browser-cached, so later visits
+start instantly. Offline or CDN-blocked, axes fall back to
 loading-derived words. A forced cross-language run (FR toggle on an English
 table) keeps the noun untranslated in the title — translating it is the one
 thing only the server's local LLM does. Verified headless (Playwright +
