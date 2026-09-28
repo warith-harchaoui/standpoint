@@ -282,8 +282,9 @@ Sans serveur du tout ? `python webapp/build.py` compose la même GUI en **dossie
 statique** : le moteur tourne dans le navigateur du visiteur via Pyodide, et un
 seul modèle dans la page — le student distillé de Standpoint, téléchargé une
 fois au chargement puis en cache — nomme les axes et remplit les cases vides à
-l'auto-remplissage : sans serveur, sans clé. Il suffit
-d'uploader `web/` dans un dossier web statique et tout fonctionne.
+l'auto-remplissage : sans serveur, sans clé. Il suffit d'uploader le dossier
+produit (`--out` choisit lequel, `--help` affiche celui par défaut) dans un
+dossier web statique et tout fonctionne.
 Détails dans [GUI.md](GUI.md) § Static build.
 
 Pour travailler la bibliothèque en local, un environnement conda minimal enveloppe le

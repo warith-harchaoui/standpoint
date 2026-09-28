@@ -42,9 +42,10 @@ __pycache__/
 # --- Packaging / build ---
 build/
 dist/
-# The deployment payloads (webapp/build.py): web/ is what gets uploaded to
-# deraison.ai/standpoint, web-sev7n/ the open mirror. Both are generated, and
-# web/ carries the ~640 MB distilled model.
+# The deployment payload (webapp/build.py) no longer lands in the repo: the
+# build writes ~/web/deraison/standpoint/, which IS the SFTP folder for
+# deraison.ai/standpoint (model included, hence its size). These patterns stay
+# as a net, for an --out aimed back in here.
 /web/
 /web-*/
 webapp/dist*/

@@ -13,10 +13,18 @@ faster. Full architecture, diagram and limitations:
 ## Build and deploy
 
 ```bash
-python webapp/build.py            # writes webapp/dist/ (~4 MB)
-# upload the CONTENTS of webapp/dist/ to the target web folder, e.g.:
-#   sftp> put -r webapp/dist/* /path/to/htdocs/standpoint/
+python webapp/build.py            # writes ~/web/deraison/standpoint/
+# that folder IS the SFTP payload; upload its CONTENTS to the web folder:
+#   sftp> put -r ~/web/deraison/standpoint/* /path/to/htdocs/standpoint/
 ```
+
+The default output is the `standpoint/` sub-folder of the local deraison.ai
+mirror, so what you build is already sitting where it gets uploaded from. That
+one folder is all this project owns: everything else under `~/web/deraison/`
+belongs to the site, and `build.py` refuses an `--out` pointing at the mirror
+itself, at an ancestor of it, or at any other folder inside it — and refuses to
+`--clean` a folder that is not a previous build of this app. Build somewhere
+else with `--out`, anywhere outside that mirror.
 
 The bundle is relocatable (relative URLs only), so it works at any mount point,
 e.g. `https://deraison.ai/standpoint`. The Pyodide runtime and the numeric
@@ -59,7 +67,7 @@ python webapp/build.py --no-gate --ext-txt    # what deraison.ai needs today
 
 Drop the flag once the host serves these extensions again; the payload is
 otherwise identical. Verified with `.private/ralph-loop/hostile_server.py`,
-which serves `web/` under exactly that rule, plus `verify_hostile.py` (full
+which serves the built folder under exactly that rule, plus `verify_hostile.py` (full
 journey and Laziness, asserting that no 403 reaches the page).
 
 ## Files
@@ -82,5 +90,5 @@ only honor a `robots.txt` served at the DOMAIN root, so reference
 `https://deraison.ai/standpoint/sitemap.xml` from deraison.ai's own
 `/robots.txt` (a `Sitemap:` line) for full effect.
 
-`dist/` is generated (and gitignored); rebuild it after any change to the GUI,
-the locales, or the library.
+The build folder is generated and lives outside the repo; rebuild it after any
+change to the GUI, the locales, or the library.

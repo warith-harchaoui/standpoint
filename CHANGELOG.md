@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The static build writes straight into the folder it is uploaded from.**
+  `webapp/build.py` now lands in `~/web/deraison/standpoint/` — the local
+  mirror of `https://deraison.ai/standpoint` — instead of `web/` at the repo
+  root, so the deploy is one SFTP put of one folder with nothing to copy in
+  between. That sub-folder is all this project owns: `resolve_out()` refuses an
+  `--out` pointing at the mirror itself, at an ancestor of it, or at any other
+  folder inside it, and refuses to `--clean` anything that is not a previous
+  build of this app (recognised by `index.html` + `backend-pyodide.js`), so a
+  mistyped path can no longer `rmtree` a live site.
+
 - **The static web app runs on ONE model — the distilled student answers
   everything.** The split brain (a MiniLM embedder + curated vocabularies
   naming the axes, neutral fallbacks for noun forms, the student only behind

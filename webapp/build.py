@@ -1,4 +1,4 @@
-"""Compose the static, SFTP-uploadable Standpoint web app into ``web/``.
+"""Compose the static, SFTP-uploadable Standpoint web app.
 
 The static build is the same single-page GUI the FastAPI server serves at
 ``/gui`` — literally the same HTML string (``standpoint.webgui.GUI_HTML``) —
@@ -7,14 +7,14 @@ with two build-time twists:
 1. ``backend-pyodide.js`` is injected *before* the page's main script, so the
    page's ``window.backend`` override kicks in and every data operation runs on
    an in-browser Python engine (Pyodide) instead of a server. Uploading the
-   resulting ``dist/`` folder to any static host (e.g. SFTP to
+   resulting folder to any static host (e.g. SFTP to
    https://deraison.ai/standpoint) yields a fully working app: no process to
    run, nothing to maintain server-side.
 2. Absolute server URLs (``/static/...``, ``/favicon.ico``,
    ``/site.webmanifest``) become bundle-relative so the app works from any
    mount point.
 
-What lands in ``dist/``:
+What lands in the build folder (``dist/`` for short in the rest of this file):
 
 - ``index.html``          the composed page
 - ``backend-pyodide.js``  the Pyodide transport + memoized-replay LLM driver
@@ -55,8 +55,14 @@ Run from the repo root with the project env active::
 
     python webapp/build.py --clean --no-gate --model distillation/checkpoints/llm-engine
 
-writes ``web/`` at the repo root: the whole upload payload for
-deraison.ai/standpoint, code and model together, nothing else to think about.
+writes ``~/web/deraison/standpoint/``: the local mirror of the folder served at
+https://deraison.ai/standpoint, so deploying is a plain SFTP put of that one
+folder, code and model together, nothing else to think about. Its parent
+``~/web/deraison/`` mirrors the rest of the site (index.php, includes/, the
+other projects) and belongs to deraison.ai, not here: this build never creates,
+moves or deletes anything there, and ``resolve_out()`` refuses an ``--out``
+that would.
+
 Since 2026-09-23 the site is OPEN ACCESS (no email gate); on a host that still
 carries the old gate, delete the server-side ``.htaccess``, ``index.php`` and
 ``gate/`` or every request keeps 302-ing to the login form.
@@ -64,8 +70,9 @@ carries the old gate, delete the server-side ``.htaccess``, ``index.php`` and
     # Gated variant (magic-link email wall), kept working but no longer deployed:
     python webapp/build.py --clean --model distillation/checkpoints/llm-engine
 
-    # Open-access mirror (sev7n): same recipe, separate folder.
-    python webapp/build.py --no-gate --clean --out web-sev7n \\
+    # Open-access mirror (sev7n): same recipe, a folder of its own, outside
+    # the deraison.ai mirror.
+    python webapp/build.py --no-gate --clean --out ~/web/sev7n-standpoint \\
         --base-url https://deraison.ai/standpoint
 
 The Pyodide runtime itself is loaded from the jsDelivr CDN at page load (see
@@ -85,7 +92,17 @@ from pathlib import Path
 # Repo layout anchors: this file lives in <repo>/webapp/.
 WEBAPP = Path(__file__).resolve().parent
 REPO = WEBAPP.parent
-DIST = REPO / "web"
+
+# Where the build lands, and the one folder this project owns. SITE_DIR is the
+# local mirror of the WHOLE deraison.ai site (its index.php, includes/, feeds,
+# and the other projects' folders); only the `standpoint/` sub-folder under it
+# is ours, and it maps one-to-one to https://deraison.ai/standpoint, so the
+# deploy is a plain SFTP put of that single folder. NOTHING else under SITE_DIR
+# is ever created, moved or deleted here -- see resolve_out(), which enforces
+# it rather than trusting whoever types --out.
+SITE_DIR = Path.home() / "web" / "deraison"
+OWN_DIR = SITE_DIR / "standpoint"
+DIST = OWN_DIR
 
 # Where the bundle is deployed; drives the canonical URL, the OG image URL and
 # every absolute URL in sitemap.xml / llms.txt (override with --base-url).
@@ -470,11 +487,53 @@ def ext_as_txt(base_url: str) -> None:
     print(f"--ext-txt: {len(renamed)} files shipped as .txt twins ({listing})")
 
 
+def resolve_out(out: Path, *, clean: bool) -> Path:
+    """Resolve ``--out``, refuse anything that is not ours, then (re)create it.
+
+    The default target sits inside a mirror of a live site, one mistyped path
+    away from an ``rmtree`` over it, so the two rules are mechanical rather
+    than a matter of care:
+
+    1. the target may not BE the mirror, an ancestor of it, or any folder
+       inside it other than our own ``standpoint/`` (building elsewhere under
+       ``SITE_DIR`` would add files to the site's own tree);
+    2. ``--clean`` may only delete a folder a previous build wrote, recognised
+       by the two files no other folder would carry together.
+
+    Anything else exits with a message; deleting a folder that is not ours
+    stays a manual, deliberate act.
+    """
+    resolved = out.expanduser().resolve()
+    if resolved == SITE_DIR or resolved in SITE_DIR.parents:
+        raise SystemExit(
+            f"refusing to build into {resolved}: that is the deraison.ai mirror "
+            f"itself (or a parent of it). This project owns {OWN_DIR} and nothing else."
+        )
+    if SITE_DIR in resolved.parents and not (resolved == OWN_DIR or OWN_DIR in resolved.parents):
+        raise SystemExit(
+            f"refusing to build into {resolved}: inside the deraison.ai mirror, "
+            f"only {OWN_DIR} belongs to this project."
+        )
+    if clean and resolved.exists():
+        stamp = ("index.html", "backend-pyodide.js")
+        if not all((resolved / f).exists() for f in stamp):
+            raise SystemExit(
+                f"refusing to --clean {resolved}: it exists but is not a previous "
+                f"build of this app (no {' + '.join(stamp)}). Remove it by hand if "
+                "that is really what you meant."
+            )
+        shutil.rmtree(resolved)
+    resolved.mkdir(parents=True, exist_ok=True)
+    return resolved
+
+
 def main() -> None:
-    """Build dist/ end to end; ``--clean`` wipes a previous build first."""
+    """Build the bundle end to end; ``--clean`` wipes a previous build first."""
     global DIST  # every helper writes relative to this module-level anchor
     parser = argparse.ArgumentParser(description="Build the static Standpoint web app.")
-    parser.add_argument("--clean", action="store_true", help="remove dist/ before building")
+    parser.add_argument(
+        "--clean", action="store_true", help="remove a previous build before building"
+    )
     parser.add_argument(
         "--base-url",
         default=BASE_URL,
@@ -522,8 +581,8 @@ def main() -> None:
         "--model",
         type=Path,
         default=None,
-        help="copy this folder in as dist/llm-engine/ (the distilled student the "
-        "page downloads at load, produced by "
+        help="copy this folder in as llm-engine/ inside the build (the distilled "
+        "student the page downloads at load, produced by "
         "distillation/scripts/05_export_browser.py). Several hundred MB, so it "
         "is opt-in: without it the bundle expects the folder uploaded separately",
     )
@@ -548,14 +607,11 @@ def main() -> None:
         type=Path,
         default=DIST,
         help="output folder (default: %(default)s); use a separate one to keep "
-        "the gated dist/ intact",
+        "that build intact. Refused if it would write anywhere else inside the "
+        f"{SITE_DIR} mirror",
     )
     args = parser.parse_args()
-    DIST = args.out.resolve()
-
-    if args.clean and DIST.exists():
-        shutil.rmtree(DIST)
-    DIST.mkdir(parents=True, exist_ok=True)
+    DIST = resolve_out(args.out, clean=args.clean)
 
     wheels = build_wheels()
     export_i18n()
@@ -588,8 +644,8 @@ def main() -> None:
     if args.ext_txt:
         ext_as_txt(args.base_url)
     total = sum(f.stat().st_size for f in DIST.rglob("*") if f.is_file())
-    print(f"\n{DIST.name}/ ready ({total / 1e6:.1f} MB before the CDN-served Pyodide runtime).")
-    print(f"Upload the CONTENTS of {DIST.name}/ to the web folder (e.g. /standpoint).")
+    print(f"\n{DIST} ready ({total / 1e6:.1f} MB before the CDN-served Pyodide runtime).")
+    print("Upload the CONTENTS of that folder to the web folder it mirrors (/standpoint).")
     if args.no_gate:
         print("Open access: if the server still carries the old gate, delete its")
         print(".htaccess, index.php and gate/ there, or requests keep 302-ing to")
