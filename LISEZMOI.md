@@ -100,7 +100,7 @@ couleur et ses valeurs d'origine.
 - **Application web statique** : la même page GUI avec le moteur compilé en
   WebAssembly (Pyodide), composée par `webapp/build.py` en un dossier que
   n'importe quel hébergement statique peut servir ; aucun processus serveur
-  (voir [GUI.md](GUI.md) § Static build).
+  (voir [GUI.md](https://github.com/warith-harchaoui/standpoint/blob/main/GUI.md) § Static build).
 
 Elle s'installe aussi comme **skill Claude / OpenCode** ; voir
 [skills/standpoint/SKILL.md](https://github.com/warith-harchaoui/standpoint/blob/main/skills/standpoint/SKILL.md)
@@ -285,7 +285,7 @@ au chargement derrière un voile « Patience… » plein écran, puis en cache �
 les axes et remplit les cases vides à l'auto-remplissage : sans serveur, sans
 clé. Il suffit d'uploader le dossier produit (`--out` choisit lequel, `--help`
 affiche celui par défaut) dans un dossier web statique et tout fonctionne.
-Détails dans [GUI.md](GUI.md) § Static build.
+Détails dans [GUI.md](https://github.com/warith-harchaoui/standpoint/blob/main/GUI.md) § Static build.
 
 Pour travailler la bibliothèque en local, un environnement conda minimal enveloppe le
 même `requirements.txt` :

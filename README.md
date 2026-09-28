@@ -92,7 +92,7 @@ plus a YAML file with every option's coordinates, role, colour, and original val
 - **MCP**: `standpoint-mcp` publishes the API as MCP tools at `/mcp` (`[mcp]` extra).
 - **Static web app**: the same GUI page with the engine compiled to WebAssembly
   (Pyodide), built by `webapp/build.py` into a folder any static host can serve;
-  no server process at all (see [GUI.md](GUI.md) § Static build).
+  no server process at all (see [GUI.md](https://github.com/warith-harchaoui/standpoint/blob/main/GUI.md) § Static build).
 
 It also ships as a **Claude / OpenCode skill**; see
 [skills/standpoint/SKILL.md](https://github.com/warith-harchaoui/standpoint/blob/main/skills/standpoint/SKILL.md)
@@ -269,7 +269,7 @@ model — Standpoint's own distilled student, downloaded once at page load behin
 a full-screen `Patience…` veil, then cached — names the axes and fills the empty
 cells on auto-fill: no server, no key. Upload the folder it writes (`--out` says
 where, `--help` prints the default) to any static web folder and it just works.
-Details in [GUI.md](GUI.md) § Static build.
+Details in [GUI.md](https://github.com/warith-harchaoui/standpoint/blob/main/GUI.md) § Static build.
 
 For local library work, a thin conda env wraps the same `requirements.txt`:
 
