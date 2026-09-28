@@ -36,7 +36,11 @@ jobs:
           # Pin ruff so the lint result is reproducible across ruff releases.
           pip install "ruff==0.15.21"
       - name: Lint (Python only; formatting is enforced locally)
-        run: ruff check standpoint tests
+        # Same four paths as scripts/check.sh, so a lint error can never pass here
+        # and fail the local gate. `ruff check` is static -- linting the skill
+        # scripts and the static-build sources needs none of their dependencies
+        # installed, so the extra coverage costs no runner time.
+        run: ruff check standpoint tests skills webapp
       - name: Tests (model-free; failures block the merge)
         # `CI` is set by GitHub Actions; the conftest guard skips @needs_model tests
         # when Ollama is unreachable, keeping this the deterministic, model-free gate.

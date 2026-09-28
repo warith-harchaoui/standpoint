@@ -11,7 +11,7 @@ check:  ## Run the full local gate (lint + format check + tests)
 	scripts/check.sh
 
 lint:  ## Lint everything, skill scripts included
-	ruff check standpoint tests skills
+	ruff check standpoint tests skills webapp
 
 format:  ## Apply ruff formatting to the package and tests
 	ruff format standpoint tests
