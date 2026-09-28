@@ -53,6 +53,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A full-screen "Patience…" veil while the app works.** The header activity
+  ring was easy to miss; now every operation it tracks — the engine boot and
+  the one-off model download included — also lays a translucent light-grey
+  veil over the page, dark-grey word centred, and swallows stray clicks until
+  the answer is there. It is up from the first paint on a cold start, with the
+  download progress badge still readable above it. One word, not two: the
+  spelling is identical in French and in English, and the veil can be on
+  screen before the localized string table has landed.
+
 - **A seventh access surface: the static web app (`webapp/`).** `python
   webapp/build.py` composes the exact GUI page into a folder any static host
   can serve (plain SFTP upload, no server process): the engine (numpy /

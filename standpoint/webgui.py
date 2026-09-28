@@ -151,6 +151,23 @@ GUI_HTML = r"""<!doctype html>
     .dark .spinner { border-color:#404040; border-top-color:#d4d4d4; }
     @keyframes sp-spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+    /* The full-screen wait veil (#veil): the header ring is small and easy to
+       miss, so foreground work also lays one word over the whole page. Light
+       grey and see-through, so the table stays visible underneath, dark-grey
+       type, centred. Neutral chrome, never a data colour. Above the sticky
+       header (z-40). The animation's .25s delay with `both` fill keeps it at
+       opacity 0 at first, so quick operations never flash it (it still swallows
+       clicks meanwhile); reduced-motion users get it at once, no fade. */
+    .veil { position:fixed; inset:0; z-index:50; display:flex; align-items:center;
+      justify-content:center; text-align:center; padding:1.5rem;
+      background:rgba(229,229,229,.72); color:#404040;
+      -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px);
+      animation: sp-veil .2s ease-out .25s both; }
+    .dark .veil { background:rgba(23,23,23,.72); color:#d4d4d4; }
+    .veil-word { font-weight:700; line-height:1.15; letter-spacing:-.01em;
+      font-size:clamp(2rem, 7vw, 3.75rem); }
+    @keyframes sp-veil { from { opacity:0; } to { opacity:1; } }
+    @media (prefers-reduced-motion: reduce) { .veil { animation: none; } }
     /* Example-dataset chips: Good Colors light tint as fill, base hue as stroke
        (https://harchaoui.org/warith/colors/). These are the one colored piece of
        chrome, because each button IS a dataset ("color means data"). Text stays
@@ -345,6 +362,19 @@ GUI_HTML = r"""<!doctype html>
     </div>
   </footer>
 
+  <!-- Full-screen wait veil: the same signal as the header ring, impossible to
+       miss, and it swallows stray clicks while the engine thinks. Up for EVERY
+       operation the ring covers, the static build's engine boot and model
+       download included, so the page is veiled from the first paint until it can
+       actually answer (the download badge stays readable above it). Deliberately
+       NOT localized -- "Patience…" is spelled the same in French and in English,
+       so one word covers both, and the veil can be up before the string table has
+       even landed. aria-hidden, because the ring up in the header already
+       announces the same thing (role="status"). -->
+  <div id="veil" class="veil hidden" aria-hidden="true">
+    <p class="veil-word headline">Patience…</p>
+  </div>
+
 <script>
 // --- tiny state: header cells, lower-is-better flags, and data rows -----------
 let headers = [];      // criteria names (excluding the first "option" column)
@@ -431,13 +461,24 @@ const backend = window.backend || {
 
 // --- global activity indicator -------------------------------------------------
 // A counter (not a boolean): overlapping operations each start/end their own
-// slot, and the header ring stays visible until the LAST one finishes. Every
-// backend method is wrapped below, so any transport (fetch or in-browser
-// engine) lights the ring without per-call wiring; `window.spBusy` lets the
-// static build's engine boot / model downloads participate too.
+// slot, and both indicators -- the header ring and the full-screen "Patience…"
+// veil -- stay up until the LAST one finishes. Every backend method is wrapped
+// below, so any transport (fetch or in-browser engine) lights them without
+// per-call wiring; `window.spBusy` lets the static build's engine boot / model
+// downloads take a slot too, which is what veils the page on a cold start.
 let busyCount = 0;
-function busyStart() { busyCount++; $("busy").classList.remove("hidden"); }
-function busyEnd() { busyCount = Math.max(0, busyCount - 1); if (!busyCount) $("busy").classList.add("hidden"); }
+function busyStart() {
+  busyCount++;
+  $("busy").classList.remove("hidden");
+  $("veil").classList.remove("hidden");
+}
+function busyEnd() {
+  busyCount = Math.max(0, busyCount - 1);
+  if (!busyCount) {
+    $("busy").classList.add("hidden");
+    $("veil").classList.add("hidden");
+  }
+}
 window.spBusy = { start: busyStart, end: busyEnd };
 for (const key of Object.keys(backend)) {
   const op = backend[key];
