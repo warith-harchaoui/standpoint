@@ -143,25 +143,7 @@ def build_wheels() -> list[str]:
     # shimmed), so the build must not drag in wheels nobody installs.
     for spec in VENDORED:
         _run([sys.executable, "-m", "pip", "wheel", "--no-deps", "-w", str(wheels_dir), spec])
-    # --no-cache-dir on OUR source only: pip's wheel cache keys a local directory
-    # build loosely enough to hand back a previous build of it, and it did -- the
-    # 2026-09-28 bundle shipped a standpoint-0.8.6 wheel while the tree said
-    # 0.9.0, i.e. an older engine, silently. The pinned third-party wheels above
-    # keep their cache; a few seconds here buy the certainty that what ships is
-    # what the working tree says.
-    _run(
-        [
-            sys.executable,
-            "-m",
-            "pip",
-            "wheel",
-            "--no-deps",
-            "--no-cache-dir",
-            "-w",
-            str(wheels_dir),
-            str(REPO),
-        ]
-    )
+    _run([sys.executable, "-m", "pip", "wheel", "--no-deps", "-w", str(wheels_dir), str(REPO)])
 
     names = {p.name for p in wheels_dir.glob("*.whl")}
 
