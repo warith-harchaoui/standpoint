@@ -6,9 +6,9 @@
 
 `Standpoint` belongs to a collection of libraries called `AI Helpers` developed for building Artificial Intelligence.
 
-[🌍 AI Helpers](https://harchaoui.org/warith/ai-helpers)
+[🌍 AI Helpers](https://deraison.ai/ai-helpers)
 
-[![Standpoint logo](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/logo.png)](https://harchaoui.org/warith/ai-helpers/#standingpoint)
+[![Standpoint logo](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/logo.png)](https://deraison.ai/ai-helpers/#standpoint)
 
 Where do you stand?
 
@@ -41,7 +41,7 @@ best local model for *your* machine on first use, caching the pick to a gitignor
 
 ## Documentation
 
-[💻 Documentation](https://harchaoui.org/warith/ai-helpers/docs/standingpoint-doc/)
+[💻 Documentation](https://deraison.ai/ai-helpers/docs/standpoint-doc/)
 
 [🗺️ Landscape](https://github.com/warith-harchaoui/standpoint/blob/main/LANDSCAPE.md)
 
@@ -148,7 +148,7 @@ local vision-LLM for your machine from `standpoint/llm.brief.yaml` and pulls it 
   python -m pip install --upgrade pip
   ```
 
-New to Python environments? See [🥸 Tech tips](https://harchaoui.org/warith/4ml/#install).
+New to Python environments? See [🥸 Tech tips](https://deraison.ai/4ml/#install).
 
 ### From PyPI (recommended)
 
@@ -359,7 +359,7 @@ the contribution and versioning policy is in [CONTRIBUTING.md](https://github.co
 
 PCA perceptual maps are standard (`factoextra` and `FactoMineR` in R, `prince` and
 `pca` in Python); using a model to read the components is a newer idea. Colours
-come from the ["Good Colors"](https://harchaoui.org/warith/colors/) palette.
+come from the ["Good Colors"](https://deraison.ai/colors/) palette.
 Figures are hand-authored SVG, rasterised to PNG by
 [`resvg`](https://github.com/RazrFalcon/resvg).
 

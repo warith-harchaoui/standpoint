@@ -29,13 +29,13 @@ GUI_HTML = r"""<!doctype html>
   <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#0B0B0C" />
-  <!-- Roboto family, to match the sprezzature look and feel (harchaoui.org). -->
+  <!-- Roboto family, to match the sprezzature look and feel (deraison.ai). -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&family=Roboto+Serif:wght@400;500;600&family=Roboto+Mono&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* The "Good Colors" DATA palette (https://harchaoui.org/warith/colors/) is
+    /* The "Good Colors" DATA palette (https://deraison.ai/colors/) is
        reserved for the dots on the server-rendered map (see `gradient_colors` in
        `standpoint.__init__`). The UI chrome (accents, buttons, headings) stays
        NEUTRAL slate/ink, so a colour in this app always means "data", never
@@ -45,7 +45,7 @@ GUI_HTML = r"""<!doctype html>
     }
     body { font-family: Roboto, system-ui, -apple-system, Helvetica, Arial, sans-serif;
            background: var(--paper); -webkit-font-smoothing: antialiased; }
-    /* Sprezzature look and feel (harchaoui.org/warith/sprezzature): a serif display
+    /* Sprezzature look and feel (sprezzature.ai/): a serif display
        headline over sans body copy, and a small monospace "eyebrow" tag above it. */
     .headline { font-family: "Roboto Serif", Georgia, serif; }
     .eyebrow { font-family: "Roboto Mono", ui-monospace, SFMono-Regular, monospace; }
@@ -105,7 +105,7 @@ GUI_HTML = r"""<!doctype html>
     .dark input, .dark select { background-color:#0B0B0C; color:#e5e5e5; border-color:#404040; }
     .dark #run { background:#e5e5e5 !important; color:#0B0B0C !important; }
     /* Card border, sprezzature style: solid neutral-200 (#e5e5e5), the exact border
-       colour measured off harchaoui.org/warith/sprezzature/figures.html; no shadow,
+       colour measured off sprezzature.ai/figures.html; no shadow,
        the border alone separates a card from the page (dark variant set above). */
     .card { border:1px solid #e5e5e5; }
     /* Header toggle buttons: transparent pills, sprezzature nav style (their lang/theme
@@ -169,7 +169,7 @@ GUI_HTML = r"""<!doctype html>
     @keyframes sp-veil { from { opacity:0; } to { opacity:1; } }
     @media (prefers-reduced-motion: reduce) { .veil { animation: none; } }
     /* Example-dataset chips: Good Colors light tint as fill, base hue as stroke
-       (https://harchaoui.org/warith/colors/). These are the one colored piece of
+       (https://deraison.ai/colors/). These are the one colored piece of
        chrome, because each button IS a dataset ("color means data"). Text stays
        near-ink for contrast; dark mode keeps the stroke and drops the tint. */
     .ex-blue   { background:#CCE4FF; border-color:#007AFF; color:#0a3d75; }

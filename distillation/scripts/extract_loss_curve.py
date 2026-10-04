@@ -8,7 +8,7 @@ no `It/sec` of their own, so they're stamped with the elapsed time of the most
 recent training row instead -- close enough for a loss-curve x-axis, off by at
 most one report interval.
 
-Also emits the bounded score from "What Likelihood Means" (harchaoui.org/warith/
+Also emits the bounded score from "What Likelihood Means" (deraison.ai/
 LIKELIHOOD-en.pdf), Section 5: for a K-way next-token classifier trained on
 cross-entropy, Q(theta) := 1 - CE(theta)/ln(K) reads 1 for a perfectly confident,
 correct model, 0 for one no better than uniform guessing over the vocabulary, and

@@ -57,7 +57,7 @@ veil can be up before the string table has landed). The veil swallows stray
 clicks until the answer is there, and the model's download badge stays
 readable above it.
 
-**Colour discipline**: the ["Good Colors"](https://harchaoui.org/warith/colors/)
+**Colour discipline**: the ["Good Colors"](https://deraison.ai/colors/)
 palette is reserved for **data only**: the dots on the map, rendered server-side by
 `gradient_colors()`. The UI chrome (buttons, accents, headings) stays neutral
 slate/ink, so a colour in the app always means "data", never decoration. Accessible
@@ -80,7 +80,7 @@ flowchart LR
     pos --> lib["core library, unchanged<br/>to_svg · to_yaml"]
     lib -->|"SVG string"| embed["🖥️ innerHTML<br/>live quadrant"]
 
-    %% "Good Colors" palette: https://harchaoui.org/warith/colors/
+    %% "Good Colors" palette: https://deraison.ai/colors/
     classDef browser fill:#CCE4FF,stroke:#007AFF,color:#000000,stroke-width:2px;
     classDef server fill:#D4F5D9,stroke:#28CD41,color:#000000,stroke-width:2px;
     class grid,embed browser;
@@ -142,7 +142,7 @@ flowchart LR
     glue -.->|"pending model call<br/>(memoized replay)"| llm["distilled student<br/>transformers.js · WebGPU"]
     llm -.->|"schema-shaped answer<br/>(poles, noun forms, ratings)"| glue
 
-    %% "Good Colors" palette: https://harchaoui.org/warith/colors/
+    %% "Good Colors" palette: https://deraison.ai/colors/
     classDef browser fill:#CCE4FF,stroke:#007AFF,color:#000000,stroke-width:2px;
     classDef wasm fill:#EAD6FF,stroke:#AF52DE,color:#000000,stroke-width:2px;
     class grid,embed browser;

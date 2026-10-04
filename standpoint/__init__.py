@@ -65,7 +65,7 @@ DetectorFactory.seed = 0  # deterministic language detection
 # grab stdout). The CLI in `run()` is the one place that prints on purpose.
 logger = logging.getLogger("standpoint")
 
-# "Good Colors" Apple-base palette: https://harchaoui.org/warith/colors/.
+# "Good Colors" Apple-base palette: https://deraison.ai/colors/.
 # The four highlighted roles keep a fixed identity hue; the axis cross and labels
 # use neutrals. Every other dot is coloured by its map position (`gradient_colors`).
 PALETTE = {

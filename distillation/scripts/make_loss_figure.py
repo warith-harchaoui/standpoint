@@ -7,14 +7,14 @@ rather than reaching for a plotting library out of convenience).
 
 `extract_loss_curve.py` already computes Q(theta) := 1 - CE(theta)/ln(K) per row
 -- see that script's docstring for why ("What Likelihood Means",
-harchaoui.org/warith/LIKELIHOOD-en.pdf, Section 5). This draws the raw (noisy,
+deraison.ai/LIKELIHOOD-en.pdf, Section 5). This draws the raw (noisy,
 every-10-iteration) training curve at low opacity, a 100-iteration centered
 moving average of it on top (the trend it's easy to lose in the noise otherwise),
 and the sparse (every half epoch) validation-loss line, with two reference lines
 the paper's own bounds name directly -- Q = 1 (oracle) and Q = 0 (uniform-
 guessing floor) -- plus vertical epoch-boundary markers and a legend. Colors are
 the Okabe-Ito colorblind-safe "academic" palette
-(harchaoui.org/warith/colors/academic), fetched and hardcoded here since it's a
+(deraison.ai/colors/academic), fetched and hardcoded here since it's a
 small fixed set of hex values, not a runtime dependency.
 """
 
@@ -32,7 +32,7 @@ TOTAL_ITERS = 11127  # scripts/03_train_lora.py: EPOCHS * len(train)
 MA_WINDOW_ITERS = 100  # centered moving average window on the training curve
 STEPS_PER_REPORT = 10  # extract_loss_curve.py: training rows are 10 iterations apart
 
-# harchaoui.org/warith/colors/academic -- Okabe-Ito, colorblind-safe.
+# deraison.ai/colors/academic -- Okabe-Ito, colorblind-safe.
 RED = "#D55E00"
 ORANGE = "#E69F00"
 GREEN = "#009E73"

@@ -6,9 +6,9 @@
 
 `Standpoint` fait partie d'une collection de bibliothèques appelée `AI Helpers`, développée pour bâtir des applications d'intelligence artificielle.
 
-[🌍 AI Helpers](https://harchaoui.org/warith/ai-helpers)
+[🌍 AI Helpers](https://deraison.ai/ai-helpers)
 
-[![Logo Standpoint](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/logo.png)](https://harchaoui.org/warith/ai-helpers)
+[![Logo Standpoint](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/logo.png)](https://deraison.ai/ai-helpers)
 
 Sachez où vous en êtes
 
@@ -43,7 +43,7 @@ puis tout fonctionne hors ligne.
 
 ## Documentation
 
-[💻 Documentation](https://harchaoui.org/warith/ai-helpers/docs/standingpoint-doc/)
+[💻 Documentation](https://deraison.ai/ai-helpers/docs/standpoint-doc/)
 
 [🗺️ Paysage](https://github.com/warith-harchaoui/standpoint/blob/main/PAYSAGE.md)
 
@@ -159,7 +159,7 @@ avec un autre projet :
   python -m pip install --upgrade pip
   ```
 
-Nouveau avec les environnements Python : [🥸 Conseils techniques](https://harchaoui.org/warith/4ml/#install).
+Nouveau avec les environnements Python : [🥸 Conseils techniques](https://deraison.ai/4ml/#install).
 
 ### Depuis PyPI (recommandé)
 
@@ -380,7 +380,7 @@ la politique de contribution et de versionnage est dans [CONTRIBUTING.md](https:
 Les cartes perceptuelles ACP sont classiques (`factoextra` et `FactoMineR` en R,
 `prince` et `pca` en Python) ; utiliser un modèle pour lire les composantes est une
 idée plus récente. Les couleurs viennent de la palette
-["Good Colors"](https://harchaoui.org/warith/colors/). Les figures sont écrites à
+["Good Colors"](https://deraison.ai/colors/). Les figures sont écrites à
 la main en SVG et converties en PNG par
 [`resvg`](https://github.com/RazrFalcon/resvg).
 

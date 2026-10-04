@@ -285,7 +285,7 @@ release on PyPI. Everything below therefore ships for the first time here.
   hardcoded true-neutral hex values (`#171717`, `#e5e5e5`, `#d4d4d4`, ...) — the two
   modes were quietly using different gray families. Every `slate-*` class is now
   `neutral-*`, which resolves to those same hexes: measuring
-  harchaoui.org/warith/sprezzature/figures.html confirms its ink (`#171717`), card
+  sprezzature.ai/figures.html confirms its ink (`#171717`), card
   border (`#e5e5e5`) and outline-button border (`#d4d4d4`) are exactly Tailwind's
   `neutral-900/200/300`. The hero headline grows to the reference's measured 48px,
   section headings (`Table`, `Options`, `Quadrant`, `Basic Analysis`) go from
@@ -362,7 +362,7 @@ release on PyPI. Everything below therefore ships for the first time here.
   headline instead of crowding the points, and the label de-clutter now uses the
   **actual** rendered canvas size instead of the old fixed default — so option
   labels sit next to their dots rather than being pushed too far vertically.
-- **GUI look and feel**, matched to the [sprezzature](https://harchaoui.org/warith/sprezzature/figures.html)
+- **GUI look and feel**, matched to the [sprezzature](https://sprezzature.ai/figures.html)
   design system: a sticky, translucent, blurred nav bar (logo + wordmark, GitHub star
   and language/theme pills); a monospace "eyebrow" tag over a serif display headline;
   bordered cards with no shadow (in dark mode the card fill sits at page-black, the
@@ -525,7 +525,7 @@ release on PyPI. Everything below therefore ships for the first time here.
 
 ### Added
 
-- **Joined the [AI Helpers](https://harchaoui.org/warith/ai-helpers) suite** (Misc
+- **Joined the [AI Helpers](https://deraison.ai/ai-helpers) suite** (Misc
   group): suite framing + logo in the README/LISEZMOI, a canonical Documentation
   section, and a self-referential positioning map wired into `LANDSCAPE.md` /
   `PAYSAGE.md` from the committed `assets/landscape.csv` / `paysage.csv` source.
