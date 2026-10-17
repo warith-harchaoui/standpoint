@@ -8,13 +8,13 @@ All six surfaces run the same `positioning()` pipeline. Pick by who is calling.
 import standpoint as sp
 
 pos = sp.positioning("table.csv", reference=0, lower_is_better=["Price"], model="qwen2.5vl:7b")
-pos.coords        # DataFrame: axis-1 / axis-2 per option
-pos.loadings      # DataFrame: criterion weights per axis
-pos.axes          # {'x': 'Cost ↔ Scalability', 'y': 'Simplicity ↔ Power'}
-pos.role_of       # {'AWS': 'best', 'DigitalOcean': 'worst', 'Azure': 'top', ...}
-pos.to_svg()      # a self-contained, interactive SVG document (str)
-pos.to_yaml()     # coordinates + coefficients
-pos.export("out") # writes every file (see input-and-output.md)
+pos.coords  # DataFrame: axis-1 / axis-2 per option
+pos.loadings  # DataFrame: criterion weights per axis
+pos.axes  # {'x': 'Cost ↔ Scalability', 'y': 'Simplicity ↔ Power'}
+pos.role_of  # {'AWS': 'best', 'DigitalOcean': 'worst', 'Azure': 'top', ...}
+pos.to_svg()  # a self-contained, interactive SVG document (str)
+pos.to_yaml()  # coordinates + coefficients
+pos.export("out")  # writes every file (see input-and-output.md)
 ```
 
 `positioning(data, ...)` accepts a path, a raw CSV/Markdown string, or a pandas

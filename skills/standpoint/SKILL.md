@@ -1,39 +1,25 @@
 ---
 name: standpoint
 description: >-
-  Turn a comparison table (options as rows, criteria as columns, numeric ratings on any
-  scale) into a labelled 2D positioning map — a quadrant / perceptual / competitive-
-  landscape map — plus a YAML of every coordinate, all on
-  the local machine with `standpoint`. Under the hood it is correlation PCA: the two
-  axes stay readable weighted sums of the criteria and are named in plain words by a
-  local Ollama model (in the table's own language, English / French / Spanish), the
-  reference option is rotated to the top-right, and every option is coloured and
-  labelled. Reachable as a Python library (`import standpoint as sp`), two CLIs
-  (`standpoint`, `standpoint-click`), a browser GUI (`standpoint-gui`), a FastAPI HTTP
-  API, and an MCP server (`standpoint-mcp`).
-
-  TRIGGER — any of: the user wants to *place / position / map* several options against
-  each other from a ratings table ("plot these tools / products / vendors / languages /
-  cars / frameworks on a map", "make a positioning map / perceptual map / quadrant /
-  2x2 / competitive landscape", "where does X stand versus the others", "compare these
-  options across these criteria and chart it", "turn this comparison table into a map");
-  the user has a table of *options × criteria* with numeric scores and wants a 2D
-  picture of it; the user asks for a PCA / perceptual map of a scorecard or ratings
-  table; the user names a command (`standpoint`, `standpoint-click`, `standpoint-gui`,
-  `standpoint-mcp`) or a library symbol (`positioning`, `analyze`, `axis_poles`,
-  `assign_roles`, `to_svg`, `export_all`, `parse_table`); the user points at a CSV /
-  Markdown table whose first column is option names and the rest numeric criteria and
-  wants it turned into a positioning map; the user wants to run the standpoint
-  GUI, HTTP API, or MCP server.
-
-  SKIP when: the user wants an ordinary chart of one or two variables (bar / line /
-  scatter / pie of a series or a time axis) — that is plain plotting, not a positioning
-  map (reach for a figures skill instead); PCA purely for dimensionality
-  reduction inside an ML pipeline (use scikit-learn directly — standpoint is for the
-  *labelled competitive map*, not feature engineering); a single-criterion ranking that
-  is really just a sort; or building / cleaning / gathering the table itself rather than
-  mapping it. standpoint maps an existing options × criteria table; it does not collect
-  the data or fit a predictor.
+  Turn one comparison table — options in rows, criteria in columns, numbers in
+  the cells — into a labelled 2D positioning map (quadrant / perceptual /
+  competitive-landscape chart) plus a YAML of every coordinate, so the
+  placement is auditable rather than hand-drawn. Use when the user says "plot
+  these tools / products / vendors / frameworks on a map", "where does X stand
+  versus the others", "map the competitive landscape", "make a positioning map
+  / perceptual map / quadrant / 2×2 / magic-quadrant-style chart", "compare
+  these options across these criteria and chart it", hands over a CSV or
+  Markdown table whose first column is names and the rest numeric ratings, or
+  names `standpoint`, `standpoint-click`, `standpoint-gui`, `standpoint-mcp`,
+  `import standpoint`. Do NOT use for a bar / line / scatter chart of raw data,
+  a single-criterion ranking, or a diagram with no numbers behind it. The
+  exhaustive trigger catalogue is in `references/triggers.md`.
+license: BSD-3-Clause
+metadata:
+  author: Warith Harchaoui
+  package: standpoint
+  suite: ai-helpers
+  homepage: https://deraison.ai/ai-helpers
 ---
 
 # standpoint — comparison table → positioning map
@@ -81,10 +67,10 @@ Library, one call:
 ```python
 import standpoint as sp
 
-pos = sp.positioning("table.csv")             # a path, a raw string, or a DataFrame
-pos.export("out")                             # writes out/<name>.{png,svg,white.png,white.svg,yaml}
-pos.axes        # {'x': 'Cost ↔ Scalability', 'y': 'Simplicity ↔ Power'}
-pos.role_of     # {'AWS': 'best', 'DigitalOcean': 'worst', ...}
+pos = sp.positioning("table.csv")  # a path, a raw string, or a DataFrame
+pos.export("out")  # writes out/<name>.{png,svg,white.png,white.svg,yaml}
+pos.axes  # {'x': 'Cost ↔ Scalability', 'y': 'Simplicity ↔ Power'}
+pos.role_of  # {'AWS': 'best', 'DigitalOcean': 'worst', ...}
 ```
 
 ## Which interface to reach for
@@ -123,7 +109,8 @@ python scripts/positioning_summary.py table.csv --outdir out
 ```
 
 See `references/interfaces.md` for the full library / CLI / API / MCP / Docker surface,
-and `references/input-and-output.md` for the table rules and the exact files written.
+`references/input-and-output.md` for the table rules and the exact files written,
+and `references/triggers.md` for the exhaustive, auditable trigger catalogue.
 
 ## Gotchas worth remembering
 
