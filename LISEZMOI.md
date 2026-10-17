@@ -240,7 +240,7 @@ En bibliothèque :
 import standpoint as sp
 
 pos = sp.positioning("examples/programming_languages.csv")
-pos.export("out")                 # écrit out/python.{png,svg,white.png,white.svg,yaml}
+pos.export("out")  # écrit out/python.{png,svg,white.png,white.svg,yaml}
 print(pos.axes)
 # {'x': 'Concurrency ↔ Ecosystem', 'y': 'Safety ↔ Learning'}
 ```

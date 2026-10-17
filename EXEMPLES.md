@@ -12,18 +12,19 @@ où les libellés foncés disparaîtraient sur fond transparent) et les données
 ```python
 import standpoint as sp
 
-pos = sp.positioning("examples/programming_languages.csv")   # chemin, chaîne ou DataFrame
-pos.axes            # {'x': 'Scalability ↔ Versatility', 'y': 'Flexibility ↔ Accessibility'}
-pos.coords          # DataFrame : coordonnées axe 1 / axe 2 par option
-pos.loadings        # DataFrame : poids de chaque critère par axe
-pos.role_of         # {'Python': 'best', 'Rust': 'worst', ...}
-pos.export("out")   # écrit out/python.{png,svg,white.png,white.svg,yaml}
+pos = sp.positioning("examples/programming_languages.csv")  # chemin, chaîne ou DataFrame
+pos.axes  # {'x': 'Scalability ↔ Versatility', 'y': 'Flexibility ↔ Accessibility'}
+pos.coords  # DataFrame : coordonnées axe 1 / axe 2 par option
+pos.loadings  # DataFrame : poids de chaque critère par axe
+pos.role_of  # {'Python': 'best', 'Rust': 'worst', ...}
+pos.export("out")  # écrit out/python.{png,svg,white.png,white.svg,yaml}
 ```
 
 Passez un DataFrame si vous en avez déjà un et nommez la référence :
 
 ```python
 import pandas as pd, standpoint as sp
+
 df = pd.read_csv("examples/cloud_providers.csv", index_col=0)
 sp.positioning(df, reference="AWS").export("out")
 ```

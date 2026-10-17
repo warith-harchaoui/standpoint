@@ -145,9 +145,7 @@ def main() -> None:
             translated = translate_table(title, criteria)
             new_criteria = translated["criteria"]
             if len(new_criteria) != len(criteria):
-                raise ValueError(
-                    f"criteria count mismatch: {len(criteria)} -> {len(new_criteria)}"
-                )
+                raise ValueError(f"criteria count mismatch: {len(criteria)} -> {len(new_criteria)}")
             with out_path.open("w", newline="", encoding="utf-8") as f:
                 w = csv.writer(f)
                 w.writerow([translated["title"], *new_criteria])

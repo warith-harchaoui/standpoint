@@ -54,7 +54,9 @@ def load_rows() -> tuple[list[tuple[int, float]], list[tuple[int, float]]]:
     return train, val
 
 
-def centered_moving_average(points: list[tuple[int, float]], window_iters: int) -> list[tuple[int, float]]:
+def centered_moving_average(
+    points: list[tuple[int, float]], window_iters: int
+) -> list[tuple[int, float]]:
     """Centered moving average over `points`' q values, window in iteration units.
 
     Rows are `STEPS_PER_REPORT` iterations apart, so a `window_iters`-wide window

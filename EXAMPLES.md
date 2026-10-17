@@ -11,18 +11,19 @@ dark labels would vanish on transparency), and the `<name>.yaml` data.
 ```python
 import standpoint as sp
 
-pos = sp.positioning("examples/programming_languages.csv")   # path, string, or DataFrame
-pos.axes            # {'x': 'Scalability ↔ Versatility', 'y': 'Flexibility ↔ Accessibility'}
-pos.coords          # DataFrame: axis-1 / axis-2 per option
-pos.loadings        # DataFrame: criterion weights per axis
-pos.role_of         # {'Python': 'best', 'Rust': 'worst', ...}
-pos.export("out")   # writes out/python.{png,svg,white.png,white.svg,yaml}
+pos = sp.positioning("examples/programming_languages.csv")  # path, string, or DataFrame
+pos.axes  # {'x': 'Scalability ↔ Versatility', 'y': 'Flexibility ↔ Accessibility'}
+pos.coords  # DataFrame: axis-1 / axis-2 per option
+pos.loadings  # DataFrame: criterion weights per axis
+pos.role_of  # {'Python': 'best', 'Rust': 'worst', ...}
+pos.export("out")  # writes out/python.{png,svg,white.png,white.svg,yaml}
 ```
 
 Pass a DataFrame if you already have one, and name the reference:
 
 ```python
 import pandas as pd, standpoint as sp
+
 df = pd.read_csv("examples/cloud_providers.csv", index_col=0)
 sp.positioning(df, reference="AWS").export("out")
 ```

@@ -241,8 +241,7 @@ def main() -> None:
     rows = kept_old_ids + [a["id"] for a in sorted(added, key=lambda a: a["id"])]
     state["model.embed_tokens.weight"] = embed[torch.tensor(rows)].contiguous()
     print(
-        f"embed_tokens: {tuple(embed.shape)} -> "
-        f"{tuple(state['model.embed_tokens.weight'].shape)}"
+        f"embed_tokens: {tuple(embed.shape)} -> {tuple(state['model.embed_tokens.weight'].shape)}"
     )
     save_file(state, str(args.out / "model.safetensors"), metadata={"format": "pt"})
 

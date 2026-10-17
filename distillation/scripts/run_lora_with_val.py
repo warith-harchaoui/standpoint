@@ -77,9 +77,7 @@ def _guard_against_nan_updates(optimizer: optim.Optimizer) -> None:
 
     def guarded_update(model, gradients: dict) -> None:
         nonlocal skipped
-        is_finite = all(
-            bool(mx.all(mx.isfinite(g))) for _, g in tree_flatten(gradients)
-        )
+        is_finite = all(bool(mx.all(mx.isfinite(g))) for _, g in tree_flatten(gradients))
         if not is_finite:
             skipped += 1
             print(
