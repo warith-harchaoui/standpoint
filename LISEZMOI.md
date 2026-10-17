@@ -276,6 +276,11 @@ Ou tout dans un conteneur (installe depuis `requirements.txt`, sert l'API + MCP)
 ```bash
 docker build -t standpoint .
 docker run --rm -p 8000:8000 standpoint
+
+# Ou via Compose, qui porte le port, les variables et une sonde de santé — et,
+# derrière --profile llm, un Ollama pour le nommage des axes
+docker compose up --build
+docker compose --profile llm up --build
 ```
 
 Sans serveur du tout ? `python webapp/build.py` compose la même GUI en **dossier

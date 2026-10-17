@@ -1,0 +1,64 @@
+# standpoint — Compose entry point for the container image next to this file.
+#
+#   docker compose up --build                 # API + MCP + GUI on http://localhost:8000
+#   docker compose --profile llm up --build   # ... plus a local Ollama to name the axes
+#   docker compose run --rm standpoint standpoint /data/table.csv --outdir /data/out
+#
+# The image installs the [mcp] extra, so one app serves every door: the
+# FastAPI routes, the GUI at /gui, and /mcp mounted onto that same app by
+# fastapi-mcp. Each MCP tool *is* one of these routes — never a second
+# implementation.
+#
+# Axis naming needs an LLM
+# ------------------------
+# Naming the poles of each axis goes through an LLM, so an unreachable Ollama
+# is not a degraded mode — those calls fail. Two ways to give it one:
+#
+#   * the `llm` profile below runs Ollama inside this project. Pull a model
+#     once it is up:  docker compose exec ollama ollama pull llama3.2
+#   * or point the service at an Ollama already running on your host, without
+#     the profile:    OLLAMA_HOST=http://host.docker.internal:11434 docker compose up
+
+services:
+  standpoint:
+    build: .
+    image: standpoint:local
+    ports:
+      - "${STANDPOINT_PORT:-8000}:8000"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      STANDPOINT_HOST: 0.0.0.0
+      STANDPOINT_PORT: "8000"
+      # Defaults to the `llm` profile's service; override for a host Ollama.
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+    healthcheck:
+      # The GUI root, since this app exposes no dedicated /health route.
+      # python, not curl: the slim image ships no HTTP client.
+      test:
+        - CMD
+        - python
+        - -c
+        - |
+          import sys, urllib.request
+          sys.exit(0 if urllib.request.urlopen("http://localhost:8000/", timeout=3).status == 200 else 1)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # Generous: numpy / pandas / scikit-learn / vl-convert are slow to import.
+      start_period: 45s
+
+  ollama:
+    profiles: [llm]
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      # Models are large; keep them across restarts.
+      - standpoint-ollama:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  standpoint-ollama:
