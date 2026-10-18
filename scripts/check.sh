@@ -22,6 +22,14 @@ echo "==> ruff format --check (standpoint tests webapp)"
 python -m ruff format --check standpoint tests webapp
 
 echo "==> pytest (core + any installed surface; each heavy surface self-skips)"
-python -m pytest tests/ -q
+# A gate must never hang: the model-backed tests reach a local Ollama, and a stalled
+# socket would otherwise block the push indefinitely rather than fail. pytest-timeout
+# is in the dev extra; the flag is only passed when the plugin is importable, so this
+# still works in an environment that lacks it.
+TIMEOUT_ARGS=""
+if python -c "import pytest_timeout" 2>/dev/null; then
+  TIMEOUT_ARGS="--timeout=600"
+fi
+python -m pytest tests/ -q $TIMEOUT_ARGS
 
 echo "==> gate green"

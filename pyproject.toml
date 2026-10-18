@@ -37,7 +37,7 @@ classifiers = [
 # `ollama` is not a library dependency (LLM calls route through best-engine-ai-helper,
 # see the [0.7.0] CHANGELOG entry) -- it is here only for tests/conftest.py, which
 # calls the Ollama client directly to confirm/pull the model before @needs_model tests.
-dev = ["pytest>=7.0", "ruff>=0.5", "httpx>=0.27", "ollama>=0.3"]
+dev = ["pytest>=7.0", "pytest-timeout>=2.3", "ruff>=0.5", "httpx>=0.27", "ollama>=0.3"]
 # `deepeval` powers the optional pole-naming evaluation in tests/test_eval.py. It is
 # a separate, heavier extra: the eval is skipped unless both deepeval and a local
 # Ollama model are available, so it runs on a workstation, not in the default CI job.
