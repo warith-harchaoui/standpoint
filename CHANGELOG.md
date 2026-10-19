@@ -7,6 +7,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-19
+
+### Added
+
+- **The written analysis, which this package had promised and never produced.**
+
+  The module docstring has said `export_all` "writes PNG + SVG + a Markdown
+  analysis + a YAML" for a long time, and the committed LLM brief says the
+  model "writes a short positioning analysis in the language of the table's
+  columns". Neither was true. There were four prompts — `axis_prompt`,
+  `noun_prompt`, `vlm_assess_prompt`, `ratings_prompt` — and **no analysis
+  prompt at all**. The deliverable was two faces, the docstring claimed three,
+  and anything downstream looking for the Markdown found nothing and could not
+  tell a missing analysis from a failed run.
+
+  The gap surfaced as a `StopIteration` in the suite's landscape generator,
+  which means `make landscape` was broken for every helper rather than for one.
+
+  `analysis_markdown()` writes the third face, `analysis_prose()` is the model
+  call behind it, and both are public. `Positioning` gains `to_markdown()`.
+
+- **The document owns every number in it; the model owns only the reading.**
+
+  The variance each axis preserves, the cumulative total, and the list of
+  imputed cells are computed in Python and written by `analysis_markdown`. The
+  prompt explicitly forbids the model from stating a percentage, a coordinate
+  or a rating. A model asked to narrate its own figures will occasionally round
+  one differently and contradict the file it sits in, and a positioning map
+  that disagrees with itself is worse than one that says less — "auditable" is
+  the property this package exists for.
+
+  The `## Axes` section is machine-readable on purpose: each line reads
+  `**Horizontal: A ↔ B** — ~NN% of the variance`, so a consumer can lift the
+  pole names without a model and without parsing prose.
+
+- **An unreachable model degrades the prose, never the document.** The figure
+  and the YAML are the load-bearing halves and neither needs a model, so the
+  analysis section says the model was unavailable rather than silently going
+  missing. A section that is absent is indistinguishable from a map with
+  nothing to say about itself.
+
+### Fixed
+
+- **The model was being asked to do signed arithmetic, and got it wrong.**
+
+  The first version of the prompt passed each option as `name (+2.47, +2.08)`
+  and named the four poles, leaving the convention — a positive first
+  coordinate means the right-hand side — unstated. The model duly inverted the
+  horizontal axis: it described the reference, which is *pinned to the
+  top-right corner by construction*, as a left-hand option, and filed two
+  left-hand options as right-hand ones. The vertical axis, where "up is more"
+  is the stronger prior, came out correct, which is exactly what makes this
+  kind of error easy to miss.
+
+  Naming the pole instead was not enough either: told `Amazon Lex: Adaptable +
+  Resourceful`, the model still had to know which side `Adaptable` was on, and
+  it guessed wrong, grouping three left-hand options under "lower right".
+
+  Sides and quadrants are now computed in Python and handed over as words, with
+  the direction first — `right-top (Modular + Insightful)` — and no coordinate
+  pairs reach the prompt at all. Verified against the coordinates: every
+  spatial claim in the generated prose is correct, including which options share
+  a quadrant and which do not.
+
+  A prompt rule was added for the remaining failure this exposed: the model had
+  written a closing sentence about two options "converging in the upper right"
+  having correctly placed one of them in the upper *left* three sentences
+  earlier. It may no longer claim two options sit together unless the computed
+  quadrant list gives them the same label.
+
+- Stale "two-fold deliverable" wording in the module docstring, the CLI output
+  and the `--outdir` help.
+
+
 ## [0.10.0] - 2026-10-19
 
 ### Added

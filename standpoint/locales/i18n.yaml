@@ -43,6 +43,58 @@ en:
     Reply as JSON: {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
   # "Flemme" (lazy) autofill: the user typed the option names and the criteria; the
   # model fills every rating from its own knowledge. {noun} is the first-column word.
+  analysis_md:
+    dir_left: "left"
+    dir_right: "right"
+    dir_top: "top"
+    dir_bottom: "bottom"
+    axes_heading: "Axes"
+    analysis_heading: "Analysis"
+    imputed_heading: "Cells the table did not contain"
+    horizontal: "Horizontal"
+    vertical: "Vertical"
+    variance_axis: "~{pct}% of the variance"
+    variance_total: "In two axes, we preserved ~{pct}% of the information in the table."
+    imputed_intro: "These ratings were not supplied and were filled with their column's minimum, so every coordinate above depends partly on them:"
+    unavailable: "The written analysis needs the local model, which was not reachable."
+  analysis_prompt: |
+    You are writing the short written analysis that accompanies a 2D
+    positioning map. The map is a PCA of a comparison table: every criterion is
+    rated 1 to 5, higher is better, and the two axes are weighted combinations
+    of those criteria.
+
+    Write TWO or THREE short paragraphs of plain English prose. Rules:
+    - Interpret, do not recite. The reader already has the table and the
+      numbers; what they want is what the shape MEANS.
+    - Never state a percentage, a coordinate or a rating. Those are computed
+      and printed around your text, and a number you invent would contradict
+      them.
+    - Say what the horizontal axis separates, and what the vertical one
+      separates. Name the criteria that load most heavily on each.
+    - Name which options sit together and why, including any that land in the
+      same corner for different reasons.
+    - If the leader wins on some axes and not others, say so plainly. A
+      analysis that only flatters the leader is worthless.
+    - Never say two options sit together, converge, or share a corner unless
+      the quadrant list below gives them the SAME label. A model that groups
+      two options by intuition writes a sentence the map contradicts.
+    - No headings, no bullet lists, no bold. Flowing prose only.
+    - Write in English.
+
+    Reference option (the leader): {reference}
+
+    Horizontal axis: {axis_1}, from {pole_left} on the left to {pole_right} on the right.
+    Weights on the horizontal axis: {loadings_1}
+    Toward {pole_right} (the right side), strongest first: {right_side}
+    Toward {pole_left} (the left side), strongest first: {left_side}
+
+    Vertical axis: {axis_2}, from {pole_bottom} at the bottom to {pole_top} at the top.
+    Weights on the vertical axis: {loadings_2}
+    Toward {pole_top} (the upper half), strongest first: {top_side}
+    Toward {pole_bottom} (the lower half), strongest first: {bottom_side}
+
+    Each option's quadrant, already worked out for you -- use these words and do
+    not try to re-derive a position: {quadrants}
   ratings_prompt: |
     You rate options on criteria for a comparison table, using your own knowledge.
     The options ({noun}) are: {options}.
@@ -182,6 +234,60 @@ fr:
     Répondez en JSON : {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
   # « Flemme » : l'utilisateur a saisi les noms des options et des critères ; le
   # modèle remplit chaque note depuis sa propre connaissance. {noun} = mot d'en-tête.
+  analysis_md:
+    dir_left: "gauche"
+    dir_right: "droite"
+    dir_top: "haut"
+    dir_bottom: "bas"
+    axes_heading: "Axes"
+    analysis_heading: "Analyse"
+    imputed_heading: "Cases que le tableau ne contenait pas"
+    horizontal: "Horizontal"
+    vertical: "Vertical"
+    variance_axis: "~{pct} % de la variance"
+    variance_total: "En deux axes, nous avons préservé ~{pct} % de l'information du tableau."
+    imputed_intro: "Ces notes n'étaient pas fournies ; elles ont été remplies par le minimum de leur colonne, si bien que chaque coordonnée ci-dessus en dépend en partie :"
+    unavailable: "L'analyse écrite demande le modèle local, qui n'était pas joignable."
+  analysis_prompt: |
+    Vous rédigez la courte analyse écrite qui accompagne une carte de
+    positionnement en 2D. La carte est une ACP d'un tableau comparatif : chaque
+    critère est noté de 1 à 5, le plus haut étant le mieux, et les deux axes
+    sont des combinaisons pondérées de ces critères.
+
+    Écrivez DEUX ou TROIS courts paragraphes en français courant. Règles :
+    - Interprétez, ne récitez pas. Le lecteur a déjà le tableau ainsi que les
+      chiffres ; ce qu'il veut, c'est ce que la forme VEUT DIRE.
+    - N'énoncez jamais un pourcentage, une coordonnée ni une note. Ces valeurs
+      sont calculées puis imprimées autour de votre texte, et un chiffre que
+      vous inventeriez les contredirait.
+    - Dites ce que sépare l'axe horizontal, puis ce que sépare l'axe vertical.
+      Nommez les critères qui pèsent le plus sur chacun.
+    - Nommez les options qui se regroupent ainsi que la raison, y compris
+      celles qui atterrissent dans le même coin pour des raisons différentes.
+    - Si le leader gagne sur certains axes et pas sur d'autres, dites-le
+      franchement. Une analyse qui ne fait que flatter le leader ne vaut rien.
+    - Ne dites jamais que deux options se rejoignent, convergent ou partagent
+      un coin si la liste des quadrants ci-dessous ne leur donne pas la MÊME
+      étiquette. Regrouper deux options à l'intuition produit une phrase que la
+      carte contredit.
+    - Aucun titre, aucune liste à puces, aucun gras. Prose suivie uniquement.
+    - N'écrivez jamais une virgule avant « et » ni avant « ou ».
+    - Rédigez en français.
+
+    Option de référence (le leader) : {reference}
+
+    Axe horizontal : {axis_1}, de {pole_left} à gauche vers {pole_right} à droite.
+    Poids sur l'axe horizontal : {loadings_1}
+    Vers {pole_right} (le côté droit), du plus fort au plus faible : {right_side}
+    Vers {pole_left} (le côté gauche), du plus fort au plus faible : {left_side}
+
+    Axe vertical : {axis_2}, de {pole_bottom} en bas vers {pole_top} en haut.
+    Poids sur l'axe vertical : {loadings_2}
+    Vers {pole_top} (la moitié haute), du plus fort au plus faible : {top_side}
+    Vers {pole_bottom} (la moitié basse), du plus fort au plus faible : {bottom_side}
+
+    Le quadrant de chaque option, déjà établi pour vous — reprenez ces mots sans
+    tenter de recalculer une position : {quadrants}
   ratings_prompt: |
     Vous notez des options sur des critères pour un tableau comparatif, à partir de
     votre propre connaissance.
@@ -322,6 +428,58 @@ es:
     Responde en JSON: {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
   # «Flemme»: el usuario escribió los nombres; el modelo rellena cada nota con su
   # propio conocimiento. {noun} es la palabra de la primera columna.
+  analysis_md:
+    dir_left: "izquierda"
+    dir_right: "derecha"
+    dir_top: "arriba"
+    dir_bottom: "abajo"
+    axes_heading: "Ejes"
+    analysis_heading: "Análisis"
+    imputed_heading: "Celdas que la tabla no contenía"
+    horizontal: "Horizontal"
+    vertical: "Vertical"
+    variance_axis: "~{pct} % de la varianza"
+    variance_total: "En dos ejes, hemos preservado ~{pct} % de la información de la tabla."
+    imputed_intro: "Estas puntuaciones no se facilitaron y se rellenaron con el mínimo de su columna, de modo que cada coordenada anterior depende en parte de ellas:"
+    unavailable: "El análisis escrito necesita el modelo local, que no estaba accesible."
+  analysis_prompt: |
+    Estás escribiendo el breve análisis escrito que acompaña a un mapa de
+    posicionamiento 2D. El mapa es un ACP de una tabla comparativa: cada
+    criterio se puntúa de 1 a 5, más alto es mejor, y los dos ejes son
+    combinaciones ponderadas de esos criterios.
+
+    Escribe DOS o TRES párrafos breves en español llano. Reglas:
+    - Interpreta, no recites. El lector ya tiene la tabla y los números; lo que
+      quiere es lo que la forma SIGNIFICA.
+    - Nunca indiques un porcentaje, una coordenada ni una puntuación. Se
+      calculan y se imprimen alrededor de tu texto, y un número inventado los
+      contradiría.
+    - Di qué separa el eje horizontal y qué separa el vertical. Nombra los
+      criterios que más pesan en cada uno.
+    - Nombra qué opciones se agrupan y por qué, incluidas las que caen en la
+      misma esquina por razones distintas.
+    - Si el líder gana en algunos ejes y no en otros, dilo con claridad. Un
+      análisis que sólo halaga al líder no vale nada.
+    - Nunca digas que dos opciones coinciden, convergen o comparten una
+      esquina si la lista de cuadrantes no les da la MISMA etiqueta. Agrupar
+      dos opciones por intuición produce una frase que el mapa contradice.
+    - Sin títulos, sin listas, sin negrita. Sólo prosa corrida.
+    - Escribe en español.
+
+    Opción de referencia (el líder): {reference}
+
+    Eje horizontal: {axis_1}, de {pole_left} a la izquierda a {pole_right} a la derecha.
+    Pesos en el eje horizontal: {loadings_1}
+    Hacia {pole_right} (el lado derecho), de mayor a menor: {right_side}
+    Hacia {pole_left} (el lado izquierdo), de mayor a menor: {left_side}
+
+    Eje vertical: {axis_2}, de {pole_bottom} abajo a {pole_top} arriba.
+    Pesos en el eje vertical: {loadings_2}
+    Hacia {pole_top} (la mitad superior), de mayor a menor: {top_side}
+    Hacia {pole_bottom} (la mitad inferior), de mayor a menor: {bottom_side}
+
+    El cuadrante de cada opción, ya resuelto para ti: usa estas palabras y no
+    intentes volver a deducir una posición: {quadrants}
   ratings_prompt: |
     Valoras opciones sobre criterios para una tabla comparativa, con tu propio
     conocimiento.

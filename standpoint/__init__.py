@@ -6,7 +6,7 @@ most, so a table of many criteria collapses into a readable two-axis map.
 
 Turn a table of *approaches x criteria* (CSV or Markdown, numeric ratings on any
 scale) into a competitive positioning map, plus a full dump of the coefficients:
-a two-fold deliverable from one input file.
+a three-fold deliverable from one input file.
 
 Pipeline
 --------
@@ -37,7 +37,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.10.0"
+__version__ = "0.11.0"
 
 import argparse
 import contextlib
@@ -125,6 +125,8 @@ __all__ = [
     "to_svg",
     "render_figures",
     "png_on_white",
+    "analysis_markdown",
+    "analysis_prose",
     "export_all",
     "suggest_ratings",
     "results_yaml",
@@ -1527,7 +1529,7 @@ def to_svg(
 
 
 # --------------------------------------------------------------------------- #
-# Two-fold export: figures (PNG + SVG), YAML
+# Export: figures (PNG + SVG), the written analysis (Markdown), YAML
 # --------------------------------------------------------------------------- #
 def _white_variant(svg: str) -> str:
     """Insert an opaque white background rect right after the opening ``<svg>`` tag.
@@ -1887,6 +1889,221 @@ def results_yaml(
     return yaml.dump(doc, sort_keys=False, allow_unicode=True, width=100)
 
 
+def analysis_prose(
+    df: pd.DataFrame,
+    result: PCAResult,
+    poles: list[str],
+    axis_names: list[str],
+    *,
+    lang: str = "en",
+    model: str | None = None,
+) -> str:
+    """The local model's interpretation of the map's shape, as plain prose.
+
+    Returns an empty string when the model is unreachable, so a caller can
+    degrade to the computed facts rather than failing: the figure and the YAML
+    are the deliverable's load-bearing halves, and neither needs a model.
+
+    The prompt is given the axis names, the loadings and every option's
+    position, and is told **not** to state a percentage, a coordinate or a
+    rating. Those are computed in :func:`analysis_markdown` and printed around
+    this prose. A model asked to narrate its own numbers will occasionally
+    round one differently and contradict the file it sits in, and a positioning
+    map that disagrees with itself is worse than one that says less.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The rated table, as parsed.
+    result : PCAResult
+        The oriented fit, for loadings and coordinates.
+    poles : list of str
+        ``[left, right, bottom, top]``.
+    axis_names : list of str
+        The two ``"A <-> B"`` axis names.
+    lang : str, optional
+        Prompt language; falls back to English.
+    model : str, optional
+        Override the resolved model tag.
+
+    Returns
+    -------
+    str
+        Two or three paragraphs, or ``""`` when no model answered.
+    """
+    feats = result.features
+    coords = result.coords()
+
+    def weights(k: int) -> str:
+        """Criterion loadings on axis `k`, heaviest first, as a readable string."""
+        pairs = sorted(zip(feats, result.components[k], strict=False), key=lambda t: -abs(t[1]))
+        return ", ".join(f"{f} {w:+.2f}" for f, w in pairs if abs(w) > 0.05) or "-"
+
+    left, right, bottom, top = poles
+
+    # The model is given its spatial facts in words, never as coordinates.
+    #
+    # The first version of this prompt passed "name (+2.47, +2.08)" per option
+    # and named the poles, leaving the model to infer that a positive first
+    # coordinate means the right-hand side. It never stated that convention,
+    # and the model duly inverted the horizontal axis: it put the reference --
+    # pinned to the top-right corner by construction -- "on the left", and
+    # called two left-hand options right-hand ones. The vertical axis, where
+    # "up is more" is the stronger prior, came out correct.
+    #
+    # So the sides and quadrants are computed here. It is the same division of
+    # labour as the percentages in `analysis_markdown`: Python owns every fact,
+    # the model owns only the reading of it. Asking a language model to do
+    # signed arithmetic and then trusting its prose is how an auditable
+    # document acquires a confident falsehood.
+    def side(axis: int, sign: int) -> str:
+        """Option names on one end of `axis`, furthest out first.
+
+        `sign` selects the end: +1 for the positive-coordinate side (right, or
+        top), -1 for the other. Returns "-" when nothing sits there.
+        """
+        picked = [
+            (name, float(row.iloc[axis]))
+            for name, row in coords.iterrows()
+            if (row.iloc[axis] > 0) == (sign > 0) and row.iloc[axis] != 0
+        ]
+        picked.sort(key=lambda t: -abs(t[1]))
+        return ", ".join(name for name, _ in picked) or "-"
+
+    # Named with the direction word first, because the pole name alone was not
+    # enough: told only "Amazon Lex: Adaptable + Resourceful", the model still
+    # had to know that Adaptable is the left-hand pole, and it guessed wrong,
+    # filing three left-hand options under "lower right". Spelling out
+    # "left-bottom" leaves nothing to infer.
+    words = i18n(lang)["analysis_md"]
+
+    def quadrant(x: float, y: float) -> str:
+        """One option's quadrant, direction word first then the two poles."""
+        horizontal = words["dir_right"] if x > 0 else words["dir_left"]
+        vertical = words["dir_top"] if y > 0 else words["dir_bottom"]
+        pole_h = right if x > 0 else left
+        pole_v = top if y > 0 else bottom
+        return f"{horizontal}-{vertical} ({pole_h} + {pole_v})"
+
+    quadrants = "; ".join(
+        f"{name}: {quadrant(float(row.iloc[0]), float(row.iloc[1]))}"
+        for name, row in coords.iterrows()
+    )
+    try:
+        tpl = i18n(lang)["analysis_prompt"]
+        prose = llm.chat(
+            tpl.format(
+                reference=result.reference,
+                axis_1=axis_names[0],
+                axis_2=axis_names[1],
+                pole_left=left,
+                pole_right=right,
+                pole_bottom=bottom,
+                pole_top=top,
+                loadings_1=weights(0),
+                loadings_2=weights(1),
+                right_side=side(0, +1),
+                left_side=side(0, -1),
+                top_side=side(1, +1),
+                bottom_side=side(1, -1),
+                quadrants=quadrants,
+            ),
+            engine=engine(),
+            kind="vlm",
+            temperature=0.2,
+            model=model,
+        )
+        text = prose if isinstance(prose, str) else str(prose)
+        # The model is asked for prose and sometimes returns it fenced anyway.
+        text = re.sub(r"^\s*```[a-z]*\s*|\s*```\s*$", "", text.strip())
+        return text.strip()
+    except Exception:
+        logger.warning("written analysis: the local model was not reachable")
+        return ""
+
+
+def analysis_markdown(
+    df: pd.DataFrame,
+    result: PCAResult,
+    poles: list[str],
+    axis_names: list[str],
+    *,
+    lang: str = "en",
+    title: str | None = None,
+    model: str | None = None,
+) -> str:
+    """The written analysis as a Markdown document: computed facts, then prose.
+
+    The third face of the deliverable, next to the figure and the YAML. The
+    module docstring has promised it for a long time and :func:`export_all`
+    stopped writing it, which left every consumer parsing a file that was never
+    there.
+
+    The split is the point. Everything numeric here -- the variance each axis
+    preserves, the cumulative total, which cells were imputed -- is computed in
+    Python and written by this function. The model contributes interpretation
+    only, under a prompt that forbids it from quoting a number. That keeps the
+    document auditable, which is the one property a positioning map has to have.
+
+    The ``## Axes`` section is deliberately machine-readable: each line reads
+    ``**Horizontal: A <-> B** -- ~NN% of the variance``, so a downstream
+    generator can lift the pole names without a model and without this
+    function's prose.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The rated table, as parsed.
+    result : PCAResult
+        The oriented fit.
+    poles : list of str
+        ``[left, right, bottom, top]``.
+    axis_names : list of str
+        The two ``"A <-> B"`` axis names.
+    lang : str, optional
+        Output language; falls back to English.
+    title : str, optional
+        Document title. Defaults to the reference option's name.
+    model : str, optional
+        Override the resolved model tag.
+
+    Returns
+    -------
+    str
+        A Markdown document, always complete: when the model is unreachable the
+        analysis section says so rather than being silently absent.
+    """
+    strings = i18n(lang)["analysis_md"]
+    evr = result.explained_variance_ratio
+    left, right, bottom, top = poles
+
+    def pct(value: float) -> str:
+        """A variance ratio as a whole-number percentage, without the sign."""
+        return f"{100 * float(value):.0f}"
+
+    lines = [f"# {title or result.reference}", ""]
+    lines += [f"## {strings['axes_heading']}", ""]
+    for label, name, share in (
+        (strings["horizontal"], f"{left} \u2194 {right}", evr[0]),
+        (strings["vertical"], f"{bottom} \u2194 {top}", evr[1]),
+    ):
+        variance = strings["variance_axis"].format(pct=pct(share))
+        lines.append(f"- **{label}: {name}** \u2014 {variance}")
+    lines += ["", strings["variance_total"].format(pct=pct(evr.sum())), ""]
+
+    lines += [f"## {strings['analysis_heading']}", ""]
+    prose = analysis_prose(df, result, poles, axis_names, lang=lang, model=model)
+    lines += [prose or f"*{strings['unavailable']}*", ""]
+
+    filled = imputed_cells(df)
+    if filled:
+        lines += [f"## {strings['imputed_heading']}", "", strings["imputed_intro"], ""]
+        lines += [f"- {option} / {criterion}" for option, criterion in filled]
+        lines.append("")
+
+    return "\n".join(lines)
+
+
 def export_all(
     df: pd.DataFrame,
     result: PCAResult,
@@ -1897,9 +2114,16 @@ def export_all(
     stem: str,
     noun_plural: str = "Approaches",
     title: str | None = None,
+    lang: str = "en",
+    model: str | None = None,
 ) -> list[str]:
-    """Write the full two-fold deliverable for one table: figures (PNG + SVG) and a
-    YAML of coordinates + coefficients. Returns the list of paths written.
+    """Write the full deliverable for one table. Returns the paths written.
+
+    Three faces, not two: the figures (PNG + SVG), the written analysis
+    (Markdown), and the YAML of coordinates + coefficients. The Markdown face
+    was promised by this module's docstring and had stopped being written, so
+    anything downstream looking for it found nothing and had no way to tell a
+    missing analysis from a failed run.
     """
     svg = to_svg(
         result,
@@ -1911,6 +2135,12 @@ def export_all(
         attributes=df,
     )
     written = render_figures(svg, stem)
+    md_path = f"{stem}.md"
+    _atomic_write(
+        md_path,
+        analysis_markdown(df, result, poles, axis_names, lang=lang, title=title, model=model),
+    )
+    written.append(md_path)
     yaml_path = f"{stem}.yaml"
     _atomic_write(yaml_path, results_yaml(df, result, roles, poles, axis_names, colors))
     written.append(yaml_path)
@@ -1973,12 +2203,23 @@ class Positioning:
             self.df, self.result, self.roles, self.poles, self.axis_names, self.colors
         )
 
+    def to_markdown(self) -> str:
+        """The written analysis: the computed facts, then the model's reading."""
+        return analysis_markdown(
+            self.df,
+            self.result,
+            self.poles,
+            self.axis_names,
+            lang=self.lang,
+            title=self.title,
+        )
+
     def figure(self, stem: str) -> list[str]:
         """Render the map to `<stem>.png` and `<stem>.svg`; returns the paths."""
         return render_figures(self.to_svg(), stem)
 
     def export(self, outdir: str = ".", stem: str | None = None) -> list[str]:
-        """Write the full two-fold deliverable into `outdir`; returns the paths."""
+        """Write the full deliverable into `outdir`; returns the paths."""
         os.makedirs(outdir, exist_ok=True)
         name = stem or re.sub(r"[^A-Za-z0-9]+", "_", self.result.reference).strip("_").lower()
         return export_all(
@@ -1991,6 +2232,7 @@ class Positioning:
             os.path.join(outdir, name),
             noun_plural=self.noun_plural,
             title=self.title,
+            lang=self.lang,
         )
 
 
@@ -2126,7 +2368,7 @@ def run(
     print(pos.loadings.round(3).to_string(), "\n")
 
     written = pos.export(outdir, stem=stem)
-    print("Two-fold deliverable written:")
+    print("Deliverable written:")
     for path in written:
         print(f"  {path}")
 
@@ -2156,7 +2398,7 @@ def main(argv: list[str] | None = None) -> None:
         "-o",
         "--outdir",
         default="out",
-        help="output directory for the two-fold deliverable (default out/)",
+        help="output directory for the deliverable (default out/)",
     )
     ap.add_argument("--stem", help="basename for outputs (default: derived from reference)")
     ap.add_argument(

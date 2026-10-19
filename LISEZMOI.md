@@ -68,8 +68,16 @@ couleur et ses valeurs d'origine.
 
 ## Fonctionnalités
 
-- **Une commande, un livrable en deux volets** : une figure interactive écrite à
-  la main et un YAML de coordonnées + coefficients.
+- **Une commande, un livrable en trois volets** : une figure interactive écrite
+  à la main, une **analyse écrite** en Markdown, puis un YAML de coordonnées +
+  coefficients.
+- **L'analyse est propriétaire de ses chiffres.** La variance préservée par
+  chaque axe, le total cumulé ainsi que la liste des cases imputées sont
+  calculés puis écrits directement ; le modèle reçoit les poids et les positions
+  *en mots*, avec interdiction d'énoncer un pourcentage, une coordonnée ou une
+  note. Une carte qui contredit sa propre prose vaut moins qu'une carte qui en
+  dit moins. Un modèle injoignable vous coûte l'interprétation, rien d'autre —
+  la figure et le YAML n'ont besoin d'aucun modèle.
 - **Axes lisibles** : l'ACP garde les axes sous forme de sommes pondérées de vos
   colonnes ; un modèle local nomme les quatre pôles par des qualités positives,
   avec un garde-fou contre les acronymes, les négatifs et les paires d'antonymes.

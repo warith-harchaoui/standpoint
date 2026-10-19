@@ -65,8 +65,16 @@ plus a YAML file with every option's coordinates, role, colour, and original val
 
 ## Features
 
-- **One command, two-fold deliverable**: a hand-authored, interactive figure
-  (PNG + SVG, no Vega) and a YAML of coordinates + coefficients.
+- **One command, three-fold deliverable**: a hand-authored, interactive figure
+  (PNG + SVG, no Vega), a **written analysis** in Markdown, and a YAML of
+  coordinates + coefficients.
+- **The analysis owns its numbers.** The variance each axis preserves, the
+  cumulative total and the list of imputed cells are computed and written
+  directly; the model is given the loadings and the positions *as words* and is
+  forbidden from stating a percentage, a coordinate or a rating. A map that
+  disagrees with its own prose is worse than one that says less. An unreachable
+  model costs you the interpretation and nothing else — the figure and the YAML
+  need no model at all.
 - **Readable axes**: PCA keeps the axes as weighted sums of your columns; a local
   model names the four poles as positive qualities, guarded against acronyms,
   negatives, and antonym pairs.

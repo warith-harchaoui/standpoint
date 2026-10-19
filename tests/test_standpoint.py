@@ -394,8 +394,9 @@ def test_export_all_writes_complete_and_focused_deliverable(tmp_path, df, result
     colors = p4m.gradient_colors(result, roles)
     stem = str(tmp_path / "map")
     written = p4m.export_all(df, result, roles, poles, names, colors, stem)
-    # transparent png+svg, white png+svg, then yaml
-    assert len(written) == 5
+    # transparent png+svg, white png+svg, then the written analysis, then yaml
+    assert len(written) == 6
+    assert Path(f"{stem}.md").read_text(encoding="utf-8").startswith("# ")
     assert Path(f"{stem}.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
     assert Path(f"{stem}.white.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
     assert "<svg" in Path(f"{stem}.svg").read_text()
@@ -421,12 +422,15 @@ def test_positioning_end_to_end(tmp_path, df):
     assert pos.to_svg().startswith("<svg")
     assert yaml.safe_load(pos.to_yaml())["meta"]["reference"] == "Python"
 
+    assert pos.to_markdown().startswith("# ")
+
     written = pos.export(str(tmp_path), stem="demo")
     assert {Path(w).name for w in written} == {
         "demo.png",
         "demo.svg",
         "demo.white.png",
         "demo.white.svg",
+        "demo.md",
         "demo.yaml",
     }
 
@@ -628,3 +632,125 @@ def test_the_invented_value_is_still_the_column_minimum() -> None:
     """Disclosure, not a change of strategy: the number itself is unchanged."""
     by_name = {a["name"]: a for a in _yaml_for(_gapped())["approaches"]}
     assert by_name["gamma"]["attributes"]["Safety"] == 2.0  # min of the column
+
+
+# --------------------------------------------------------------------------- #
+# the written analysis — the third face of the deliverable
+# --------------------------------------------------------------------------- #
+_FAKE_POLES = ["Adaptable", "Modular", "Resourceful", "Insightful"]
+_FAKE_AXES = ["Adaptable ↔ Modular", "Resourceful ↔ Insightful"]
+
+
+def test_the_written_analysis_owns_its_numbers(df, result, monkeypatch) -> None:
+    """Every figure in the document is computed here, never quoted by the model.
+
+    The prompt forbids the model from stating a percentage precisely so that
+    this holds: a model asked to narrate its own variance will occasionally
+    round one differently and contradict the file it sits in.
+    """
+    monkeypatch.setattr(p4m, "analysis_prose", lambda *a, **k: "Some reading.")
+    md = p4m.analysis_markdown(df, result, _FAKE_POLES, _FAKE_AXES)
+    evr = result.explained_variance_ratio
+    assert f"~{100 * float(evr[0]):.0f}%" in md
+    assert f"~{100 * float(evr[1]):.0f}%" in md
+    assert f"~{100 * float(evr.sum()):.0f}%" in md
+    assert "Some reading." in md
+
+
+def test_the_axes_section_is_machine_readable(df, result, monkeypatch) -> None:
+    """A downstream generator must lift the poles without a model, and without
+    reading the prose. This is the contract `gen_landscape.py` consumes."""
+    import re
+
+    monkeypatch.setattr(p4m, "analysis_prose", lambda *a, **k: "x")
+    md = p4m.analysis_markdown(df, result, _FAKE_POLES, _FAKE_AXES)
+    found = re.findall(r"\*\*(Horizontal|Vertical): (.+?) ↔ (.+?)\*\*", md)
+    assert [(a, b, c) for a, b, c in found] == [
+        ("Horizontal", "Adaptable", "Modular"),
+        ("Vertical", "Resourceful", "Insightful"),
+    ]
+
+
+def test_the_analysis_is_complete_when_the_model_is_absent(df, result, monkeypatch) -> None:
+    """A missing model degrades the prose, never the document.
+
+    The figure and the YAML are the load-bearing halves and neither needs a
+    model, so an unreachable Ollama must not cost the reader the axes, the
+    variance or the imputation notice. And the absence has to be stated: a
+    silently missing section is indistinguishable from a map with nothing to
+    say about itself.
+    """
+
+    def explode(*a, **k):
+        raise RuntimeError("ollama down")
+
+    monkeypatch.setattr(p4m.llm, "chat", explode)
+    assert p4m.analysis_prose(df, result, _FAKE_POLES, _FAKE_AXES) == ""
+    md = p4m.analysis_markdown(df, result, _FAKE_POLES, _FAKE_AXES)
+    assert "Adaptable ↔ Modular" in md
+    assert "local model" in md
+
+
+def test_the_prompt_hands_the_model_words_not_coordinates(df, result, monkeypatch) -> None:
+    """The regression that made the first version of this feature wrong.
+
+    Given "Amazon Lex (-2.24, -2.08)" and the pole names, the model inverted the
+    horizontal axis: it filed the reference -- pinned top-right by construction
+    -- as a left-hand option. Naming the pole was not enough either, since
+    "Adaptable + Resourceful" still leaves it to guess which side Adaptable is.
+    So the prompt now carries the direction word first, and no coordinates at
+    all.
+    """
+    captured: dict[str, str] = {}
+
+    def capture(prompt, **kwargs):
+        captured["prompt"] = prompt
+        return "ok"
+
+    monkeypatch.setattr(p4m.llm, "chat", capture)
+    p4m.analysis_prose(df, result, _FAKE_POLES, _FAKE_AXES)
+    prompt = captured["prompt"]
+
+    # The reference is pinned top-right, so that is what the prompt must say.
+    assert f"{result.reference}: right-top" in prompt
+    # Every option gets a quadrant, and every quadrant leads with a direction.
+    for name in result.names:
+        assert name in prompt
+    assert "left-bottom" in prompt or "left-top" in prompt
+    # No coordinate PAIRS anywhere: that is the whole point. Criterion loadings
+    # are still passed as signed numbers and should be -- they are weights, not
+    # positions, and the prompt asks the model to name the heaviest of them.
+    # What must never appear is "(+2.47, +2.08)", the thing it read backwards.
+    import re
+
+    assert not re.search(r"\([-+]?\d+\.\d+,\s*[-+]?\d+\.\d+\)", prompt), (
+        "a coordinate pair leaked into the prompt"
+    )
+
+
+def test_export_writes_the_markdown_face(df, result, roles, tmp_path, monkeypatch) -> None:
+    """`export_all` promised PNG + SVG + Markdown + YAML and wrote three."""
+    monkeypatch.setattr(p4m, "analysis_prose", lambda *a, **k: "reading")
+    stem = str(tmp_path / "out")
+    written = p4m.export_all(
+        df, result, roles, _FAKE_POLES, _FAKE_AXES, ["#000"] * len(result.names), stem
+    )
+    assert f"{stem}.md" in written
+    assert (tmp_path / "out.md").read_text(encoding="utf-8").startswith("# ")
+
+
+def test_the_analysis_declares_what_was_invented(monkeypatch) -> None:
+    """The imputation notice reaches the prose face too, not only the YAML.
+
+    A reader handed the written analysis and not the YAML would otherwise be
+    told what the placement means without being told that one of its inputs
+    was a fill rather than a measurement.
+    """
+    import io
+
+    table = io.StringIO("Domain,Alpha,Beta,Gamma\nref,5,5,4\nb,2,,1\nc,3,1,5\nd,1,2,2\n")
+    gapped = p4m.parse_table(table.getvalue())
+    fit = p4m.analyze(gapped, reference=0)
+    monkeypatch.setattr(p4m, "analysis_prose", lambda *a, **k: "reading")
+    md = p4m.analysis_markdown(gapped, fit, _FAKE_POLES, _FAKE_AXES)
+    assert "b / Beta" in md
