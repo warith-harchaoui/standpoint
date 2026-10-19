@@ -306,6 +306,25 @@ suivantes sont des critères numériques sur n'importe quelle échelle. Plus hau
 mieux. Les cellules vides prennent le minimum de la colonne : une note
 manquante n'avantage jamais une option.
 
+**Et la carte le dit.** Ce choix par défaut est un jugement, pas une mesure, et
+il voyage plus loin que l'option à laquelle il appartient : les critères sont
+centrés-réduits avant la projection, donc une valeur inventée déplace la moyenne
+puis l'écart-type de sa colonne — et avec eux les coordonnées de *toutes* les
+options. Sur un tableau de cinq options, une seule cellule vide a déplacé
+l'option concernée de 2,47 unités à la verticale : de l'autre côté de la
+frontière du quadrant, c'est-à-dire vers une autre conclusion.
+
+Chaque exécution déclare donc ce qu'elle a dû inventer :
+
+- un avertissement sur stderr, avant même que la carte soit tracée ;
+- `meta.imputed_cells` dans le YAML, qui liste chaque couple
+  `(option, critère)` rempli ;
+- `imputed_attributes` sur chaque option, pour qu'une ligne se lise seule.
+
+Un tableau complet ne dit rien du tout. Il ne s'agit pas de décourager les
+trous : un placement qu'on ne peut pas auditer n'est pas auditable — cet
+outil existe précisément pour être audité.
+
 | Language | Performance | Ease of Learning | Ecosystem | Type Safety | Job Market |
 |---|---|---|---|---|---|
 | Python | 2 | 5 | 5 | 2 | 5 |

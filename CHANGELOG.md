@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-19
+
+### Added
+
+- **Every run now declares what it had to invent.**
+
+  A blank cell is filled with its column's minimum. That default is unchanged
+  and still right — a missing rating should not flatter an option — but nothing
+  said it had happened, and the consequence is larger than one cell.
+
+  Measured on a five-option table with a single blank `Safety` value: the
+  affected option moved from `(1.15, 1.06)` to `(0.83, -1.41)`. That is 2.47
+  units vertically, most of the map's height, and across the horizontal axis —
+  in a quadrant chart, a different quadrant and therefore a different
+  conclusion. **Every other option moved as well**, because criteria are
+  z-scored before the projection, so an invented value shifts its column's mean
+  and spread and perturbs the whole space. A gap in one row silently relocates
+  rows that were complete.
+
+  Meanwhile the YAML reported `Safety: 2.0` for that option, indistinguishable
+  from a measurement, and the written analysis explained the resulting position
+  as though it had been earned. For a tool whose stated purpose is a placement
+  that is *auditable rather than hand-drawn*, that was the gap worth closing.
+
+  Three disclosures, for three different readers:
+
+  - **a warning on stderr**, before the map is drawn, for whoever runs the
+    command and will never open the YAML. It names the cells and states that
+    every coordinate is affected, not only the options with gaps;
+  - **`meta.imputed_cells`** — every filled `(option, criterion)` pair;
+  - **`imputed_attributes`** on each option, so one row is readable on its own.
+
+  A complete table reports nothing, which keeps the signal meaningful.
+
+### Unchanged, deliberately
+
+- **The imputation strategy.** Column-minimum is defensible and is what every
+  existing map was built on; swapping it would silently move all of them. The
+  strategy was never the problem.
+- **Tables with gaps are still accepted.** An unknown cell is a normal artefact
+  of a comparison table. Refusing it would push people to invent a number by
+  hand, which is worse: the tool's fill is at least consistent, and now stated.
+
 ## [0.9.0] - 2026-09-28
 
 This release supersedes the `v0.8.6` tag, which was cut while these entries were

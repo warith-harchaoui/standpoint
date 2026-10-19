@@ -37,7 +37,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.9.0"
+__version__ = "0.10.0"
 
 import argparse
 import contextlib
@@ -291,11 +291,39 @@ def _resolve_reference(df: pd.DataFrame, reference: int | str) -> int:
     return int(reference % df.shape[0])
 
 
+def imputed_cells(df: pd.DataFrame) -> list[tuple[str, str]]:
+    """Which ``(option, criterion)`` pairs :func:`impute` will have to invent.
+
+    Returned so the deliverable can *say* which numbers were filled in. The
+    placement this package produces is meant to be auditable, and a reader
+    cannot audit a coordinate that was partly derived from a value the input
+    never contained.
+    """
+    mask = df.isna()
+    return [
+        (str(option), str(criterion))
+        for option in df.index
+        for criterion in df.columns
+        if bool(mask.at[option, criterion])
+    ]
+
+
 def impute(df: pd.DataFrame) -> pd.DataFrame:
     """Fill missing cells with each column's minimum observed value.
 
     A blank criterion is treated as the worst (minimum) value for that criterion,
     rather than the mean; a missing rating should not flatter an approach.
+
+    The choice is deliberate and stays. What matters is that it is **declared**:
+    a filled cell is indistinguishable from a measured one once it reaches the
+    map, and it moves more than the option it belongs to. Because the pipeline
+    z-scores each criterion, an invented value shifts that column's mean and
+    standard deviation, so *every* option's coordinates move with it.
+
+    Measured on a five-option table with one blank cell: the affected option
+    travelled 2.47 units on the vertical axis -- most of the map's height, and
+    across the quadrant boundary, which is to say a different conclusion. Use
+    :func:`imputed_cells` to report what was filled.
     """
     return df.fillna(df.min(numeric_only=True))
 
@@ -1800,6 +1828,7 @@ def results_yaml(
     evr = result.explained_variance_ratio
     left, right, bottom, top = poles
     feats = result.features
+    filled = imputed_cells(df)
     raw = impute(df)
 
     doc = {
@@ -1811,6 +1840,14 @@ def results_yaml(
             "n_approaches": len(result.names),
             "attributes": feats,
             "lower_is_better": sorted(result.lower),
+            # Which cells the input did not contain. Empty for a complete
+            # table. Listed because every coordinate in this file was computed
+            # partly from these, and a reader auditing a placement has to be
+            # able to tell a measurement from a fill.
+            "imputed_cells": [
+                {"option": option, "criterion": criterion}
+                for option, criterion in imputed_cells(df)
+            ],
         },
         "axes": {
             "axis_1": {
@@ -1837,6 +1874,10 @@ def results_yaml(
                 "role": role,
                 "color": color,
                 "attributes": {f: round(float(raw.loc[n, f]), 3) for f in feats},
+                # Per option, so a reader looking at one row does not have to
+                # cross-reference meta.imputed_cells to find out which of these
+                # attributes the input actually supplied.
+                "imputed_attributes": sorted(c for o, c in filled if o == n),
             }
             for n, (x, y), role, color in zip(
                 result.names, result.scores, roles, colors, strict=False
@@ -2029,8 +2070,28 @@ def run(
     """
     ref: int | str = int(reference) if reference.lstrip("-").isdigit() else reference
     lower_cols = [c.strip() for c in lower.split(",") if c.strip()]
+    parsed = parse_table(table)
+
+    # Say it out loud, before the map exists. A blank cell is filled with its
+    # column's minimum (see `impute`), which is a defensible default and an
+    # invisible one: the number reaches the YAML looking exactly like a
+    # measurement. Worse, because each criterion is z-scored, an invented value
+    # moves that column's mean and spread, so every option's coordinates shift,
+    # not only the one with the gap. Whoever is reading the map on screen should
+    # not have to open the YAML to discover that.
+    missing = imputed_cells(parsed)
+    if missing:
+        shown = ", ".join(f"{option}/{criterion}" for option, criterion in missing[:5])
+        more = f" (+{len(missing) - 5} more)" if len(missing) > 5 else ""
+        print(
+            f"warning: {len(missing)} empty cell(s) filled with the column minimum: "
+            f"{shown}{more}. Every coordinate below is affected, not just these "
+            "options -- see meta.imputed_cells in the YAML.",
+            file=sys.stderr,
+        )
+
     pos = positioning(
-        parse_table(table),
+        parsed,
         reference=ref,
         top=top,
         right=right,

@@ -288,6 +288,23 @@ A CSV or Markdown table. The first column holds the option names; the rest are
 numeric criteria on any scale. Higher means better. Empty cells are filled with
 the column's minimum, so a missing rating never helps an option.
 
+**And the map says so.** That default is a judgement, not a measurement, and it
+travels further than the option it belongs to: criteria are z-scored before the
+projection, so an invented value shifts its column's mean and spread and moves
+*every* option's coordinates. On a five-option table, one blank cell moved the
+affected option 2.47 units vertically — across the quadrant boundary, which is
+to say to a different conclusion.
+
+So each run reports what it had to invent:
+
+- a warning on stderr, before the map is drawn;
+- `meta.imputed_cells` in the YAML, listing every filled `(option, criterion)`;
+- `imputed_attributes` on each option, so one row is readable on its own.
+
+A complete table says nothing at all. The point is not to discourage gaps — it
+is that a placement you cannot audit is not auditable, and this tool exists to
+be audited.
+
 | Language | Performance | Ease of Learning | Ecosystem | Type Safety | Job Market |
 |---|---|---|---|---|---|
 | Python | 2 | 5 | 5 | 2 | 5 |

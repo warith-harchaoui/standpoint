@@ -541,3 +541,90 @@ def test_main_click_writes_deliverable(tmp_path):
     written = {p.name for p in tmp_path.iterdir()}
     assert "click_demo.png" in written
     assert "click_demo.yaml" in written
+
+
+# --------------------------------------------------------------------------- #
+# A placement you cannot audit is not auditable
+# --------------------------------------------------------------------------- #
+# A blank cell is filled with its column's minimum. That default is defensible
+# -- a missing rating should not flatter an option -- and it stays. What it was
+# not is *visible*: the invented number reached the YAML looking exactly like a
+# measurement. And because each criterion is z-scored, it moves that column's
+# mean and spread, so every option's coordinates shift, not only the one with
+# the gap.
+
+
+def _gapped() -> pd.DataFrame:
+    return pd.DataFrame(
+        {"Speed": [5, 4, 3, 2, 1], "Safety": [5, 3, np.nan, 4, 2], "Cost": [4, 5, 3, 2, 1]},
+        index=["alpha", "beta", "gamma", "delta", "epsilon"],
+    )
+
+
+def _complete() -> pd.DataFrame:
+    df = _gapped()
+    df.loc["gamma", "Safety"] = 5
+    return df
+
+
+def test_imputed_cells_names_every_gap() -> None:
+    assert p4m.imputed_cells(_gapped()) == [("gamma", "Safety")]
+
+
+def test_a_complete_table_reports_no_imputation() -> None:
+    assert p4m.imputed_cells(_complete()) == []
+
+
+def test_one_blank_cell_moves_every_option() -> None:
+    """The reason disclosure matters: the effect is not local.
+
+    z-scoring means an invented value changes its column's mean and standard
+    deviation, so it perturbs the whole space -- including options whose own
+    row was complete.
+    """
+    gapped = p4m.analyze(_gapped(), reference="alpha")
+    complete = p4m.analyze(_complete(), reference="alpha")
+    moved = [
+        name
+        for name, g, c in zip(gapped.names, gapped.scores, complete.scores, strict=True)
+        if abs(g[0] - c[0]) > 1e-6 or abs(g[1] - c[1]) > 1e-6
+    ]
+    assert "gamma" in moved
+    assert len(moved) > 1, "a gap must be shown to perturb more than its own row"
+
+
+def _yaml_for(df: pd.DataFrame) -> dict:
+    """Render the deliverable YAML without needing a model for axis naming."""
+    result = p4m.analyze(df, reference="alpha")
+    n = len(result.names)
+    return yaml.safe_load(
+        p4m.results_yaml(
+            df,
+            result,
+            roles=["best"] + ["other"] * (n - 1),
+            poles=["L", "R", "B", "T"],
+            axis_names=["axis one", "axis two"],
+            colors=["#FF3B30"] * n,
+        )
+    )
+
+
+def test_the_yaml_declares_what_was_invented() -> None:
+    """Both table-wide and per option, so one row is readable on its own."""
+    doc = _yaml_for(_gapped())
+    assert doc["meta"]["imputed_cells"] == [{"option": "gamma", "criterion": "Safety"}]
+    by_name = {a["name"]: a for a in doc["approaches"]}
+    assert by_name["gamma"]["imputed_attributes"] == ["Safety"]
+    assert by_name["alpha"]["imputed_attributes"] == []
+
+
+def test_a_complete_table_declares_nothing() -> None:
+    doc = _yaml_for(_complete())
+    assert doc["meta"]["imputed_cells"] == []
+    assert all(a["imputed_attributes"] == [] for a in doc["approaches"])
+
+
+def test_the_invented_value_is_still_the_column_minimum() -> None:
+    """Disclosure, not a change of strategy: the number itself is unchanged."""
+    by_name = {a["name"]: a for a in _yaml_for(_gapped())["approaches"]}
+    assert by_name["gamma"]["attributes"]["Safety"] == 2.0  # min of the column
