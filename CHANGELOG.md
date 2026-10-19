@@ -77,6 +77,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   earlier. It may no longer claim two options sit together unless the computed
   quadrant list gives them the same label.
 
+- **The analysis checks itself.** `check_analysis()` compares every spatial
+  claim in the generated prose against the computed coordinates, with no model
+  and no reasoning about meaning: find the direction words, find the option
+  names, compare against the sign. Contradictions are logged as warnings rather
+  than edited out, because silently fixing the prose would make the warning
+  unfalsifiable. It found two real errors in generated output that reading the
+  paragraph alone did not.
+
+  Attribution is by position rather than by sentence. One sentence routinely
+  carries two claims about two groups — "LiveKit shares the upper region, while
+  Amazon Lex and Vapi are grouped in the lower right" — and applying every
+  direction word in a sentence to every name in it reported nine problems where
+  two were real. A warning channel that cries wolf is no better than the
+  silence it replaced.
+
+  And both word orders are read. "Vapi sits on the right" names the option
+  before the direction; "in the bottom-right corner are Vapi and Rasa" names it
+  after. A first version only looked backwards, and duly reported a run clean
+  whose prose had filed a left-hand option in the bottom-right corner — found
+  by reading the coordinates against the paragraph by hand, which is the work
+  this function exists to remove.
+
+- **The four corners are handed over with their membership.** Per-option
+  quadrants were still not enough: the model wrote "the options in the
+  bottom-right corner" and listed one that was in the bottom-left. Naming a
+  group is now copying a computed list rather than assembling one. That is the
+  third application of the same remedy in this one function — compute the
+  thing and hand it over, instead of handing over its inputs and hoping — and
+  after it, every corner claim in the generated prose is correct, by the
+  checker and by hand.
+
+- **`temperature=0`**, like every other call in this package. Reproducibility is
+  a stated property here, and a sampled analysis would quietly have made the
+  Markdown face the one file that changes between identical runs.
+
 - Stale "two-fold deliverable" wording in the module docstring, the CLI output
   and the `--outdir` help.
 

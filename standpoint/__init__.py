@@ -127,6 +127,7 @@ __all__ = [
     "png_on_white",
     "analysis_markdown",
     "analysis_prose",
+    "check_analysis",
     "export_all",
     "suggest_ratings",
     "results_yaml",
@@ -1989,6 +1990,17 @@ def analysis_prose(
         f"{name}: {quadrant(float(row.iloc[0]), float(row.iloc[1]))}"
         for name, row in coords.iterrows()
     )
+
+    # The corners with their exact membership, so naming a group is copying
+    # rather than assembling. Handing over per-option quadrants was not enough:
+    # the model still wrote "the options in the bottom-right corner" and listed
+    # one that was in the bottom-left. Third time the same remedy has worked --
+    # compute the thing and hand it over, rather than hand over its inputs.
+    corners: dict[str, list[str]] = {}
+    for name, row in coords.iterrows():
+        key = quadrant(float(row.iloc[0]), float(row.iloc[1]))
+        corners.setdefault(key, []).append(str(name))
+    groups = " | ".join(f"{key}: {', '.join(members)}" for key, members in corners.items())
     try:
         tpl = i18n(lang)["analysis_prompt"]
         prose = llm.chat(
@@ -2007,10 +2019,15 @@ def analysis_prose(
                 top_side=side(1, +1),
                 bottom_side=side(1, -1),
                 quadrants=quadrants,
+                groups=groups,
             ),
             engine=engine(),
             kind="vlm",
-            temperature=0.2,
+            # Zero, like every other call in this package. Reproducibility is a
+            # stated property here -- the same CSV must produce the same
+            # deliverable -- and a sampled analysis would quietly make the
+            # Markdown face the one file that changes between identical runs.
+            temperature=0,
             model=model,
         )
         text = prose if isinstance(prose, str) else str(prose)
@@ -2020,6 +2037,115 @@ def analysis_prose(
     except Exception:
         logger.warning("written analysis: the local model was not reachable")
         return ""
+
+
+def check_analysis(
+    prose: str,
+    result: PCAResult,
+    *,
+    lang: str = "en",
+) -> list[str]:
+    """Find claims in the prose that the computed positions contradict.
+
+    No model and no reasoning about meaning: find the direction words, find the
+    option names, and compare each claim against the sign of that option's
+    coordinate. A sentence saying an option sits on the right when its first
+    coordinate is negative is a mismatch, full stop.
+
+    This exists because the model does over-group even when handed every
+    position in words. In one run it filed two left-hand options under "lower
+    right" while placing three others correctly, and the only way to notice was
+    to read the coordinates alongside the prose. A package whose promise is
+    that a placement is *auditable* rather than hand-drawn has to be able to
+    audit its own sentences.
+
+    **Attribution is by position, not by sentence.** One sentence routinely
+    carries two claims about two different groups -- "LiveKit shares the upper
+    region, while Amazon Lex and Vapi are grouped in the lower right" -- so
+    applying every direction word in a sentence to every name in it reported
+    nine problems where two were real. A direction word therefore claims only
+    the names since the previous direction word, and a direction word with no
+    names of its own inherits the previous one's, which is what makes
+    "lower-right" a single claim about a single group.
+
+    A span that names nobody is ignored: "those on the right prioritise
+    modularity" is a statement about the axis, not about anybody's position.
+
+    Parameters
+    ----------
+    prose : str
+        The written analysis, as returned by :func:`analysis_prose`.
+    result : PCAResult
+        The oriented fit the prose is describing.
+    lang : str, optional
+        Which language's direction vocabulary to read.
+
+    Returns
+    -------
+    list of str
+        One message per contradicted claim, de-duplicated and sorted. Empty
+        means every spatial statement in the prose agrees with the map.
+    """
+    words = i18n(lang)["analysis_md"]
+    opposite = {"left": "right", "right": "left", "top": "bottom", "bottom": "top"}
+
+    def vocab(key: str) -> list[str]:
+        """The comma-separated synonym list under `key`, lowercased."""
+        return [w.strip().lower() for w in words[key].split(",") if w.strip()]
+
+    directions = {
+        "left": (0, -1, vocab("dir_left_words")),
+        "right": (0, +1, vocab("dir_right_words")),
+        "bottom": (1, -1, vocab("dir_bottom_words")),
+        "top": (1, +1, vocab("dir_top_words")),
+    }
+    coords = result.coords()
+    problems: list[str] = []
+
+    for sentence in re.split(r"(?<=[.!?])\s+", prose):
+        low = sentence.lower()
+
+        # Where every direction word and every option name falls, in order.
+        hits: list[tuple[int, str]] = []
+        for label, (_axis, _sign, tokens) in directions.items():
+            for token in tokens:
+                for match in re.finditer(rf"\b{re.escape(token)}\b", low):
+                    hits.append((match.start(), label))
+        names: list[tuple[int, object]] = []
+        for name in coords.index:
+            at = low.find(str(name).lower())
+            while at != -1:
+                names.append((at, name))
+                at = low.find(str(name).lower(), at + 1)
+        if not hits or not names:
+            continue
+        hits.sort()
+
+        carried: list[object] = []
+        for index, (position, label) in enumerate(hits):
+            previous = hits[index - 1][0] if index else 0
+            following = hits[index + 1][0] if index + 1 < len(hits) else len(low)
+
+            # Both word orders occur and both have to be read. "Vapi sits on
+            # the right" puts the name before the direction; "in the bottom-right
+            # corner are Vapi and Rasa" puts it after, and a rule that only
+            # looked backwards silently passed the second -- which is how a
+            # wrong grouping survived a run this checker reported clean.
+            before = [n for at, n in names if previous <= at < position]
+            after = [n for at, n in names if position < at <= following]
+            claimed = before or after
+            if claimed:
+                carried = claimed
+            axis, sign, _tokens = directions[label]
+            for name in carried:
+                value = float(coords.loc[name].iloc[axis])
+                if value == 0 or (value > 0) == (sign > 0):
+                    continue
+                problems.append(
+                    words["mismatch"].format(option=name, claimed=label, actual=opposite[label])
+                )
+
+    return sorted(set(problems))
 
 
 def analysis_markdown(
@@ -2093,6 +2219,11 @@ def analysis_markdown(
 
     lines += [f"## {strings['analysis_heading']}", ""]
     prose = analysis_prose(df, result, poles, axis_names, lang=lang, model=model)
+    if prose:
+        # Surfaced rather than silently corrected: the prose is the model's
+        # reading and editing it here would make the warning unfalsifiable.
+        for problem in check_analysis(prose, result, lang=lang):
+            logger.warning("written analysis: %s", problem)
     lines += [prose or f"*{strings['unavailable']}*", ""]
 
     filled = imputed_cells(df)

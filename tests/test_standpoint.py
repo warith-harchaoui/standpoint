@@ -754,3 +754,137 @@ def test_the_analysis_declares_what_was_invented(monkeypatch) -> None:
     monkeypatch.setattr(p4m, "analysis_prose", lambda *a, **k: "reading")
     md = p4m.analysis_markdown(gapped, fit, _FAKE_POLES, _FAKE_AXES)
     assert "b / Beta" in md
+
+
+@pytest.fixture(scope="module")
+def voice_fit() -> p4m.PCAResult:
+    """A fit whose option names are the ones the prose below talks about.
+
+    Self-contained rather than reusing the module's example table, whose
+    options are programming languages: a checker that finds no name in a
+    sentence reports nothing, so testing it against the wrong table would pass
+    for the wrong reason.
+    """
+    table = (
+        "Spoken Conversation,Local,Barge-in,Latency,Library,Testable,Swappable,Telephony\n"
+        "discussion-helper,5,5,5,5,5,5,1\n"
+        "LiveKit Agents,3,5,4,3,3,5,5\n"
+        "Pipecat,3,4,3,4,3,5,5\n"
+        "Vocode,3,3,2,4,2,4,4\n"
+        "Vapi,1,4,2,1,1,2,5\n"
+        "Amazon Lex,1,2,1,1,1,1,5\n"
+        "Rasa,4,1,1,3,4,3,3\n"
+        "speech_recognition + pyttsx3,5,1,1,5,2,3,1\n"
+    )
+    return p4m.analyze(p4m.parse_table(table), reference=0)
+
+
+def test_the_checker_catches_a_miscalled_side(voice_fit) -> None:
+    """The failure that prompted this check, replayed from a real run.
+
+    The model placed three options correctly and filed two left-hand ones under
+    "lower right" in the same breath. Nothing but the coordinates could tell.
+    """
+    prose = (
+        "Notably, discussion-helper occupies the upper-right corner. "
+        "LiveKit Agents shares the upper region but leans towards adaptability, "
+        "while several options including Amazon Lex, Vapi, Rasa, "
+        "speech_recognition + pyttsx3 and Vocode are grouped in the lower-right "
+        "quadrant."
+    )
+    problems = p4m.check_analysis(prose, voice_fit)
+    assert len(problems) == 2, problems
+    assert any("Amazon Lex" in p and "right" in p for p in problems)
+    assert any("Vapi" in p and "right" in p for p in problems)
+
+
+def test_the_checker_does_not_cry_wolf(voice_fit) -> None:
+    """Precision matters more than recall here.
+
+    A first version attributed every direction word in a sentence to every
+    option named in it, and reported nine problems on the prose above where two
+    were real. A warning channel that cries wolf is no better than the silence
+    it replaced.
+    """
+    good = (
+        "discussion-helper occupies the upper-right corner. "
+        "Amazon Lex and Vapi both sit in the lower left. "
+        "Those on the right prioritise modularity."
+    )
+    assert p4m.check_analysis(good, voice_fit) == []
+
+
+def test_a_statement_about_the_axis_is_not_a_claim_about_anybody(voice_fit) -> None:
+    """ "Those on the right are modular" names no option, so it cannot be wrong."""
+    assert p4m.check_analysis("Options on the left are more adaptable.", voice_fit) == []
+    assert p4m.check_analysis("", voice_fit) == []
+
+
+def test_the_written_analysis_is_reproducible(df, result, monkeypatch) -> None:
+    """Same table, same document. The analysis call runs at temperature 0.
+
+    Reproducibility is a stated property of this package, and the Markdown face
+    must not be the one file that changes between identical runs.
+    """
+    seen: list[float] = []
+
+    def record(prompt, **kwargs):
+        seen.append(kwargs.get("temperature"))
+        return "prose"
+
+    monkeypatch.setattr(p4m.llm, "chat", record)
+    first = p4m.analysis_markdown(df, result, _FAKE_POLES, _FAKE_AXES)
+    second = p4m.analysis_markdown(df, result, _FAKE_POLES, _FAKE_AXES)
+    assert first == second
+    assert seen == [0, 0]
+
+
+def test_the_checker_reads_both_word_orders(voice_fit) -> None:
+    """The blind spot that let a wrong grouping pass a clean run.
+
+    "Vapi sits on the right" puts the name before the direction word; "in the
+    bottom-right corner are Vapi and Rasa" puts it after. The first version
+    only looked backwards, so it reported a real run clean while the prose
+    filed a left-hand option in the bottom-right corner. Found by reading the
+    coordinates against the prose by hand, which is exactly the work this
+    function exists to remove.
+    """
+    after = "The options grouped in the bottom-right corner are Vocode, Vapi and Rasa."
+    before = "Vapi sits in the bottom-right corner."
+    for prose in (after, before):
+        problems = p4m.check_analysis(prose, voice_fit)
+        assert any("Vapi" in p and "right" in p for p in problems), prose
+        # Vocode and Rasa really are bottom-right, so they must not be flagged.
+        assert not any("Vocode" in p or "Rasa" in p for p in problems), problems
+
+
+def test_the_prompt_hands_over_the_corner_membership(df, result, monkeypatch) -> None:
+    """Naming a group has to be copying, not assembling.
+
+    Per-option quadrants were not enough: the model still wrote "the options in
+    the bottom-right corner" and listed one that was in the bottom-left. The
+    four corners therefore arrive with their exact membership. Third time the
+    same remedy applies in this function -- compute the thing and hand it over,
+    rather than hand over its inputs and hope.
+    """
+    captured: dict[str, str] = {}
+
+    def capture(prompt, **kwargs):
+        captured["prompt"] = prompt
+        return "ok"
+
+    monkeypatch.setattr(p4m.llm, "chat", capture)
+    p4m.analysis_prose(df, result, _FAKE_POLES, _FAKE_AXES)
+    prompt = captured["prompt"]
+
+    # The reference is pinned top-right, so a "right-top" corner must be listed
+    # with the reference among its members. Matched on the membership syntax
+    # ("corner: a, b | corner: c") rather than on a character window, because
+    # the per-option quadrant list uses the same corner names earlier on.
+    import re
+
+    corners = {
+        m.group(1): m.group(2) for m in re.finditer(r"(\w+-\w+) \([^)]*\): ([^|\n]+)", prompt)
+    }
+    assert "right-top" in corners, corners
+    assert result.reference in [n.strip() for n in corners["right-top"].split(",")]

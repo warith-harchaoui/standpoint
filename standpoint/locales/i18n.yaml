@@ -48,6 +48,11 @@ en:
     dir_right: "right"
     dir_top: "top"
     dir_bottom: "bottom"
+    dir_left_words: "left"
+    dir_right_words: "right"
+    dir_top_words: "top, upper, higher"
+    dir_bottom_words: "bottom, lower"
+    mismatch: "written analysis places {option} on the {claimed}, but it sits {actual}"
     axes_heading: "Axes"
     analysis_heading: "Analysis"
     imputed_heading: "Cells the table did not contain"
@@ -95,6 +100,9 @@ en:
 
     Each option's quadrant, already worked out for you -- use these words and do
     not try to re-derive a position: {quadrants}
+
+    And the four corners with their exact membership. When you name a group,
+    copy one of these lists; never assemble your own: {groups}
   ratings_prompt: |
     You rate options on criteria for a comparison table, using your own knowledge.
     The options ({noun}) are: {options}.
@@ -239,6 +247,11 @@ fr:
     dir_right: "droite"
     dir_top: "haut"
     dir_bottom: "bas"
+    dir_left_words: "gauche"
+    dir_right_words: "droite"
+    dir_top_words: "haut, supérieur"
+    dir_bottom_words: "bas, inférieur"
+    mismatch: "l'analyse écrite place {option} du côté {claimed}, alors qu'elle est {actual}"
     axes_heading: "Axes"
     analysis_heading: "Analyse"
     imputed_heading: "Cases que le tableau ne contenait pas"
@@ -288,6 +301,9 @@ fr:
 
     Le quadrant de chaque option, déjà établi pour vous — reprenez ces mots sans
     tenter de recalculer une position : {quadrants}
+
+    Et les quatre coins avec leur composition exacte. Quand vous nommez un
+    groupe, recopiez une de ces listes ; n'en composez jamais une : {groups}
   ratings_prompt: |
     Vous notez des options sur des critères pour un tableau comparatif, à partir de
     votre propre connaissance.
@@ -433,6 +449,11 @@ es:
     dir_right: "derecha"
     dir_top: "arriba"
     dir_bottom: "abajo"
+    dir_left_words: "izquierda"
+    dir_right_words: "derecha"
+    dir_top_words: "arriba, superior"
+    dir_bottom_words: "abajo, inferior"
+    mismatch: "el análisis escrito sitúa {option} en {claimed}, pero está en {actual}"
     axes_heading: "Ejes"
     analysis_heading: "Análisis"
     imputed_heading: "Celdas que la tabla no contenía"
@@ -480,6 +501,9 @@ es:
 
     El cuadrante de cada opción, ya resuelto para ti: usa estas palabras y no
     intentes volver a deducir una posición: {quadrants}
+
+    Y las cuatro esquinas con su composición exacta. Cuando nombres un grupo,
+    copia una de estas listas; nunca compongas la tuya: {groups}
   ratings_prompt: |
     Valoras opciones sobre criterios para una tabla comparativa, con tu propio
     conocimiento.
