@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-20
+
+### Changed
+
+- **`locales/i18n.yaml` turned round into the suite's canonical shape, and
+  `i18n()` now reads it through `os_helper.Locales`.** The file put the
+  locale first (`en:` / `fr:` / `es:` at the top level) and declared no
+  `meta`, so the loader shared by the rest of the suite refused it outright.
+  It is now keyed by semantic name first and locale second, with its
+  metadata declared (CODING.md 21.3).
+
+  **`i18n(lang)` keeps its signature and its return value**: callers want a
+  whole language at once, never a single key, so the function transposes the
+  one section back into the per-language view they expect. No call site
+  moved.
+
+  These templates drive what a local model writes, in three languages, so
+  the transposition was done by program rather than by hand and **verified
+  to reproduce every language bundle object-for-object against the previous
+  file** — not "looks right", identical. Four tests now hold that: the file
+  loads under the shared loader, the shared validator finds nothing, all
+  three languages carry the same keys, and an unknown language still falls
+  back to English.
+
+- **`os-helper` is a declared dependency.** standpoint was the only member of
+  the suite that imported it nowhere, receiving it transitively through
+  best-engine-ai-helper. The code now imports it by name, so it is declared
+  by name.
+
+- **`best-engine-ai-helper` is capped at `<2`, with the floor at 1.6.1.** It
+  read `>=1.0` with no ceiling, so a future major would have resolved in
+  silently. The floor is 1.6.1 because every earlier wheel shipped an empty
+  model catalogue (see that package's 1.6.1 entry), which is not a version
+  this one can be asked to work against.
+
 ## [0.11.1] - 2026-10-20
 
 ### Fixed

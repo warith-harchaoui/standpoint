@@ -18,7 +18,13 @@ dependencies = [
     "resvg-py>=0.3",
     "PyYAML>=6.0",
     "langdetect>=1.0.9",
-    "best-engine-ai-helper>=1.0",
+    # The shared locale loader (`osh.Locales`) that reads locales/i18n.yaml.
+    # Previously arrived transitively through best-engine-ai-helper; the code
+    # imports it by name now, so it is declared by name.
+    "os-helper>=2.4.0,<3",
+    # Capped: it was ">=1.0" with no ceiling, so a future major would have
+    # resolved in silently — the same gap found across the suite.
+    "best-engine-ai-helper>=1.6.1,<2",
     "click>=8.1",
 ]
 classifiers = [

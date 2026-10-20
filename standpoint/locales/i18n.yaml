@@ -1,608 +1,572 @@
 # Standpoint: localized LLM prompt templates.
-# Language is auto-detected from the table's column names (langdetect); the
-# detected language drives the pole names so the whole deliverable comes out in
-# the table's own language. Supported: en, fr, es.
+#
+# Shape: the suite's canonical one (CODING.md 21.3) — a semantic key first,
+# then one value per locale — read by the shared loader `os_helper.Locales`.
+# It used to put the locale first (`en:` / `fr:` / `es:` at the top level),
+# which no shared loader could read. `standpoint.i18n(lang)` still hands back
+# the whole bundle for one language, because that is how every caller uses it;
+# only the file turned round, and the transposition was verified to reproduce
+# each language bundle object-for-object.
+#
+# Unlike most of the suite, the prompts here ARE translated rather than
+# authored in one model-facing language: the deliverable must come out in the
+# table's own language, so the language is detected from the column names and
+# drives the pole names, the analysis and the title. CODING.md 21.3.3 permits
+# both and asks only that the choice be deliberate and centralized.
 #
 # Placeholders (Python str.format): {glossary} {left} {right} {bottom} {top}
 # for axis_prompt. JSON braces are escaped as {{ }}.
 
-en:
-  # Figure title. {plural} is the plural of the table's first-column noun. The whole
-  # title is localized, so a French table never reads "Voitures in the Quadrant".
-  title_template: "{plural} in the Quadrant"
-  noun_prompt: |
-    Translate this word to English if it isn't already, then give its singular and
-    plural forms, capitalized, not a different synonym: "{word}".
-    Reply as JSON: {{"singular": "...", "plural": "..."}}.
-  glossary_prefix: "Glossary, translate these to plain words, never output the acronym: "
-  axis_prompt: |
-    You are naming the four poles of a 2D map whose two axes are weighted
-    combinations of the input criteria. Every criterion is rated higher-is-better:
-    a higher value always means more of a good thing.
+meta:
+  default_locale: en
+  supported_locales:
+  - en
+  - fr
+  - es
+bundle:
+  title_template:
+    en: '{plural} in the Quadrant'
+    fr: '{plural} dans le quadrant'
+    es: '{plural} en el cuadrante'
+  noun_prompt:
+    en: 'Translate this word to English if it isn''t already, then give its singular and
 
-    Each label names a POSITIVE QUALITY, a strength an approach at that end can be
-    praised for. Give a concise label of ONE to THREE real English words. Rules:
-    - ALWAYS a positive quality. NEVER a drawback, cost, or negative. Forbidden
-      examples: 'High Cost', 'Expensive', 'Slow', 'Complex', 'Insecure'. If a
-      criterion is an inverse quantity (cost, price, latency, errors) where a high
-      rating means LESS of it, name the benefit instead ('Affordable', 'Fast',
-      'Reliable', 'Simple', 'Secure').
-    - The four labels are four DIFFERENT positive qualities, never an opposite pair
-      or antonyms (not 'Affordable' and 'Expensive', not 'Fast' and 'Slow'), and
-      never reuse a word across labels.
-    - Never output an acronym or abbreviation; spell out the idea.
-    - Write the labels in English.
+      plural forms, capitalized, not a different synonym: "{word}".
 
-    Each pole below lists the criteria that approaches THERE score highest on. Name
-    the shared positive quality of that list:
-    {glossary}LEFT pole, strongest at: {left}
-    RIGHT pole, strongest at: {right}
-    BOTTOM pole, strongest at: {bottom}
-    TOP pole, strongest at: {top}
+      Reply as JSON: {{"singular": "...", "plural": "..."}}.
 
-    Reply as JSON: {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
-  # "Flemme" (lazy) autofill: the user typed the option names and the criteria; the
-  # model fills every rating from its own knowledge. {noun} is the first-column word.
+      '
+    fr: 'Traduisez ce mot en français s''il ne l''est pas déjà, puis donnez son singulier et
+
+      son pluriel, avec une majuscule, pas un synonyme différent : « {word} ».
+
+      Répondez en JSON : {{"singular": "...", "plural": "..."}}.
+
+      '
+    es: 'Traduce esta palabra al español si no lo está ya, y luego da su singular y
+
+      plural, con mayúscula, no un sinónimo diferente: «{word}».
+
+      Responde en JSON: {{"singular": "...", "plural": "..."}}.
+
+      '
+  glossary_prefix:
+    en: 'Glossary, translate these to plain words, never output the acronym: '
+    fr: 'Glossaire, traduisez en mots simples, n''affichez jamais l''acronyme : '
+    es: 'Glosario, traduce a palabras simples, nunca muestres la sigla: '
+  axis_prompt:
+    en: "You are naming the four poles of a 2D map whose two axes are weighted\ncombinations of the input\
+      \ criteria. Every criterion is rated higher-is-better:\na higher value always means more of a good\
+      \ thing.\n\nEach label names a POSITIVE QUALITY, a strength an approach at that end can be\npraised\
+      \ for. Give a concise label of ONE to THREE real English words. Rules:\n- ALWAYS a positive quality.\
+      \ NEVER a drawback, cost, or negative. Forbidden\n  examples: 'High Cost', 'Expensive', 'Slow',\
+      \ 'Complex', 'Insecure'. If a\n  criterion is an inverse quantity (cost, price, latency, errors)\
+      \ where a high\n  rating means LESS of it, name the benefit instead ('Affordable', 'Fast',\n  'Reliable',\
+      \ 'Simple', 'Secure').\n- The four labels are four DIFFERENT positive qualities, never an opposite\
+      \ pair\n  or antonyms (not 'Affordable' and 'Expensive', not 'Fast' and 'Slow'), and\n  never reuse\
+      \ a word across labels.\n- Never output an acronym or abbreviation; spell out the idea.\n- Write\
+      \ the labels in English.\n\nEach pole below lists the criteria that approaches THERE score highest\
+      \ on. Name\nthe shared positive quality of that list:\n{glossary}LEFT pole, strongest at: {left}\n\
+      RIGHT pole, strongest at: {right}\nBOTTOM pole, strongest at: {bottom}\nTOP pole, strongest at:\
+      \ {top}\n\nReply as JSON: {{\"left\": \"<label>\", \"right\": \"<label>\", \"bottom\": \"<label>\"\
+      , \"top\": \"<label>\"}}.\n"
+    fr: "Vous nommez les quatre pôles d'une carte 2D dont les deux axes sont des\ncombinaisons pondérées\
+      \ des critères d'entrée. Chaque critère est noté « plus\nc'est haut, mieux c'est » : une valeur\
+      \ plus élevée signifie toujours plus d'une\nbonne chose.\n\nChaque étiquette nomme une QUALITÉ POSITIVE,\
+      \ une force pour laquelle une\napproche de ce côté peut être louée. Donnez une étiquette de UN à\
+      \ TROIS vrais\nmots français. Règles :\n- TOUJOURS une qualité positive. JAMAIS un inconvénient,\
+      \ un coût ni un négatif.\n  Exemples interdits : « Coût élevé », « Cher », « Lent », « Complexe\
+      \ ». Si un\n  critère est une quantité inverse (coût, prix, latence, erreurs) où une note\n  élevée\
+      \ signifie MOINS, nommez plutôt le bénéfice (« Abordable », « Rapide »,\n  « Fiable », « Simple\
+      \ », « Sécurisé »).\n- Les quatre étiquettes sont quatre qualités positives DIFFÉRENTES, jamais\
+      \ une\n  paire opposée ni des antonymes (pas « Abordable » et « Cher », pas « Rapide »\n  et « Lent\
+      \ »), et ne réutilisez jamais un mot d'une étiquette à l'autre.\n- N'affichez jamais d'acronyme\
+      \ ni d'abréviation ; explicitez l'idée.\n- Rédigez les étiquettes en français.\n\nChaque pôle ci-dessous\
+      \ liste les critères où les approches obtiennent les\nmeilleures notes. Nommez la qualité positive\
+      \ commune de cette liste :\n{glossary}Pôle GAUCHE, les plus fortes en : {left}\nPôle DROIT, les\
+      \ plus fortes en : {right}\nPôle BAS, les plus fortes en : {bottom}\nPôle HAUT, les plus fortes\
+      \ en : {top}\n\nRépondez en JSON : {{\"left\": \"<label>\", \"right\": \"<label>\", \"bottom\":\
+      \ \"<label>\", \"top\": \"<label>\"}}.\n"
+    es: "Estás nombrando los cuatro polos de un mapa 2D cuyos dos ejes son combinaciones\nponderadas de\
+      \ los criterios de entrada. Cada criterio se valora « cuanto más\nalto, mejor » : un valor más alto\
+      \ siempre significa más de algo bueno.\n\nCada etiqueta nombra una CUALIDAD POSITIVA, una fortaleza\
+      \ por la que una\npropuesta de ese extremo puede ser elogiada. Da una etiqueta de UNA a TRES\npalabras\
+      \ reales en español. Reglas:\n- SIEMPRE una cualidad positiva. NUNCA un inconveniente, un coste\
+      \ ni un negativo.\n  Ejemplos prohibidos: « Coste alto », « Caro », « Lento », « Complejo ». Si\
+      \ un\n  criterio es una cantidad inversa (coste, precio, latencia, errores) donde una\n  puntuación\
+      \ alta significa MENOS, nombra el beneficio (« Asequible », « Rápido »,\n  « Fiable », « Sencillo\
+      \ », « Seguro »).\n- Las cuatro etiquetas son cuatro cualidades positivas DIFERENTES, nunca un par\n\
+      \  opuesto ni antónimos (no « Asequible » y « Caro », no « Rápido » y « Lento »),\n  y nunca reutilices\
+      \ una palabra entre etiquetas.\n- Nunca muestres una sigla ni una abreviatura; explica la idea.\n\
+      - Escribe las etiquetas en español.\n\nCada polo abajo lista los criterios donde las propuestas\
+      \ puntúan más alto.\nNombra la cualidad positiva común de esa lista:\n{glossary}Polo IZQUIERDO,\
+      \ más fuertes en: {left}\nPolo DERECHO, más fuertes en: {right}\nPolo INFERIOR, más fuertes en:\
+      \ {bottom}\nPolo SUPERIOR, más fuertes en: {top}\n\nResponde en JSON: {{\"left\": \"<label>\", \"\
+      right\": \"<label>\", \"bottom\": \"<label>\", \"top\": \"<label>\"}}.\n"
   analysis_md:
-    dir_left: "left"
-    dir_right: "right"
-    dir_top: "top"
-    dir_bottom: "bottom"
-    dir_left_words: "left"
-    dir_right_words: "right"
-    dir_top_words: "top, upper, higher"
-    dir_bottom_words: "bottom, lower"
-    mismatch: "written analysis places {option} on the {claimed}, but it sits {actual}"
-    axes_heading: "Axes"
-    analysis_heading: "Analysis"
-    imputed_heading: "Cells the table did not contain"
-    horizontal: "Horizontal"
-    vertical: "Vertical"
-    variance_axis: "~{pct}% of the variance"
-    variance_total: "In two axes, we preserved ~{pct}% of the information in the table."
-    imputed_intro: "These ratings were not supplied and were filled with their column's minimum, so every coordinate above depends partly on them:"
-    unavailable: "The written analysis needs the local model, which was not reachable."
-  analysis_prompt: |
-    You are writing the short written analysis that accompanies a 2D
-    positioning map. The map is a PCA of a comparison table: every criterion is
-    rated 1 to 5, higher is better, and the two axes are weighted combinations
-    of those criteria.
+    en:
+      dir_left: left
+      dir_right: right
+      dir_top: top
+      dir_bottom: bottom
+      dir_left_words: left
+      dir_right_words: right
+      dir_top_words: top, upper, higher
+      dir_bottom_words: bottom, lower
+      mismatch: written analysis places {option} on the {claimed}, but it sits {actual}
+      axes_heading: Axes
+      analysis_heading: Analysis
+      imputed_heading: Cells the table did not contain
+      horizontal: Horizontal
+      vertical: Vertical
+      variance_axis: ~{pct}% of the variance
+      variance_total: In two axes, we preserved ~{pct}% of the information in the table.
+      imputed_intro: 'These ratings were not supplied and were filled with their column''s minimum, so
+        every coordinate above depends partly on them:'
+      unavailable: The written analysis needs the local model, which was not reachable.
+    fr:
+      dir_left: gauche
+      dir_right: droite
+      dir_top: haut
+      dir_bottom: bas
+      dir_left_words: gauche
+      dir_right_words: droite
+      dir_top_words: haut, supérieur
+      dir_bottom_words: bas, inférieur
+      mismatch: l'analyse écrite place {option} du côté {claimed}, alors qu'elle est {actual}
+      axes_heading: Axes
+      analysis_heading: Analyse
+      imputed_heading: Cases que le tableau ne contenait pas
+      horizontal: Horizontal
+      vertical: Vertical
+      variance_axis: ~{pct} % de la variance
+      variance_total: En deux axes, nous avons préservé ~{pct} % de l'information du tableau.
+      imputed_intro: 'Ces notes n''étaient pas fournies ; elles ont été remplies par le minimum de leur
+        colonne, si bien que chaque coordonnée ci-dessus en dépend en partie :'
+      unavailable: L'analyse écrite demande le modèle local, qui n'était pas joignable.
+    es:
+      dir_left: izquierda
+      dir_right: derecha
+      dir_top: arriba
+      dir_bottom: abajo
+      dir_left_words: izquierda
+      dir_right_words: derecha
+      dir_top_words: arriba, superior
+      dir_bottom_words: abajo, inferior
+      mismatch: el análisis escrito sitúa {option} en {claimed}, pero está en {actual}
+      axes_heading: Ejes
+      analysis_heading: Análisis
+      imputed_heading: Celdas que la tabla no contenía
+      horizontal: Horizontal
+      vertical: Vertical
+      variance_axis: ~{pct} % de la varianza
+      variance_total: En dos ejes, hemos preservado ~{pct} % de la información de la tabla.
+      imputed_intro: 'Estas puntuaciones no se facilitaron y se rellenaron con el mínimo de su columna,
+        de modo que cada coordenada anterior depende en parte de ellas:'
+      unavailable: El análisis escrito necesita el modelo local, que no estaba accesible.
+  analysis_prompt:
+    en: "You are writing the short written analysis that accompanies a 2D\npositioning map. The map is\
+      \ a PCA of a comparison table: every criterion is\nrated 1 to 5, higher is better, and the two axes\
+      \ are weighted combinations\nof those criteria.\n\nWrite TWO or THREE short paragraphs of plain\
+      \ English prose. Rules:\n- Interpret, do not recite. The reader already has the table and the\n\
+      \  numbers; what they want is what the shape MEANS.\n- Never state a percentage, a coordinate or\
+      \ a rating. Those are computed\n  and printed around your text, and a number you invent would contradict\n\
+      \  them.\n- Say what the horizontal axis separates, and what the vertical one\n  separates. Name\
+      \ the criteria that load most heavily on each.\n- Name which options sit together and why, including\
+      \ any that land in the\n  same corner for different reasons.\n- If the leader wins on some axes\
+      \ and not others, say so plainly. A\n  analysis that only flatters the leader is worthless.\n- Never\
+      \ say two options sit together, converge, or share a corner unless\n  the quadrant list below gives\
+      \ them the SAME label. A model that groups\n  two options by intuition writes a sentence the map\
+      \ contradicts.\n- No headings, no bullet lists, no bold. Flowing prose only.\n- Write in English.\n\
+      \nReference option (the leader): {reference}\n\nHorizontal axis: {axis_1}, from {pole_left} on the\
+      \ left to {pole_right} on the right.\nWeights on the horizontal axis: {loadings_1}\nToward {pole_right}\
+      \ (the right side), strongest first: {right_side}\nToward {pole_left} (the left side), strongest\
+      \ first: {left_side}\n\nVertical axis: {axis_2}, from {pole_bottom} at the bottom to {pole_top}\
+      \ at the top.\nWeights on the vertical axis: {loadings_2}\nToward {pole_top} (the upper half), strongest\
+      \ first: {top_side}\nToward {pole_bottom} (the lower half), strongest first: {bottom_side}\n\nEach\
+      \ option's quadrant, already worked out for you -- use these words and do\nnot try to re-derive\
+      \ a position: {quadrants}\n\nAnd the four corners with their exact membership. When you name a group,\n\
+      copy one of these lists; never assemble your own: {groups}\n"
+    fr: "Vous rédigez la courte analyse écrite qui accompagne une carte de\npositionnement en 2D. La carte\
+      \ est une ACP d'un tableau comparatif : chaque\ncritère est noté de 1 à 5, le plus haut étant le\
+      \ mieux, et les deux axes\nsont des combinaisons pondérées de ces critères.\n\nÉcrivez DEUX ou TROIS\
+      \ courts paragraphes en français courant. Règles :\n- Interprétez, ne récitez pas. Le lecteur a\
+      \ déjà le tableau ainsi que les\n  chiffres ; ce qu'il veut, c'est ce que la forme VEUT DIRE.\n\
+      - N'énoncez jamais un pourcentage, une coordonnée ni une note. Ces valeurs\n  sont calculées puis\
+      \ imprimées autour de votre texte, et un chiffre que\n  vous inventeriez les contredirait.\n- Dites\
+      \ ce que sépare l'axe horizontal, puis ce que sépare l'axe vertical.\n  Nommez les critères qui\
+      \ pèsent le plus sur chacun.\n- Nommez les options qui se regroupent ainsi que la raison, y compris\n\
+      \  celles qui atterrissent dans le même coin pour des raisons différentes.\n- Si le leader gagne\
+      \ sur certains axes et pas sur d'autres, dites-le\n  franchement. Une analyse qui ne fait que flatter\
+      \ le leader ne vaut rien.\n- Ne dites jamais que deux options se rejoignent, convergent ou partagent\n\
+      \  un coin si la liste des quadrants ci-dessous ne leur donne pas la MÊME\n  étiquette. Regrouper\
+      \ deux options à l'intuition produit une phrase que la\n  carte contredit.\n- Aucun titre, aucune\
+      \ liste à puces, aucun gras. Prose suivie uniquement.\n- N'écrivez jamais une virgule avant « et\
+      \ » ni avant « ou ».\n- Rédigez en français.\n\nOption de référence (le leader) : {reference}\n\n\
+      Axe horizontal : {axis_1}, de {pole_left} à gauche vers {pole_right} à droite.\nPoids sur l'axe\
+      \ horizontal : {loadings_1}\nVers {pole_right} (le côté droit), du plus fort au plus faible : {right_side}\n\
+      Vers {pole_left} (le côté gauche), du plus fort au plus faible : {left_side}\n\nAxe vertical : {axis_2},\
+      \ de {pole_bottom} en bas vers {pole_top} en haut.\nPoids sur l'axe vertical : {loadings_2}\nVers\
+      \ {pole_top} (la moitié haute), du plus fort au plus faible : {top_side}\nVers {pole_bottom} (la\
+      \ moitié basse), du plus fort au plus faible : {bottom_side}\n\nLe quadrant de chaque option, déjà\
+      \ établi pour vous — reprenez ces mots sans\ntenter de recalculer une position : {quadrants}\n\n\
+      Et les quatre coins avec leur composition exacte. Quand vous nommez un\ngroupe, recopiez une de\
+      \ ces listes ; n'en composez jamais une : {groups}\n"
+    es: "Estás escribiendo el breve análisis escrito que acompaña a un mapa de\nposicionamiento 2D. El\
+      \ mapa es un ACP de una tabla comparativa: cada\ncriterio se puntúa de 1 a 5, más alto es mejor,\
+      \ y los dos ejes son\ncombinaciones ponderadas de esos criterios.\n\nEscribe DOS o TRES párrafos\
+      \ breves en español llano. Reglas:\n- Interpreta, no recites. El lector ya tiene la tabla y los\
+      \ números; lo que\n  quiere es lo que la forma SIGNIFICA.\n- Nunca indiques un porcentaje, una coordenada\
+      \ ni una puntuación. Se\n  calculan y se imprimen alrededor de tu texto, y un número inventado los\n\
+      \  contradiría.\n- Di qué separa el eje horizontal y qué separa el vertical. Nombra los\n  criterios\
+      \ que más pesan en cada uno.\n- Nombra qué opciones se agrupan y por qué, incluidas las que caen\
+      \ en la\n  misma esquina por razones distintas.\n- Si el líder gana en algunos ejes y no en otros,\
+      \ dilo con claridad. Un\n  análisis que sólo halaga al líder no vale nada.\n- Nunca digas que dos\
+      \ opciones coinciden, convergen o comparten una\n  esquina si la lista de cuadrantes no les da la\
+      \ MISMA etiqueta. Agrupar\n  dos opciones por intuición produce una frase que el mapa contradice.\n\
+      - Sin títulos, sin listas, sin negrita. Sólo prosa corrida.\n- Escribe en español.\n\nOpción de\
+      \ referencia (el líder): {reference}\n\nEje horizontal: {axis_1}, de {pole_left} a la izquierda\
+      \ a {pole_right} a la derecha.\nPesos en el eje horizontal: {loadings_1}\nHacia {pole_right} (el\
+      \ lado derecho), de mayor a menor: {right_side}\nHacia {pole_left} (el lado izquierdo), de mayor\
+      \ a menor: {left_side}\n\nEje vertical: {axis_2}, de {pole_bottom} abajo a {pole_top} arriba.\n\
+      Pesos en el eje vertical: {loadings_2}\nHacia {pole_top} (la mitad superior), de mayor a menor:\
+      \ {top_side}\nHacia {pole_bottom} (la mitad inferior), de mayor a menor: {bottom_side}\n\nEl cuadrante\
+      \ de cada opción, ya resuelto para ti: usa estas palabras y no\nintentes volver a deducir una posición:\
+      \ {quadrants}\n\nY las cuatro esquinas con su composición exacta. Cuando nombres un grupo,\ncopia\
+      \ una de estas listas; nunca compongas la tuya: {groups}\n"
+  ratings_prompt:
+    en: 'You rate options on criteria for a comparison table, using your own knowledge.
 
-    Write TWO or THREE short paragraphs of plain English prose. Rules:
-    - Interpret, do not recite. The reader already has the table and the
-      numbers; what they want is what the shape MEANS.
-    - Never state a percentage, a coordinate or a rating. Those are computed
-      and printed around your text, and a number you invent would contradict
-      them.
-    - Say what the horizontal axis separates, and what the vertical one
-      separates. Name the criteria that load most heavily on each.
-    - Name which options sit together and why, including any that land in the
-      same corner for different reasons.
-    - If the leader wins on some axes and not others, say so plainly. A
-      analysis that only flatters the leader is worthless.
-    - Never say two options sit together, converge, or share a corner unless
-      the quadrant list below gives them the SAME label. A model that groups
-      two options by intuition writes a sentence the map contradicts.
-    - No headings, no bullet lists, no bold. Flowing prose only.
-    - Write in English.
+      The options ({noun}) are: {options}.
 
-    Reference option (the leader): {reference}
+      The criteria are: {criteria}.
 
-    Horizontal axis: {axis_1}, from {pole_left} on the left to {pole_right} on the right.
-    Weights on the horizontal axis: {loadings_1}
-    Toward {pole_right} (the right side), strongest first: {right_side}
-    Toward {pole_left} (the left side), strongest first: {left_side}
+      Rate EVERY option on EVERY criterion with an INTEGER from 1 to 5, where 5 is the
 
-    Vertical axis: {axis_2}, from {pole_bottom} at the bottom to {pole_top} at the top.
-    Weights on the vertical axis: {loadings_2}
-    Toward {pole_top} (the upper half), strongest first: {top_side}
-    Toward {pole_bottom} (the lower half), strongest first: {bottom_side}
+      best possible and 1 the worst, judging each criterion on its plain positive
 
-    Each option's quadrant, already worked out for you -- use these words and do
-    not try to re-derive a position: {quadrants}
+      meaning (for a cost/price/latency criterion, 5 means cheap/fast, 1 means
 
-    And the four corners with their exact membership. When you name a group,
-    copy one of these lists; never assemble your own: {groups}
-  ratings_prompt: |
-    You rate options on criteria for a comparison table, using your own knowledge.
-    The options ({noun}) are: {options}.
-    The criteria are: {criteria}.
-    Rate EVERY option on EVERY criterion with an INTEGER from 1 to 5, where 5 is the
-    best possible and 1 the worst, judging each criterion on its plain positive
-    meaning (for a cost/price/latency criterion, 5 means cheap/fast, 1 means
-    expensive/slow). Base the ratings on what these options are actually known for.
-    Reply as JSON only, an object mapping each exact option name to an object mapping
-    each exact criterion name to its integer, e.g.
-    {{"OptionA": {{"Crit1": 4, "Crit2": 2}}, "OptionB": {{"Crit1": 3, "Crit2": 5}}}}.
-  vlm_assess_prompt: >-
-    This image is a 2D competitor positioning map. The single RED dot is the
-    leader and should sit in the TOP-RIGHT QUADRANT (anywhere in the
-    upper-right quarter of the map, above the horizontal axis and right of the
-    vertical axis; it does NOT need to touch the extreme corner). The four
-    axis poles are named in italic text at the top, bottom, left, and right
-    edges. Assess three things: (1) is the red leader dot anywhere in the
-    top-right quadrant? (2) are the point labels readable and not badly
-    overlapping? (3) are the four italic axis pole labels at the edges present
-    and legible? Reply as JSON.
-  # Notes for the deterministic layout self-check (`assess_layout`), which
-  # replaced the vision model on the CLI's --check path.
-  check_ok: "Layout checks passed."
-  check_leader_not_top_right: "The leader ({leader}) is not in the top-right quadrant."
-  check_poles_missing: "Some axis pole labels are missing."
-  check_crowded: "Point labels risk overlapping: {pairs}."
+      expensive/slow). Base the ratings on what these options are actually known for.
+
+      Reply as JSON only, an object mapping each exact option name to an object mapping
+
+      each exact criterion name to its integer, e.g.
+
+      {{"OptionA": {{"Crit1": 4, "Crit2": 2}}, "OptionB": {{"Crit1": 3, "Crit2": 5}}}}.
+
+      '
+    fr: 'Vous notez des options sur des critères pour un tableau comparatif, à partir de
+
+      votre propre connaissance.
+
+      Les options ({noun}) sont : {options}.
+
+      Les critères sont : {criteria}.
+
+      Notez CHAQUE option sur CHAQUE critère avec un ENTIER de 1 à 5, où 5 est le
+
+      meilleur possible et 1 le pire, en jugeant chaque critère sur son sens positif
+
+      simple (pour un critère de coût/prix/latence, 5 = bon marché/rapide, 1 =
+
+      cher/lent). Fondez les notes sur ce pour quoi ces options sont réellement connues.
+
+      Répondez uniquement en JSON, un objet associant chaque nom exact d''option à un
+
+      objet associant chaque nom exact de critère à son entier, p. ex.
+
+      {{"OptionA": {{"Crit1": 4, "Crit2": 2}}, "OptionB": {{"Crit1": 3, "Crit2": 5}}}}.
+
+      '
+    es: 'Valoras opciones sobre criterios para una tabla comparativa, con tu propio
+
+      conocimiento.
+
+      Las opciones ({noun}) son: {options}.
+
+      Los criterios son: {criteria}.
+
+      Valora CADA opción en CADA criterio con un ENTERO de 1 a 5, donde 5 es lo mejor
+
+      posible y 1 lo peor, juzgando cada criterio por su sentido positivo simple (para
+
+      un criterio de coste/precio/latencia, 5 = barato/rápido, 1 = caro/lento). Basa las
+
+      notas en aquello por lo que estas opciones son realmente conocidas.
+
+      Responde solo en JSON, un objeto que asocia cada nombre exacto de opción a un
+
+      objeto que asocia cada nombre exacto de criterio a su entero, p. ej.
+
+      {{"OpcionA": {{"Crit1": 4, "Crit2": 2}}, "OpcionB": {{"Crit1": 3, "Crit2": 5}}}}.
+
+      '
+  vlm_assess_prompt:
+    en: 'This image is a 2D competitor positioning map. The single RED dot is the leader and should sit
+      in the TOP-RIGHT QUADRANT (anywhere in the upper-right quarter of the map, above the horizontal
+      axis and right of the vertical axis; it does NOT need to touch the extreme corner). The four axis
+      poles are named in italic text at the top, bottom, left, and right edges. Assess three things: (1)
+      is the red leader dot anywhere in the top-right quadrant? (2) are the point labels readable and
+      not badly overlapping? (3) are the four italic axis pole labels at the edges present and legible?
+      Reply as JSON.'
+    fr: 'Cette image est une carte de positionnement concurrentiel en 2D. Le point ROUGE unique est le
+      leader et devrait se situer dans le QUADRANT HAUT-DROIT (n''importe où dans le quart supérieur droit
+      de la carte, au-dessus de l''axe horizontal et à droite de l''axe vertical ; il n''a PAS besoin
+      de toucher le coin extrême). Les quatre pôles d''axe sont nommés en italique aux bords haut, bas,
+      gauche et droit. Évaluez trois choses : (1) le point rouge du leader est-il quelque part dans le
+      quadrant haut-droit ? (2) les étiquettes des points sont-elles lisibles et ne se chevauchent-elles
+      pas trop ? (3) les quatre étiquettes de pôle en italique sont-elles présentes et lisibles aux bords
+      ? Répondez en JSON.'
+    es: 'Esta imagen es un mapa de posicionamiento competitivo en 2D. El único punto ROJO es el líder
+      y debería situarse en el CUADRANTE SUPERIOR DERECHO (en cualquier lugar del cuarto superior derecho
+      del mapa, por encima del eje horizontal y a la derecha del eje vertical; NO necesita tocar la esquina
+      extrema). Los cuatro polos del eje están nombrados en cursiva en los bordes superior, inferior,
+      izquierdo y derecho. Evalúa tres cosas: (1) ¿está el punto rojo del líder en algún lugar del cuadrante
+      superior derecho? (2) ¿son legibles las etiquetas de los puntos y no se solapan demasiado? (3) ¿están
+      presentes y son legibles las cuatro etiquetas de polo en cursiva en los bordes? Responde en JSON.'
+  check_ok:
+    en: Layout checks passed.
+    fr: Vérifications de mise en page réussies.
+    es: Verificaciones de disposición superadas.
+  check_leader_not_top_right:
+    en: The leader ({leader}) is not in the top-right quadrant.
+    fr: Le leader ({leader}) n'est pas dans le quadrant haut-droit.
+    es: El líder ({leader}) no está en el cuadrante superior derecho.
+  check_poles_missing:
+    en: Some axis pole labels are missing.
+    fr: Des étiquettes de pôle d'axe sont manquantes.
+    es: Faltan etiquetas de polo de eje.
+  check_crowded:
+    en: 'Point labels risk overlapping: {pairs}.'
+    fr: 'Les étiquettes de points risquent de se chevaucher : {pairs}.'
+    es: 'Las etiquetas de los puntos corren riesgo de solaparse: {pairs}.'
   gui:
-    lang_name: English
-    baseline: Where do you stand?
-    pitch: Give any table of options scored against criteria and it will place each one on a quadrant, with axes derived from your data and labeled in plain language, so you can see at a glance where the option you care about stands.
-    guide_1: Fill out the table (or import it as a CSV/XLSX file), then select the row you want to promote.
-    guide_2: Click “Generate Quadrant”.
-    github: ⭐️ on GitHub
-    busy_aria: Working…
-    theme_light_aria: Switch to dark theme
-    theme_dark_aria: Switch to light theme
-    lang_aria: Switch language
-    table_title: Table
-    examples_label: "Examples:"
-    ex_languages: Programming languages
-    ex_laptops: Laptops
-    ex_cloud: Cloud providers
-    ex_cars: Electric cars
-    add_row: ＋ Option (row)
-    add_col: ＋ Criterion (column)
-    new_table: 🆕 New Table
-    flemme: 😴 Laziness (auto-fill)
-    flemme_aria: Auto-fill the empty cells from the model's knowledge
-    upload: Upload CSV / XLSX
-    download_csv: Download CSV
-    download_xlsx: Download XLSX
-    hint_higher: Higher is better by default.
-    hint_toggle: "Toggle ⬇️ / ⬆️ on a column to set whether lower or higher is the better score."
-    options_title: Options
-    reference_label: Chosen top-right reference
-    transparent_bg: Transparent background
-    generate: Generate quadrant
-    generating: Generating…
-    status_running: "Running PCA and asking the local model… (this can take ~10–25 s)"
-    flemme_running: "Asking the model to fill the table… (this can take a moment)"
-    quadrant_title: Quadrant
-    chart_placeholder: Generate to see the map.
-    err_upload: "Upload failed: "
-    err_xlsx: XLSX export failed.
-    err_flemme: "Auto-fill failed: "
-    err_generic: "Error: "
-    err_image: "Image export failed: "
-    # Static (in-browser) build only: ONE distilled model, downloaded at page
-    # load, answers every engine call — pole naming, noun forms, the
-    # "Laziness" ratings fill (webapp/backend-pyodide.js).
-    # The server GUI never shows these keys.
-    flemme_none: "no empty cells to fill — add an option, a criterion, or clear a cell first."
-    model_loading: "Downloading the AI model (about 330 MB, once — it stays cached for later visits)… "
-    model_offline: "AI model unavailable; axes and names fall back to the built-in heuristics."
-    flemme_server: "Answered by the shared AI server. Your table's data was sent to it, not kept in this page."
-    flemme_server_login: "Sign in to the shared AI server for the fast path. Using the in-page model meanwhile."
-    flemme_server_login_link: "Sign in"
-    flemme_nogpu: "this browser can't run the in-page AI model (WebGPU missing); try a recent Chrome, Edge or Safari."
-    new_option: New
-    new_criterion: Criterion
-    aria_options_col: Name of the options column
-    aria_criterion: Criterion {n} name
-    aria_higher: Higher is better, click to make lower better
-    aria_lower: Lower is better, click to make higher better
-    title_higher: higher is better (click to flip)
-    title_lower: lower is better (click to flip)
-    aria_del_col: Delete column
-    title_del_col: delete column
-    aria_del_row: Delete option {n}
-    title_del_row: delete row
-    aria_option: Option {n} name
-    aria_rating: Rating of {opt} on {crit}
-    ref_fallback: "row {i}"
-    poles_title: Axis poles
-    poles_hint: "Rename the four poles; the map updates live."
-    aria_pole_top: Top pole name
-    aria_pole_left: Left pole name
-    aria_pole_right: Right pole name
-    aria_pole_bottom: Bottom pole name
-
-fr:
-  # « Voitures dans le quadrant », jamais « Voitures in the Quadrant ».
-  title_template: "{plural} dans le quadrant"
-  noun_prompt: |
-    Traduisez ce mot en français s'il ne l'est pas déjà, puis donnez son singulier et
-    son pluriel, avec une majuscule, pas un synonyme différent : « {word} ».
-    Répondez en JSON : {{"singular": "...", "plural": "..."}}.
-  glossary_prefix: "Glossaire, traduisez en mots simples, n'affichez jamais l'acronyme : "
-  axis_prompt: |
-    Vous nommez les quatre pôles d'une carte 2D dont les deux axes sont des
-    combinaisons pondérées des critères d'entrée. Chaque critère est noté « plus
-    c'est haut, mieux c'est » : une valeur plus élevée signifie toujours plus d'une
-    bonne chose.
-
-    Chaque étiquette nomme une QUALITÉ POSITIVE, une force pour laquelle une
-    approche de ce côté peut être louée. Donnez une étiquette de UN à TROIS vrais
-    mots français. Règles :
-    - TOUJOURS une qualité positive. JAMAIS un inconvénient, un coût ni un négatif.
-      Exemples interdits : « Coût élevé », « Cher », « Lent », « Complexe ». Si un
-      critère est une quantité inverse (coût, prix, latence, erreurs) où une note
-      élevée signifie MOINS, nommez plutôt le bénéfice (« Abordable », « Rapide »,
-      « Fiable », « Simple », « Sécurisé »).
-    - Les quatre étiquettes sont quatre qualités positives DIFFÉRENTES, jamais une
-      paire opposée ni des antonymes (pas « Abordable » et « Cher », pas « Rapide »
-      et « Lent »), et ne réutilisez jamais un mot d'une étiquette à l'autre.
-    - N'affichez jamais d'acronyme ni d'abréviation ; explicitez l'idée.
-    - Rédigez les étiquettes en français.
-
-    Chaque pôle ci-dessous liste les critères où les approches obtiennent les
-    meilleures notes. Nommez la qualité positive commune de cette liste :
-    {glossary}Pôle GAUCHE, les plus fortes en : {left}
-    Pôle DROIT, les plus fortes en : {right}
-    Pôle BAS, les plus fortes en : {bottom}
-    Pôle HAUT, les plus fortes en : {top}
-
-    Répondez en JSON : {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
-  # « Flemme » : l'utilisateur a saisi les noms des options et des critères ; le
-  # modèle remplit chaque note depuis sa propre connaissance. {noun} = mot d'en-tête.
-  analysis_md:
-    dir_left: "gauche"
-    dir_right: "droite"
-    dir_top: "haut"
-    dir_bottom: "bas"
-    dir_left_words: "gauche"
-    dir_right_words: "droite"
-    dir_top_words: "haut, supérieur"
-    dir_bottom_words: "bas, inférieur"
-    mismatch: "l'analyse écrite place {option} du côté {claimed}, alors qu'elle est {actual}"
-    axes_heading: "Axes"
-    analysis_heading: "Analyse"
-    imputed_heading: "Cases que le tableau ne contenait pas"
-    horizontal: "Horizontal"
-    vertical: "Vertical"
-    variance_axis: "~{pct} % de la variance"
-    variance_total: "En deux axes, nous avons préservé ~{pct} % de l'information du tableau."
-    imputed_intro: "Ces notes n'étaient pas fournies ; elles ont été remplies par le minimum de leur colonne, si bien que chaque coordonnée ci-dessus en dépend en partie :"
-    unavailable: "L'analyse écrite demande le modèle local, qui n'était pas joignable."
-  analysis_prompt: |
-    Vous rédigez la courte analyse écrite qui accompagne une carte de
-    positionnement en 2D. La carte est une ACP d'un tableau comparatif : chaque
-    critère est noté de 1 à 5, le plus haut étant le mieux, et les deux axes
-    sont des combinaisons pondérées de ces critères.
-
-    Écrivez DEUX ou TROIS courts paragraphes en français courant. Règles :
-    - Interprétez, ne récitez pas. Le lecteur a déjà le tableau ainsi que les
-      chiffres ; ce qu'il veut, c'est ce que la forme VEUT DIRE.
-    - N'énoncez jamais un pourcentage, une coordonnée ni une note. Ces valeurs
-      sont calculées puis imprimées autour de votre texte, et un chiffre que
-      vous inventeriez les contredirait.
-    - Dites ce que sépare l'axe horizontal, puis ce que sépare l'axe vertical.
-      Nommez les critères qui pèsent le plus sur chacun.
-    - Nommez les options qui se regroupent ainsi que la raison, y compris
-      celles qui atterrissent dans le même coin pour des raisons différentes.
-    - Si le leader gagne sur certains axes et pas sur d'autres, dites-le
-      franchement. Une analyse qui ne fait que flatter le leader ne vaut rien.
-    - Ne dites jamais que deux options se rejoignent, convergent ou partagent
-      un coin si la liste des quadrants ci-dessous ne leur donne pas la MÊME
-      étiquette. Regrouper deux options à l'intuition produit une phrase que la
-      carte contredit.
-    - Aucun titre, aucune liste à puces, aucun gras. Prose suivie uniquement.
-    - N'écrivez jamais une virgule avant « et » ni avant « ou ».
-    - Rédigez en français.
-
-    Option de référence (le leader) : {reference}
-
-    Axe horizontal : {axis_1}, de {pole_left} à gauche vers {pole_right} à droite.
-    Poids sur l'axe horizontal : {loadings_1}
-    Vers {pole_right} (le côté droit), du plus fort au plus faible : {right_side}
-    Vers {pole_left} (le côté gauche), du plus fort au plus faible : {left_side}
-
-    Axe vertical : {axis_2}, de {pole_bottom} en bas vers {pole_top} en haut.
-    Poids sur l'axe vertical : {loadings_2}
-    Vers {pole_top} (la moitié haute), du plus fort au plus faible : {top_side}
-    Vers {pole_bottom} (la moitié basse), du plus fort au plus faible : {bottom_side}
-
-    Le quadrant de chaque option, déjà établi pour vous — reprenez ces mots sans
-    tenter de recalculer une position : {quadrants}
-
-    Et les quatre coins avec leur composition exacte. Quand vous nommez un
-    groupe, recopiez une de ces listes ; n'en composez jamais une : {groups}
-  ratings_prompt: |
-    Vous notez des options sur des critères pour un tableau comparatif, à partir de
-    votre propre connaissance.
-    Les options ({noun}) sont : {options}.
-    Les critères sont : {criteria}.
-    Notez CHAQUE option sur CHAQUE critère avec un ENTIER de 1 à 5, où 5 est le
-    meilleur possible et 1 le pire, en jugeant chaque critère sur son sens positif
-    simple (pour un critère de coût/prix/latence, 5 = bon marché/rapide, 1 =
-    cher/lent). Fondez les notes sur ce pour quoi ces options sont réellement connues.
-    Répondez uniquement en JSON, un objet associant chaque nom exact d'option à un
-    objet associant chaque nom exact de critère à son entier, p. ex.
-    {{"OptionA": {{"Crit1": 4, "Crit2": 2}}, "OptionB": {{"Crit1": 3, "Crit2": 5}}}}.
-  vlm_assess_prompt: >-
-    Cette image est une carte de positionnement concurrentiel en 2D. Le point
-    ROUGE unique est le leader et devrait se situer dans le QUADRANT
-    HAUT-DROIT (n'importe où dans le quart supérieur droit de la carte,
-    au-dessus de l'axe horizontal et à droite de l'axe vertical ; il n'a PAS
-    besoin de toucher le coin extrême). Les quatre pôles d'axe sont nommés en
-    italique aux bords haut, bas, gauche et droit. Évaluez trois choses :
-    (1) le point rouge du leader est-il quelque part dans le quadrant haut-droit ?
-    (2) les étiquettes des points sont-elles lisibles et ne se chevauchent-elles
-    pas trop ? (3) les quatre étiquettes de pôle en italique sont-elles
-    présentes et lisibles aux bords ? Répondez en JSON.
-  # Notes de la vérification de mise en page déterministe (`assess_layout`),
-  # qui a remplacé le modèle de vision sur le chemin --check de la CLI.
-  check_ok: "Vérifications de mise en page réussies."
-  check_leader_not_top_right: "Le leader ({leader}) n'est pas dans le quadrant haut-droit."
-  check_poles_missing: "Des étiquettes de pôle d'axe sont manquantes."
-  check_crowded: "Les étiquettes de points risquent de se chevaucher : {pairs}."
-  gui:
-    lang_name: Français
-    baseline: Sachez où vous en êtes
-    pitch: "Partez de n'importe quel tableau d'options notées selon des critères : chacune est placée sur un quadrant dont les axes sont déduits de vos données et nommés en langage clair, pour voir d'un coup d'œil où se situe l'option qui vous intéresse."
-    guide_1: Remplir le tableau (ou l'importer en CSV/XLSX) puis choisir la ligne à promouvoir.
-    guide_2: Cliquer sur « Générer le quadrant ».
-    github: ⭐️ sur GitHub
-    busy_aria: Traitement en cours…
-    theme_light_aria: Passer au thème sombre
-    theme_dark_aria: Passer au thème clair
-    lang_aria: Changer de langue
-    table_title: Tableau
-    examples_label: "Exemples :"
-    ex_languages: Langages de programmation
-    ex_laptops: Ordinateurs portables
-    ex_cloud: Fournisseurs cloud
-    ex_cars: Voitures électriques
-    add_row: ＋ Option (ligne)
-    add_col: ＋ Critère (colonne)
-    new_table: 🆕 Nouveau tableau
-    flemme: 😴 Paresse (auto-remplissage)
-    flemme_aria: Remplir les cellules vides depuis la connaissance du modèle
-    upload: Importer CSV / XLSX
-    download_csv: Télécharger CSV
-    download_xlsx: Télécharger XLSX
-    hint_higher: Par défaut, le plus haut, le meilleur.
-    hint_toggle: "Basculez ⬇️ / ⬆️ sur une colonne pour indiquer si le score le plus bas ou le plus haut est le meilleur."
-    options_title: Options
-    reference_label: Référence choisie (coin haut droit)
-    transparent_bg: Fond transparent
-    generate: Générer le quadrant
-    generating: Génération…
-    status_running: "Analyse en composantes principales et interrogation du modèle local… (environ 10 à 25 s)"
-    flemme_running: "Le modèle remplit le tableau… (cela peut prendre un moment)"
-    quadrant_title: Quadrant
-    chart_placeholder: Générez pour voir la carte.
-    err_upload: "Échec de l'import : "
-    err_xlsx: Échec de l'export XLSX.
-    err_flemme: "Échec du remplissage : "
-    err_generic: "Erreur : "
-    err_image: "Échec de l'export de l'image : "
-    # Build statique (navigateur) uniquement : UN seul modèle distillé,
-    # téléchargé au chargement de la page, répond à tous les appels du moteur —
-    # nommage des pôles, formes du nom, remplissage « Paresse »
-    # (webapp/backend-pyodide.js). Le GUI serveur ne montre jamais ces clés.
-    flemme_none: "aucune cellule vide à remplir — ajoutez une option, un critère, ou videz une cellule d'abord."
-    model_loading: "Téléchargement du modèle IA (environ 330 Mo, une seule fois — il reste en cache pour les prochaines visites)… "
-    model_offline: "Modèle IA indisponible ; axes et noms retombent sur les heuristiques intégrées."
-    flemme_server: "Réponses fournies par le serveur IA partagé. Les données de votre tableau lui ont été envoyées, elles ne restent pas dans cette page."
-    flemme_server_login: "Connectez-vous au serveur IA partagé pour la voie rapide. En attendant, le modèle embarqué prend le relais."
-    flemme_server_login_link: "Se connecter"
-    flemme_nogpu: "ce navigateur ne peut pas exécuter le modèle IA dans la page (WebGPU absent) ; essayez un Chrome, Edge ou Safari récent."
-    new_option: Nouvelle
-    new_criterion: Critère
-    aria_options_col: Nom de la colonne des options
-    aria_criterion: Nom du critère {n}
-    aria_higher: Plus haut est meilleur, cliquez pour inverser
-    aria_lower: Plus bas est meilleur, cliquez pour inverser
-    title_higher: plus haut est meilleur (cliquez pour inverser)
-    title_lower: plus bas est meilleur (cliquez pour inverser)
-    aria_del_col: Supprimer la colonne
-    title_del_col: supprimer la colonne
-    aria_del_row: Supprimer l'option {n}
-    title_del_row: supprimer la ligne
-    aria_option: Nom de l'option {n}
-    aria_rating: Note de {opt} sur {crit}
-    ref_fallback: "ligne {i}"
-    poles_title: Pôles des axes
-    poles_hint: "Renommez les quatre pôles ; la carte se met à jour en direct."
-    aria_pole_top: Nom du pôle haut
-    aria_pole_left: Nom du pôle gauche
-    aria_pole_right: Nom du pôle droit
-    aria_pole_bottom: Nom du pôle bas
-
-es:
-  # «Coches en el cuadrante», nunca «Coches in the Quadrant».
-  title_template: "{plural} en el cuadrante"
-  noun_prompt: |
-    Traduce esta palabra al español si no lo está ya, y luego da su singular y
-    plural, con mayúscula, no un sinónimo diferente: «{word}».
-    Responde en JSON: {{"singular": "...", "plural": "..."}}.
-  glossary_prefix: "Glosario, traduce a palabras simples, nunca muestres la sigla: "
-  axis_prompt: |
-    Estás nombrando los cuatro polos de un mapa 2D cuyos dos ejes son combinaciones
-    ponderadas de los criterios de entrada. Cada criterio se valora « cuanto más
-    alto, mejor » : un valor más alto siempre significa más de algo bueno.
-
-    Cada etiqueta nombra una CUALIDAD POSITIVA, una fortaleza por la que una
-    propuesta de ese extremo puede ser elogiada. Da una etiqueta de UNA a TRES
-    palabras reales en español. Reglas:
-    - SIEMPRE una cualidad positiva. NUNCA un inconveniente, un coste ni un negativo.
-      Ejemplos prohibidos: « Coste alto », « Caro », « Lento », « Complejo ». Si un
-      criterio es una cantidad inversa (coste, precio, latencia, errores) donde una
-      puntuación alta significa MENOS, nombra el beneficio (« Asequible », « Rápido »,
-      « Fiable », « Sencillo », « Seguro »).
-    - Las cuatro etiquetas son cuatro cualidades positivas DIFERENTES, nunca un par
-      opuesto ni antónimos (no « Asequible » y « Caro », no « Rápido » y « Lento »),
-      y nunca reutilices una palabra entre etiquetas.
-    - Nunca muestres una sigla ni una abreviatura; explica la idea.
-    - Escribe las etiquetas en español.
-
-    Cada polo abajo lista los criterios donde las propuestas puntúan más alto.
-    Nombra la cualidad positiva común de esa lista:
-    {glossary}Polo IZQUIERDO, más fuertes en: {left}
-    Polo DERECHO, más fuertes en: {right}
-    Polo INFERIOR, más fuertes en: {bottom}
-    Polo SUPERIOR, más fuertes en: {top}
-
-    Responde en JSON: {{"left": "<label>", "right": "<label>", "bottom": "<label>", "top": "<label>"}}.
-  # «Flemme»: el usuario escribió los nombres; el modelo rellena cada nota con su
-  # propio conocimiento. {noun} es la palabra de la primera columna.
-  analysis_md:
-    dir_left: "izquierda"
-    dir_right: "derecha"
-    dir_top: "arriba"
-    dir_bottom: "abajo"
-    dir_left_words: "izquierda"
-    dir_right_words: "derecha"
-    dir_top_words: "arriba, superior"
-    dir_bottom_words: "abajo, inferior"
-    mismatch: "el análisis escrito sitúa {option} en {claimed}, pero está en {actual}"
-    axes_heading: "Ejes"
-    analysis_heading: "Análisis"
-    imputed_heading: "Celdas que la tabla no contenía"
-    horizontal: "Horizontal"
-    vertical: "Vertical"
-    variance_axis: "~{pct} % de la varianza"
-    variance_total: "En dos ejes, hemos preservado ~{pct} % de la información de la tabla."
-    imputed_intro: "Estas puntuaciones no se facilitaron y se rellenaron con el mínimo de su columna, de modo que cada coordenada anterior depende en parte de ellas:"
-    unavailable: "El análisis escrito necesita el modelo local, que no estaba accesible."
-  analysis_prompt: |
-    Estás escribiendo el breve análisis escrito que acompaña a un mapa de
-    posicionamiento 2D. El mapa es un ACP de una tabla comparativa: cada
-    criterio se puntúa de 1 a 5, más alto es mejor, y los dos ejes son
-    combinaciones ponderadas de esos criterios.
-
-    Escribe DOS o TRES párrafos breves en español llano. Reglas:
-    - Interpreta, no recites. El lector ya tiene la tabla y los números; lo que
-      quiere es lo que la forma SIGNIFICA.
-    - Nunca indiques un porcentaje, una coordenada ni una puntuación. Se
-      calculan y se imprimen alrededor de tu texto, y un número inventado los
-      contradiría.
-    - Di qué separa el eje horizontal y qué separa el vertical. Nombra los
-      criterios que más pesan en cada uno.
-    - Nombra qué opciones se agrupan y por qué, incluidas las que caen en la
-      misma esquina por razones distintas.
-    - Si el líder gana en algunos ejes y no en otros, dilo con claridad. Un
-      análisis que sólo halaga al líder no vale nada.
-    - Nunca digas que dos opciones coinciden, convergen o comparten una
-      esquina si la lista de cuadrantes no les da la MISMA etiqueta. Agrupar
-      dos opciones por intuición produce una frase que el mapa contradice.
-    - Sin títulos, sin listas, sin negrita. Sólo prosa corrida.
-    - Escribe en español.
-
-    Opción de referencia (el líder): {reference}
-
-    Eje horizontal: {axis_1}, de {pole_left} a la izquierda a {pole_right} a la derecha.
-    Pesos en el eje horizontal: {loadings_1}
-    Hacia {pole_right} (el lado derecho), de mayor a menor: {right_side}
-    Hacia {pole_left} (el lado izquierdo), de mayor a menor: {left_side}
-
-    Eje vertical: {axis_2}, de {pole_bottom} abajo a {pole_top} arriba.
-    Pesos en el eje vertical: {loadings_2}
-    Hacia {pole_top} (la mitad superior), de mayor a menor: {top_side}
-    Hacia {pole_bottom} (la mitad inferior), de mayor a menor: {bottom_side}
-
-    El cuadrante de cada opción, ya resuelto para ti: usa estas palabras y no
-    intentes volver a deducir una posición: {quadrants}
-
-    Y las cuatro esquinas con su composición exacta. Cuando nombres un grupo,
-    copia una de estas listas; nunca compongas la tuya: {groups}
-  ratings_prompt: |
-    Valoras opciones sobre criterios para una tabla comparativa, con tu propio
-    conocimiento.
-    Las opciones ({noun}) son: {options}.
-    Los criterios son: {criteria}.
-    Valora CADA opción en CADA criterio con un ENTERO de 1 a 5, donde 5 es lo mejor
-    posible y 1 lo peor, juzgando cada criterio por su sentido positivo simple (para
-    un criterio de coste/precio/latencia, 5 = barato/rápido, 1 = caro/lento). Basa las
-    notas en aquello por lo que estas opciones son realmente conocidas.
-    Responde solo en JSON, un objeto que asocia cada nombre exacto de opción a un
-    objeto que asocia cada nombre exacto de criterio a su entero, p. ej.
-    {{"OpcionA": {{"Crit1": 4, "Crit2": 2}}, "OpcionB": {{"Crit1": 3, "Crit2": 5}}}}.
-  vlm_assess_prompt: >-
-    Esta imagen es un mapa de posicionamiento competitivo en 2D. El único punto
-    ROJO es el líder y debería situarse en el CUADRANTE SUPERIOR DERECHO (en
-    cualquier lugar del cuarto superior derecho del mapa, por encima del eje
-    horizontal y a la derecha del eje vertical; NO necesita tocar la esquina
-    extrema). Los cuatro polos del eje están nombrados en cursiva en los bordes
-    superior, inferior, izquierdo y derecho. Evalúa tres cosas: (1) ¿está el
-    punto rojo del líder en algún lugar del cuadrante superior derecho? (2)
-    ¿son legibles las etiquetas de los puntos y no se solapan demasiado? (3)
-    ¿están presentes y son legibles las cuatro etiquetas de polo en cursiva en
-    los bordes? Responde en JSON.
-  # Notas de la verificación de disposición determinista (`assess_layout`),
-  # que reemplazó al modelo de visión en la ruta --check de la CLI.
-  check_ok: "Verificaciones de disposición superadas."
-  check_leader_not_top_right: "El líder ({leader}) no está en el cuadrante superior derecho."
-  check_poles_missing: "Faltan etiquetas de polo de eje."
-  check_crowded: "Las etiquetas de los puntos corren riesgo de solaparse: {pairs}."
-  gui:
-    lang_name: Español
-    baseline: ¿Dónde te sitúas?
-    pitch: "Parte de cualquier tabla de opciones puntuadas según criterios: cada una se sitúa en un cuadrante cuyos ejes se derivan de tus datos y se nombran en lenguaje claro, para ver de un vistazo dónde queda la opción que te interesa."
-    guide_1: Rellena la tabla (o impórtala en CSV/XLSX) y elige la fila a promover.
-    guide_2: Haz clic en «Generar el cuadrante».
-    github: ⭐️ en GitHub
-    busy_aria: Procesando…
-    theme_light_aria: Cambiar al tema oscuro
-    theme_dark_aria: Cambiar al tema claro
-    lang_aria: Cambiar de idioma
-    table_title: Tabla
-    examples_label: "Ejemplos:"
-    ex_languages: Lenguajes de programación
-    ex_laptops: Portátiles
-    ex_cloud: Proveedores cloud
-    ex_cars: Coches eléctricos
-    add_row: ＋ Opción (fila)
-    add_col: ＋ Criterio (columna)
-    new_table: 🆕 Nueva tabla
-    flemme: 😴 Pereza (rellenar)
-    flemme_aria: Rellenar las celdas vacías con el conocimiento del modelo
-    upload: Importar CSV / XLSX
-    download_csv: Descargar CSV
-    download_xlsx: Descargar XLSX
-    hint_higher: Más alto es mejor por defecto.
-    hint_toggle: "Cambia ⬇️ / ⬆️ en una columna para indicar si la nota más baja o más alta es la mejor."
-    options_title: Opciones
-    reference_label: Referencia elegida (arriba a la derecha)
-    transparent_bg: Fondo transparente
-    generate: Generar el cuadrante
-    generating: Generando…
-    status_running: "Ejecutando el ACP e interrogando al modelo local… (puede tardar 10 a 25 s)"
-    flemme_running: "El modelo rellena la tabla… (puede tardar un momento)"
-    quadrant_title: Cuadrante
-    chart_placeholder: Genera para ver el mapa.
-    err_upload: "Error al importar: "
-    err_xlsx: Error al exportar XLSX.
-    err_flemme: "Error al rellenar: "
-    err_generic: "Error: "
-    err_image: "Error al exportar la imagen: "
-    # Solo para la versión estática (navegador): UN solo modelo destilado,
-    # descargado al cargar la página, responde a todas las llamadas del motor —
-    # nombrado de polos, formas del sustantivo, relleno «Pereza»
-    # (webapp/backend-pyodide.js). La GUI del servidor nunca muestra estas claves.
-    flemme_none: "no hay celdas vacías que rellenar — añade una opción, un criterio, o vacía una celda primero."
-    model_loading: "Descargando el modelo de IA (aprox. 330 MB, una sola vez — queda en caché para próximas visitas)… "
-    model_offline: "Modelo de IA no disponible; ejes y nombres recurren a las heurísticas integradas."
-    flemme_server: "Respondido por el servidor de IA compartido. Los datos de tu tabla se le enviaron, no se quedaron en esta página."
-    flemme_server_login: "Inicia sesión en el servidor de IA compartido para la vía rápida. Mientras tanto, se usa el modelo integrado."
-    flemme_server_login_link: "Iniciar sesión"
-    flemme_nogpu: "este navegador no puede ejecutar el modelo de IA en la página (falta WebGPU); prueba un Chrome, Edge o Safari reciente."
-    new_option: Nueva
-    new_criterion: Criterio
-    aria_options_col: Nombre de la columna de opciones
-    aria_criterion: Nombre del criterio {n}
-    aria_higher: Más alto es mejor, clic para invertir
-    aria_lower: Más bajo es mejor, clic para invertir
-    title_higher: más alto es mejor (clic para invertir)
-    title_lower: más bajo es mejor (clic para invertir)
-    aria_del_col: Eliminar la columna
-    title_del_col: eliminar la columna
-    aria_del_row: Eliminar la opción {n}
-    title_del_row: eliminar la fila
-    aria_option: Nombre de la opción {n}
-    aria_rating: Nota de {opt} en {crit}
-    ref_fallback: "fila {i}"
-    poles_title: Polos de los ejes
-    poles_hint: "Renombra los cuatro polos; el mapa se actualiza al instante."
-    aria_pole_top: Nombre del polo superior
-    aria_pole_left: Nombre del polo izquierdo
-    aria_pole_right: Nombre del polo derecho
-    aria_pole_bottom: Nombre del polo inferior
+    en:
+      lang_name: English
+      baseline: Where do you stand?
+      pitch: Give any table of options scored against criteria and it will place each one on a quadrant,
+        with axes derived from your data and labeled in plain language, so you can see at a glance where
+        the option you care about stands.
+      guide_1: Fill out the table (or import it as a CSV/XLSX file), then select the row you want to promote.
+      guide_2: Click “Generate Quadrant”.
+      github: ⭐️ on GitHub
+      busy_aria: Working…
+      theme_light_aria: Switch to dark theme
+      theme_dark_aria: Switch to light theme
+      lang_aria: Switch language
+      table_title: Table
+      examples_label: 'Examples:'
+      ex_languages: Programming languages
+      ex_laptops: Laptops
+      ex_cloud: Cloud providers
+      ex_cars: Electric cars
+      add_row: ＋ Option (row)
+      add_col: ＋ Criterion (column)
+      new_table: 🆕 New Table
+      flemme: 😴 Laziness (auto-fill)
+      flemme_aria: Auto-fill the empty cells from the model's knowledge
+      upload: Upload CSV / XLSX
+      download_csv: Download CSV
+      download_xlsx: Download XLSX
+      hint_higher: Higher is better by default.
+      hint_toggle: Toggle ⬇️ / ⬆️ on a column to set whether lower or higher is the better score.
+      options_title: Options
+      reference_label: Chosen top-right reference
+      transparent_bg: Transparent background
+      generate: Generate quadrant
+      generating: Generating…
+      status_running: Running PCA and asking the local model… (this can take ~10–25 s)
+      flemme_running: Asking the model to fill the table… (this can take a moment)
+      quadrant_title: Quadrant
+      chart_placeholder: Generate to see the map.
+      err_upload: 'Upload failed: '
+      err_xlsx: XLSX export failed.
+      err_flemme: 'Auto-fill failed: '
+      err_generic: 'Error: '
+      err_image: 'Image export failed: '
+      flemme_none: no empty cells to fill — add an option, a criterion, or clear a cell first.
+      model_loading: 'Downloading the AI model (about 330 MB, once — it stays cached for later visits)… '
+      model_offline: AI model unavailable; axes and names fall back to the built-in heuristics.
+      flemme_server: Answered by the shared AI server. Your table's data was sent to it, not kept in this
+        page.
+      flemme_server_login: Sign in to the shared AI server for the fast path. Using the in-page model
+        meanwhile.
+      flemme_server_login_link: Sign in
+      flemme_nogpu: this browser can't run the in-page AI model (WebGPU missing); try a recent Chrome,
+        Edge or Safari.
+      new_option: New
+      new_criterion: Criterion
+      aria_options_col: Name of the options column
+      aria_criterion: Criterion {n} name
+      aria_higher: Higher is better, click to make lower better
+      aria_lower: Lower is better, click to make higher better
+      title_higher: higher is better (click to flip)
+      title_lower: lower is better (click to flip)
+      aria_del_col: Delete column
+      title_del_col: delete column
+      aria_del_row: Delete option {n}
+      title_del_row: delete row
+      aria_option: Option {n} name
+      aria_rating: Rating of {opt} on {crit}
+      ref_fallback: row {i}
+      poles_title: Axis poles
+      poles_hint: Rename the four poles; the map updates live.
+      aria_pole_top: Top pole name
+      aria_pole_left: Left pole name
+      aria_pole_right: Right pole name
+      aria_pole_bottom: Bottom pole name
+    fr:
+      lang_name: Français
+      baseline: Sachez où vous en êtes
+      pitch: 'Partez de n''importe quel tableau d''options notées selon des critères : chacune est placée
+        sur un quadrant dont les axes sont déduits de vos données et nommés en langage clair, pour voir
+        d''un coup d''œil où se situe l''option qui vous intéresse.'
+      guide_1: Remplir le tableau (ou l'importer en CSV/XLSX) puis choisir la ligne à promouvoir.
+      guide_2: Cliquer sur « Générer le quadrant ».
+      github: ⭐️ sur GitHub
+      busy_aria: Traitement en cours…
+      theme_light_aria: Passer au thème sombre
+      theme_dark_aria: Passer au thème clair
+      lang_aria: Changer de langue
+      table_title: Tableau
+      examples_label: 'Exemples :'
+      ex_languages: Langages de programmation
+      ex_laptops: Ordinateurs portables
+      ex_cloud: Fournisseurs cloud
+      ex_cars: Voitures électriques
+      add_row: ＋ Option (ligne)
+      add_col: ＋ Critère (colonne)
+      new_table: 🆕 Nouveau tableau
+      flemme: 😴 Paresse (auto-remplissage)
+      flemme_aria: Remplir les cellules vides depuis la connaissance du modèle
+      upload: Importer CSV / XLSX
+      download_csv: Télécharger CSV
+      download_xlsx: Télécharger XLSX
+      hint_higher: Par défaut, le plus haut, le meilleur.
+      hint_toggle: Basculez ⬇️ / ⬆️ sur une colonne pour indiquer si le score le plus bas ou le plus haut
+        est le meilleur.
+      options_title: Options
+      reference_label: Référence choisie (coin haut droit)
+      transparent_bg: Fond transparent
+      generate: Générer le quadrant
+      generating: Génération…
+      status_running: Analyse en composantes principales et interrogation du modèle local… (environ 10
+        à 25 s)
+      flemme_running: Le modèle remplit le tableau… (cela peut prendre un moment)
+      quadrant_title: Quadrant
+      chart_placeholder: Générez pour voir la carte.
+      err_upload: 'Échec de l''import : '
+      err_xlsx: Échec de l'export XLSX.
+      err_flemme: 'Échec du remplissage : '
+      err_generic: 'Erreur : '
+      err_image: 'Échec de l''export de l''image : '
+      flemme_none: aucune cellule vide à remplir — ajoutez une option, un critère, ou videz une cellule
+        d'abord.
+      model_loading: 'Téléchargement du modèle IA (environ 330 Mo, une seule fois — il reste en cache
+        pour les prochaines visites)… '
+      model_offline: Modèle IA indisponible ; axes et noms retombent sur les heuristiques intégrées.
+      flemme_server: Réponses fournies par le serveur IA partagé. Les données de votre tableau lui ont
+        été envoyées, elles ne restent pas dans cette page.
+      flemme_server_login: Connectez-vous au serveur IA partagé pour la voie rapide. En attendant, le
+        modèle embarqué prend le relais.
+      flemme_server_login_link: Se connecter
+      flemme_nogpu: ce navigateur ne peut pas exécuter le modèle IA dans la page (WebGPU absent) ; essayez
+        un Chrome, Edge ou Safari récent.
+      new_option: Nouvelle
+      new_criterion: Critère
+      aria_options_col: Nom de la colonne des options
+      aria_criterion: Nom du critère {n}
+      aria_higher: Plus haut est meilleur, cliquez pour inverser
+      aria_lower: Plus bas est meilleur, cliquez pour inverser
+      title_higher: plus haut est meilleur (cliquez pour inverser)
+      title_lower: plus bas est meilleur (cliquez pour inverser)
+      aria_del_col: Supprimer la colonne
+      title_del_col: supprimer la colonne
+      aria_del_row: Supprimer l'option {n}
+      title_del_row: supprimer la ligne
+      aria_option: Nom de l'option {n}
+      aria_rating: Note de {opt} sur {crit}
+      ref_fallback: ligne {i}
+      poles_title: Pôles des axes
+      poles_hint: Renommez les quatre pôles ; la carte se met à jour en direct.
+      aria_pole_top: Nom du pôle haut
+      aria_pole_left: Nom du pôle gauche
+      aria_pole_right: Nom du pôle droit
+      aria_pole_bottom: Nom du pôle bas
+    es:
+      lang_name: Español
+      baseline: ¿Dónde te sitúas?
+      pitch: 'Parte de cualquier tabla de opciones puntuadas según criterios: cada una se sitúa en un
+        cuadrante cuyos ejes se derivan de tus datos y se nombran en lenguaje claro, para ver de un vistazo
+        dónde queda la opción que te interesa.'
+      guide_1: Rellena la tabla (o impórtala en CSV/XLSX) y elige la fila a promover.
+      guide_2: Haz clic en «Generar el cuadrante».
+      github: ⭐️ en GitHub
+      busy_aria: Procesando…
+      theme_light_aria: Cambiar al tema oscuro
+      theme_dark_aria: Cambiar al tema claro
+      lang_aria: Cambiar de idioma
+      table_title: Tabla
+      examples_label: 'Ejemplos:'
+      ex_languages: Lenguajes de programación
+      ex_laptops: Portátiles
+      ex_cloud: Proveedores cloud
+      ex_cars: Coches eléctricos
+      add_row: ＋ Opción (fila)
+      add_col: ＋ Criterio (columna)
+      new_table: 🆕 Nueva tabla
+      flemme: 😴 Pereza (rellenar)
+      flemme_aria: Rellenar las celdas vacías con el conocimiento del modelo
+      upload: Importar CSV / XLSX
+      download_csv: Descargar CSV
+      download_xlsx: Descargar XLSX
+      hint_higher: Más alto es mejor por defecto.
+      hint_toggle: Cambia ⬇️ / ⬆️ en una columna para indicar si la nota más baja o más alta es la mejor.
+      options_title: Opciones
+      reference_label: Referencia elegida (arriba a la derecha)
+      transparent_bg: Fondo transparente
+      generate: Generar el cuadrante
+      generating: Generando…
+      status_running: Ejecutando el ACP e interrogando al modelo local… (puede tardar 10 a 25 s)
+      flemme_running: El modelo rellena la tabla… (puede tardar un momento)
+      quadrant_title: Cuadrante
+      chart_placeholder: Genera para ver el mapa.
+      err_upload: 'Error al importar: '
+      err_xlsx: Error al exportar XLSX.
+      err_flemme: 'Error al rellenar: '
+      err_generic: 'Error: '
+      err_image: 'Error al exportar la imagen: '
+      flemme_none: no hay celdas vacías que rellenar — añade una opción, un criterio, o vacía una celda
+        primero.
+      model_loading: 'Descargando el modelo de IA (aprox. 330 MB, una sola vez — queda en caché para próximas
+        visitas)… '
+      model_offline: Modelo de IA no disponible; ejes y nombres recurren a las heurísticas integradas.
+      flemme_server: Respondido por el servidor de IA compartido. Los datos de tu tabla se le enviaron,
+        no se quedaron en esta página.
+      flemme_server_login: Inicia sesión en el servidor de IA compartido para la vía rápida. Mientras
+        tanto, se usa el modelo integrado.
+      flemme_server_login_link: Iniciar sesión
+      flemme_nogpu: este navegador no puede ejecutar el modelo de IA en la página (falta WebGPU); prueba
+        un Chrome, Edge o Safari reciente.
+      new_option: Nueva
+      new_criterion: Criterio
+      aria_options_col: Nombre de la columna de opciones
+      aria_criterion: Nombre del criterio {n}
+      aria_higher: Más alto es mejor, clic para invertir
+      aria_lower: Más bajo es mejor, clic para invertir
+      title_higher: más alto es mejor (clic para invertir)
+      title_lower: más bajo es mejor (clic para invertir)
+      aria_del_col: Eliminar la columna
+      title_del_col: eliminar la columna
+      aria_del_row: Eliminar la opción {n}
+      title_del_row: eliminar la fila
+      aria_option: Nombre de la opción {n}
+      aria_rating: Nota de {opt} en {crit}
+      ref_fallback: fila {i}
+      poles_title: Polos de los ejes
+      poles_hint: Renombra los cuatro polos; el mapa se actualiza al instante.
+      aria_pole_top: Nombre del polo superior
+      aria_pole_left: Nombre del polo izquierdo
+      aria_pole_right: Nombre del polo derecho
+      aria_pole_bottom: Nombre del polo inferior

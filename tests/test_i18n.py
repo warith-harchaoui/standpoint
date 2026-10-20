@@ -74,3 +74,50 @@ def test_suggest_ratings_rejects_empty_input() -> None:
         sp.suggest_ratings("Option", [], ["Speed"])
     with pytest.raises(ValueError):
         sp.suggest_ratings("Option", ["Python"], [])
+
+
+# --------------------------------------------------------------------------- #
+# The canonical file shape, and the loader shared with the rest of the suite
+# --------------------------------------------------------------------------- #
+def test_the_locale_file_is_readable_by_the_shared_loader() -> None:
+    """The file turned round in 0.12.0 so a shared loader could read it at all.
+
+    It used to put the locale first (`en:` / `fr:` / `es:` at the top level)
+    and carried no `meta`, which the suite's canonical shape — semantic key
+    first, locale second, metadata declared — does not allow. `Locales`
+    refused it outright before the change.
+    """
+    import os_helper as osh
+
+    loc = osh.Locales.from_path(sp._I18N_PATH)
+    assert loc.default_locale == "en"
+    assert set(loc.supported_locales) == set(sp.SUPPORTED_LANGS)
+    assert loc.sections() == [sp._I18N_SECTION]
+
+
+def test_the_shared_validator_finds_nothing_wrong() -> None:
+    """Every key present in all three languages, with matching placeholders.
+
+    `problems()` is the section 21.3.7 check, and it covers the faults nobody
+    thought to write a test for — which is the half the hand-rolled checks
+    above cannot reach.
+    """
+    import os_helper as osh
+
+    assert osh.Locales.from_path(sp._I18N_PATH).problems() == []
+
+
+@pytest.mark.parametrize("lang", ["en", "fr", "es"])
+def test_every_language_still_carries_the_same_keys(lang: str) -> None:
+    """Transposing a 608-line prompt file is exactly where a key goes missing.
+
+    The templates here drive what a local model writes, in three languages, so
+    a silently dropped key would surface as a deliverable in the wrong
+    language rather than as an error.
+    """
+    assert set(sp.i18n(lang)) == set(sp.i18n("en"))
+    assert sp.i18n(lang)["title_template"].strip()
+
+
+def test_an_unknown_language_falls_back_to_english() -> None:
+    assert sp.i18n("tlh") == sp.i18n("en")
