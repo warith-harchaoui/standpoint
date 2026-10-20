@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-10-20
+
+### Fixed
+
+- **`assign_roles`' explanation of the four roles did not render at all.**
+  The block laid the role name and its meaning in two aligned columns, which
+  docutils reads as an ordinary paragraph; the continuation lines, indented to
+  keep the columns, then became an "Unexpected indentation" error and Sphinx
+  dropped the whole block. The one place that says what *best*, *worst*, *top*
+  and *right* actually mean was missing from the documentation site while
+  being present in the source — the worst version of a docs bug, because
+  nothing in the repository looks wrong. Written as the definition list it
+  always was, it renders.
+
 ## [0.11.0] - 2026-10-19
 
 ### Added
