@@ -856,13 +856,17 @@ def assign_roles(
     Every pick is read straight off the oriented coordinates, so it means the same
     thing for any table (no per-domain keyword list):
 
-    best   the reference, sitting at the top-right corner by construction;
-    worst  the weakest overall: the minimum projection onto the top-right hero
-           diagonal (equivalently the smallest axis-1 + axis-2);
-    top    the challenger reaching furthest up the vertical axis, the peer that
-           most defines the map's *top* pole (the leader excluded);
-    right  the challenger reaching furthest along the horizontal axis, the peer
-           that most defines the *right* pole (leader and top champion excluded).
+    best
+        the reference, sitting at the top-right corner by construction;
+    worst
+        the weakest overall: the minimum projection onto the top-right hero
+        diagonal (equivalently the smallest axis-1 + axis-2);
+    top
+        the challenger reaching furthest up the vertical axis, the peer that
+        most defines the map's *top* pole (the leader excluded);
+    right
+        the challenger reaching furthest along the horizontal axis, the peer
+        that most defines the *right* pole (leader and top champion excluded).
 
     Parameters
     ----------
