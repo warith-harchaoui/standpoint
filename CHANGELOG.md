@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-10-21
+
+### Fixed
+
+- **Every exported `.svg` was written without a final newline.** `to_svg`
+  returns a string ending at `</svg>`, and `render_figures` wrote it
+  unchanged, so each figure on disk was a POSIX-incomplete text file: shown
+  as `\ No newline at end of file` in any diff that touched it, and a red
+  `end-of-file-fixer` in every consumer repo that vendors these figures and
+  runs pre-commit over them. vocal-helper hit exactly that, where the symptom
+  was patched on the file instead of the generator.
+
+  84 figures already committed across the suite (standpoint, best-engine,
+  elbow-helper) are normalised in the same pass, and a test now writes a
+  figure pair and asserts both variants end with exactly one newline — proven
+  by reverting the fix and watching it go red.
+
 ## [0.12.0] - 2026-10-20
 
 ### Changed

@@ -888,3 +888,25 @@ def test_the_prompt_hands_over_the_corner_membership(df, result, monkeypatch) ->
     }
     assert "right-top" in corners, corners
     assert result.reference in [n.strip() for n in corners["right-top"].split(",")]
+
+
+def test_exported_svg_files_end_with_a_newline(df, result, tmp_path) -> None:
+    """A figure on disk is a text file, and text files end with a newline.
+
+    `to_svg` returns a string ending at `</svg>`, so writing it unchanged
+    produced a no-final-newline file: POSIX-incomplete, flagged as
+    `\\ No newline at end of file` in every diff that touches it, and a red
+    `end-of-file-fixer` in each consumer repo that vendors these figures and
+    runs pre-commit over them (vocal-helper hit exactly that). Both the
+    transparent and the white variant are checked, since each is written
+    separately.
+    """
+    svg = p4m.to_svg(result, title="Trailing newline")
+    written = p4m.render_figures(svg, str(tmp_path / "fig"))
+
+    svgs = [path for path in written if path.endswith(".svg")]
+    assert len(svgs) == 2, f"expected a transparent and a white SVG, got {svgs}"
+    for path in svgs:
+        text = Path(path).read_text(encoding="utf-8")
+        assert text.endswith("\n"), f"{Path(path).name} does not end with a newline"
+        assert not text.endswith("\n\n"), f"{Path(path).name} gained a blank line"

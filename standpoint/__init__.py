@@ -37,7 +37,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.12.0"
+__version__ = "0.12.1"
 
 import argparse
 import contextlib
@@ -1624,7 +1624,13 @@ def render_figures(svg: str, stem: str) -> list[str]:
     written: list[str] = []
     for suffix, variant in ((".", svg), (".white.", _white_variant(svg))):
         png_path, svg_path = f"{stem}{suffix}png", f"{stem}{suffix}svg"
-        _atomic_write(svg_path, variant)
+        # Terminate the text file with a newline. `to_svg` ends at `</svg>`,
+        # so without this every exported `.svg` is a no-final-newline file:
+        # POSIX-incomplete, shown as `\ No newline at end of file` in every
+        # diff that ever touches it, and a red `end-of-file-fixer` wherever a
+        # consumer repo runs pre-commit on the figures it vendors. The PNG is
+        # rasterised from `variant` itself, so it is unaffected.
+        _atomic_write(svg_path, variant if variant.endswith("\n") else variant + "\n")
         _atomic_write(png_path, _svg_to_png(variant))
         written += [png_path, svg_path]
     return written
