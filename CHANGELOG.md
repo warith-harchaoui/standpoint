@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.2] - 2026-10-22
+
+### Changed
+
+- **`i18n()` delegates to `os_helper.Prompts`** instead of carrying its own
+  prompt machinery. This package had three private pieces of it: a
+  module-level cache, a hand-written transposition from the file's
+  key-then-locale shape into the locale-then-key view callers want, and
+  language resolution by `.get(lang, …["en"])`. All three now live in
+  os-helper, where the rest of the suite can have them.
+
+  `i18n(lang)` is unchanged for every caller.
+
+### Fixed
+
+- **A regional tag got English.** `i18n("fr-CA")` resolved through a plain
+  dictionary lookup, which simply missed, so a Québécois caller asking for
+  French prompts silently received English ones — different model behaviour,
+  not a cosmetic fallback. `fr-CA` now reaches the French prompts.
+
+- **A translated prompt that dropped a `{placeholder}` had no earlier signal
+  than `format()` raising in production**, on whichever request first asked
+  for that language. `Prompts.problems()` reports it, and a test calls it.
+
 ## [0.12.1] - 2026-10-21
 
 ### Fixed

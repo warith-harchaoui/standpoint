@@ -37,10 +37,11 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.12.1"
+__version__ = "0.12.2"
 
 import argparse
 import contextlib
+import functools
 import logging
 import math
 import os
@@ -217,7 +218,6 @@ def parse_table(source: str) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 SUPPORTED_LANGS = ("en", "fr", "es")
 _I18N_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "locales", "i18n.yaml")
-_I18N_CACHE: dict | None = None
 
 #: The one content section of `locales/i18n.yaml`. Named `bundle` because that
 #: is how it is consumed: a caller asks for every string of one language at
@@ -225,34 +225,35 @@ _I18N_CACHE: dict | None = None
 _I18N_SECTION = "bundle"
 
 
+@functools.lru_cache(maxsize=1)
+def _prompts() -> osh.Prompts:
+    """The shared prompt loader, bound to this package's locale file."""
+    return osh.Prompts.from_path(_I18N_PATH, section=_I18N_SECTION)
+
+
 def i18n(lang: str = "en") -> dict:
     """Prompt templates for `lang` (falls back to English), loaded from i18n.yaml.
 
-    The file is parsed and validated by `os_helper.Locales`, the loader shared
-    across the suite, rather than by a private `yaml.safe_load` here. The file
-    is keyed by semantic name first and locale second — the suite's canonical
-    shape — while callers want a whole language at once, so this transposes
-    one section into the per-language view they expect and caches it.
+    Delegates to `os_helper.Prompts`, the loader shared across the suite. This
+    used to transpose the file by hand — key-then-locale on disk, locale-then-key
+    for callers — behind a module-level cache, and resolve the language with a
+    plain `.get(lang, …["en"])`. All three now live in os-helper, which also
+    means `fr-CA` reaches the French prompts instead of silently getting
+    English, and that a prompt whose translation dropped a `{placeholder}` is
+    reported by `problems()` rather than raising at render time.
 
     Parameters
     ----------
     lang : str
-        Language code. Anything the file does not carry falls back to English.
+        Language code, regional tags included. Anything the file does not
+        carry falls back to English.
 
     Returns
     -------
     dict
         Every template for `lang`, keyed by semantic name.
     """
-    global _I18N_CACHE
-    if _I18N_CACHE is None:
-        bundle = osh.Locales.from_path(_I18N_PATH).section(_I18N_SECTION)
-        langs = {code for value in bundle.values() for code in value}
-        _I18N_CACHE = {
-            code: {key: value[code] for key, value in bundle.items() if code in value}
-            for code in langs
-        }
-    return _I18N_CACHE.get(lang, _I18N_CACHE["en"])
+    return _prompts().bundle(lang)
 
 
 def detect_language(texts: list[str]) -> str:

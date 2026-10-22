@@ -121,3 +121,38 @@ def test_every_language_still_carries_the_same_keys(lang: str) -> None:
 
 def test_an_unknown_language_falls_back_to_english() -> None:
     assert sp.i18n("tlh") == sp.i18n("en")
+
+
+def test_the_shared_loader_is_what_resolves_the_prompts() -> None:
+    """One prompt loader in the suite, not one per member.
+
+    This package kept its own cache, its own key-then-locale transposition and
+    its own `.get(lang, …["en"])` resolution until 0.12.2. Pinning the
+    delegation is what stops a second copy growing back the next time someone
+    needs "just one small thing" from the locale file.
+    """
+    import os_helper as osh
+
+    assert isinstance(sp._prompts(), osh.Prompts)
+
+
+def test_a_regional_tag_reaches_the_language_it_asked_for() -> None:
+    """`fr-CA` used to get English, because `.get("fr-CA")` simply missed.
+
+    A Québécois caller asking for French prompts and silently receiving
+    English ones gets different model behaviour, not a cosmetic fallback.
+    """
+    assert sp.i18n("fr-CA")["check_ok"] == sp.i18n("fr")["check_ok"]
+    assert sp.i18n("fr-CA")["check_ok"] != sp.i18n("en")["check_ok"]
+
+
+def test_the_prompt_section_is_sound() -> None:
+    """The whole-file check the shared loader makes a one-liner.
+
+    Covers a language a prompt forgot, an empty template, and — the fault
+    specific to prompts — a translation whose `{placeholder}` set differs
+    from the default's, which would raise inside `format()` in production for
+    whoever first asked for that language.
+    """
+    faults = sp._prompts().problems()
+    assert faults == [], "prompt faults:\n  " + "\n  ".join(faults)
