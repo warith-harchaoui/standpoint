@@ -46,13 +46,13 @@ Deux familles se font face :
   partager. Nommer les axes et orienter autour d'une référence reste à votre
   charge.
 - **Les outils de mise en page manuels et sans code** (`Tableau`, les 2×2 sous
-  `Excel`/`PowerPoint`, les modèles `Canva`/`Figma`, et le `Magic Quadrant de
+  `Excel`/`PowerPoint`, les modèles `Canva`/`Figma` et le `Magic Quadrant de
   Gartner`) sont rapides à prendre en main et avec peu ou pas de code, mais chaque
   point est placé à la main : rien n'est dérivé des données, rien n'est
   reproductible et les axes veulent dire ce que l'auteur décide. La version de
   Gartner ajoute un véritable jugement d'analyste et un texte riche autour du
   quadrant, mais les placements restent arbitrés à la main : non dérivés d'une
-  matrice, et impossibles à exécuter soi-même.
+  matrice et impossibles à exécuter soi-même.
 
 Standpoint occupe le coin qu'aucun d'eux ne couvre : la
 carte **dérivée** d'une boîte à outils ACP *plus* l'artéfact **fini et étiqueté**

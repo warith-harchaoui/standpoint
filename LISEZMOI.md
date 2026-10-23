@@ -35,7 +35,7 @@ télémétrie, pas de compte, rien à créer.
 
 Seul le nommage des axes sollicite un vision-LLM local tournant
 sur `localhost`. Standpoint ne fige aucun modèle : il embarque un brief versionné
-(`standpoint/llm.brief.yaml`) décrivant la tâche, et
+(`standpoint/llm.brief.yaml`) décrivant la tâche et
 [best-engine-ai-helper](https://pypi.org/project/best-engine-ai-helper/) résout le
 meilleur modèle local pour *votre* machine à la première utilisation, en gardant le choix
 dans un `standpoint/llm.engine.yaml` ignoré par git. Les poids sont téléchargés une fois,
@@ -292,7 +292,7 @@ docker compose --profile llm up --build
 ```
 
 Sans serveur du tout ? `python webapp/build.py` compose la même GUI en **dossier
-statique** : le moteur tourne dans le navigateur du visiteur via Pyodide, et un
+statique** : le moteur tourne dans le navigateur du visiteur via Pyodide et un
 seul modèle dans la page — le student distillé de Standpoint, téléchargé une fois
 au chargement derrière un voile « Patience… » plein écran, puis en cache — nomme
 les axes et remplit les cases vides à l'auto-remplissage : sans serveur, sans
@@ -314,7 +314,7 @@ suivantes sont des critères numériques sur n'importe quelle échelle. Plus hau
 mieux. Les cellules vides prennent le minimum de la colonne : une note
 manquante n'avantage jamais une option.
 
-**Et la carte le dit.** Ce choix par défaut est un jugement, pas une mesure, et
+**Et la carte le dit.** Ce choix par défaut est un jugement, pas une mesure et
 il voyage plus loin que l'option à laquelle il appartient : les critères sont
 centrés-réduits avant la projection, donc une valeur inventée déplace la moyenne
 puis l'écart-type de sa colonne — et avec eux les coordonnées de *toutes* les
