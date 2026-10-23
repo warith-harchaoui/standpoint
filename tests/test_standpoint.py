@@ -910,3 +910,84 @@ def test_exported_svg_files_end_with_a_newline(df, result, tmp_path) -> None:
         text = Path(path).read_text(encoding="utf-8")
         assert text.endswith("\n"), f"{Path(path).name} does not end with a newline"
         assert not text.endswith("\n\n"), f"{Path(path).name} gained a blank line"
+
+
+def test_a_contrastive_clause_does_not_lend_its_names_backwards(voice_fit) -> None:
+    """Two true claims in one sentence, reported as three errors.
+
+    Found while regenerating ann-router's map, where this shape -- "A clusters
+    upper left, while B, C and D sit lower right" -- is how the model names two
+    groups at once. Every claim in the French prose was correct against the
+    coordinates, and the checker reported eight problems.
+
+    The cause is the forward attribution window: it runs from a direction word
+    to the *next* direction word, so "left" reached past `while` and claimed
+    the names belonging to the "lower right" clause. A checker that cries wolf
+    on correct prose is worse than no checker, because the next eight real
+    warnings get waved through with it.
+    """
+    both_true = (
+        "LiveKit Agents clusters in the upper left, while Rasa, "
+        "speech_recognition + pyttsx3 and Vocode sit in the lower right."
+    )
+    assert p4m.check_analysis(both_true, voice_fit) == []
+
+
+def test_a_nameless_span_does_not_inherit_across_a_contrast(voice_fit) -> None:
+    """The documented rule, which the implementation did not keep.
+
+    `check_analysis` states that "a span that names nobody is ignored" and also
+    that a direction word with no names of its own inherits the previous one's
+    -- the second is for compound directions like "lower right", but it applied
+    at any distance, so a generic aside swallowed the subject of the sentence
+    and contradicted prose that was right. Here the aside is about *other*
+    options by construction.
+    """
+    aside = (
+        "Interestingly, discussion-helper sits in the upper right, but other "
+        "options, like those in the left-top corner, reach precision differently."
+    )
+    assert p4m.check_analysis(aside, voice_fit) == []
+
+
+def test_clause_splitting_is_language_specific(voice_fit) -> None:
+    """The break vocabulary is translated, like every other word list here.
+
+    The bug surfaced on French prose; an English-only break list would have
+    left `tandis que` unsplit and the French map still mis-audited.
+    """
+    for lang in ("en", "fr", "es"):
+        assert p4m.i18n(lang)["analysis_md"]["clause_break_words"].strip()
+    french = (
+        "LiveKit Agents se regroupe en haut à gauche, tandis que Rasa, "
+        "speech_recognition + pyttsx3 et Vocode se positionnent en bas à droite."
+    )
+    assert p4m.check_analysis(french, voice_fit, lang="fr") == []
+
+
+def test_two_coordinated_claims_keep_their_own_subjects(voice_fit) -> None:
+    """A compound direction is one claim, and the proof is two of them joined.
+
+    "Chroma sits in the lower left, and ann-router in the upper right" is the
+    shape that survived the clause-splitting fix, because `and` is not a
+    contrast: reading direction words one at a time, `left` found no name
+    before it -- `lower` had taken the only one -- so its forward window
+    reached past the comma and claimed the *second* corner's subject. Grouping
+    adjacent direction words into the corner they actually name fixes it, and
+    this sentence has both corners correct.
+    """
+    coordinated = (
+        "Amazon Lex sits in the lower left, and discussion-helper, alone, takes the upper right."
+    )
+    assert p4m.check_analysis(coordinated, voice_fit) == []
+
+
+def test_a_corner_still_catches_a_wrong_member(voice_fit) -> None:
+    """Grouping must not blunt the check it was added to keep honest.
+
+    The compound now reports as one claim, so both of its words have to be
+    tested against every name it claims -- otherwise "Vapi is in the
+    bottom-right" passes on `bottom` and never looks at `right`.
+    """
+    problems = p4m.check_analysis("Vapi sits in the bottom-right corner.", voice_fit)
+    assert any("Vapi" in p and "right" in p for p in problems), problems

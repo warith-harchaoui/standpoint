@@ -2109,6 +2109,16 @@ def check_analysis(
     A span that names nobody is ignored: "those on the right prioritise
     modularity" is a statement about the axis, not about anybody's position.
 
+    **Claims stop at a contrastive conjunction**, not only at a full stop.
+    "A clusters upper left, while B and C sit lower right" is two claims, and
+    reading the sentence whole let the first one's forward window reach past
+    `while` and claim B and C -- eight false reports on French prose whose
+    every claim was correct. Splitting there also bounds the inheritance rule
+    above to the compound directions it was written for, so a later aside
+    ("but those in the left-top corner differ") no longer inherits the
+    sentence's subject. The break words are translated like every other word
+    list here, since the shape occurs in each language's prose.
+
     Parameters
     ----------
     prose : str
@@ -2140,48 +2150,83 @@ def check_analysis(
     coords = result.coords()
     problems: list[str] = []
 
+    # A contrastive conjunction ends a claim even mid-sentence, and attribution
+    # must not reach across one. Splitting at sentence ends alone read "LiveKit
+    # clusters in the upper left, while Rasa and Vocode sit in the lower right" --
+    # both halves true -- as the left-hand claim owning the right-hand names,
+    # because the forward window runs to the next direction word and so swallowed
+    # the names belonging to the following clause. The same break repairs the
+    # inheritance rule: "ann-router sits upper right, but those in the left-top
+    # corner differ" let a nameless span inherit ann-router, contradicting the
+    # prose it was auditing. Resetting `carried` per clause is the point.
+    breaks = sorted(vocab("clause_break_words"), key=len, reverse=True)
+    alternatives = "|".join(re.escape(word) for word in breaks)
+    clauses = re.compile(rf"\b(?:{alternatives})\b")
+
     for sentence in re.split(r"(?<=[.!?])\s+", prose):
-        low = sentence.lower()
+        for clause in clauses.split(sentence):
+            low = clause.lower()
 
-        # Where every direction word and every option name falls, in order.
-        hits: list[tuple[int, str]] = []
-        for label, (_axis, _sign, tokens) in directions.items():
-            for token in tokens:
-                for match in re.finditer(rf"\b{re.escape(token)}\b", low):
-                    hits.append((match.start(), label))
-        names: list[tuple[int, object]] = []
-        for name in coords.index:
-            at = low.find(str(name).lower())
-            while at != -1:
-                names.append((at, name))
-                at = low.find(str(name).lower(), at + 1)
-        if not hits or not names:
-            continue
-        hits.sort()
+            # Where every direction word and every option name falls, in order.
+            hits: list[tuple[int, str]] = []
+            for label, (_axis, _sign, tokens) in directions.items():
+                for token in tokens:
+                    for match in re.finditer(rf"\b{re.escape(token)}\b", low):
+                        hits.append((match.start(), label))
+            names: list[tuple[int, object]] = []
+            for name in coords.index:
+                at = low.find(str(name).lower())
+                while at != -1:
+                    names.append((at, name))
+                    at = low.find(str(name).lower(), at + 1)
+            if not hits or not names:
+                continue
+            hits.sort()
 
-        carried: list[object] = []
-        for index, (position, label) in enumerate(hits):
-            previous = hits[index - 1][0] if index else 0
-            following = hits[index + 1][0] if index + 1 < len(hits) else len(low)
+            # A compound direction is one claim, so the words making it up must
+            # be attributed together: "en bas a gauche" and "lower-right" name
+            # a corner, not two sides. A run of direction words with no option
+            # name between consecutive members is therefore one group, and a
+            # name appearing between two of them closes the group -- which is
+            # exactly what separates two coordinated claims ("Chroma sits in
+            # the lower left, and ann-router in the upper right"). Reading the
+            # words one at a time let the first corner's forward window claim
+            # the second corner's subject and contradicted correct prose.
+            groups: list[list[tuple[int, str]]] = []
+            for position, label in hits:
+                adjacent = groups and not any(groups[-1][-1][0] < at < position for at, _ in names)
+                if adjacent:
+                    groups[-1].append((position, label))
+                else:
+                    groups.append([(position, label)])
 
-            # Both word orders occur and both have to be read. "Vapi sits on
-            # the right" puts the name before the direction; "in the bottom-right
-            # corner are Vapi and Rasa" puts it after, and a rule that only
-            # looked backwards silently passed the second -- which is how a
-            # wrong grouping survived a run this checker reported clean.
-            before = [n for at, n in names if previous <= at < position]
-            after = [n for at, n in names if position < at <= following]
-            claimed = before or after
-            if claimed:
-                carried = claimed
-            axis, sign, _tokens = directions[label]
-            for name in carried:
-                value = float(coords.loc[name].iloc[axis])
-                if value == 0 or (value > 0) == (sign > 0):
-                    continue
-                problems.append(
-                    words["mismatch"].format(option=name, claimed=label, actual=opposite[label])
-                )
+            carried: list[object] = []
+            for index, group in enumerate(groups):
+                start, end = group[0][0], group[-1][0]
+                previous = groups[index - 1][-1][0] if index else 0
+                following = groups[index + 1][0][0] if index + 1 < len(groups) else len(low)
+
+                # Both word orders occur and both have to be read. "Vapi sits on
+                # the right" puts the name before the direction; "in the bottom-right
+                # corner are Vapi and Rasa" puts it after, and a rule that only
+                # looked backwards silently passed the second -- which is how a
+                # wrong grouping survived a run this checker reported clean.
+                before = [n for at, n in names if previous <= at < start]
+                after = [n for at, n in names if end < at <= following]
+                claimed = before or after
+                if claimed:
+                    carried = claimed
+                for _position, label in group:
+                    axis, sign, _tokens = directions[label]
+                    for name in carried:
+                        value = float(coords.loc[name].iloc[axis])
+                        if value == 0 or (value > 0) == (sign > 0):
+                            continue
+                        problems.append(
+                            words["mismatch"].format(
+                                option=name, claimed=label, actual=opposite[label]
+                            )
+                        )
 
     return sorted(set(problems))
 

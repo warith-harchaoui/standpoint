@@ -113,6 +113,8 @@ bundle:
       dir_right_words: right
       dir_top_words: top, upper, higher
       dir_bottom_words: bottom, lower
+      clause_break_words: but, while, whilst, whereas, conversely, however, though,
+        although, contrast, unlike
       mismatch: written analysis places {option} on the {claimed}, but it sits {actual}
       axes_heading: Axes
       analysis_heading: Analysis
@@ -133,6 +135,8 @@ bundle:
       dir_right_words: droite
       dir_top_words: haut, supérieur
       dir_bottom_words: bas, inférieur
+      clause_break_words: tandis, alors, mais, cependant, néanmoins, pourtant,
+        contrairement, revanche, inverse
       mismatch: l'analyse écrite place {option} du côté {claimed}, alors qu'elle est {actual}
       axes_heading: Axes
       analysis_heading: Analyse
@@ -153,6 +157,7 @@ bundle:
       dir_right_words: derecha
       dir_top_words: arriba, superior
       dir_bottom_words: abajo, inferior
+      clause_break_words: mientras, pero, cambio, embargo, aunque, diferencia
       mismatch: el análisis escrito sitúa {option} en {claimed}, pero está en {actual}
       axes_heading: Ejes
       analysis_heading: Análisis
