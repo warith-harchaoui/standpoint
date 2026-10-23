@@ -991,3 +991,23 @@ def test_a_corner_still_catches_a_wrong_member(voice_fit) -> None:
     """
     problems = p4m.check_analysis("Vapi sits in the bottom-right corner.", voice_fit)
     assert any("Vapi" in p and "right" in p for p in problems), problems
+
+
+def test_the_house_comma_rule_is_applied_not_merely_requested() -> None:
+    """The French prompt asks for this already; the model does it anyway.
+
+    "Never write a comma before et or ou" has been in the French prompt from
+    the start, and a freshly generated analysis still broke it twice. Same
+    lesson as `check_analysis`: an instruction in a prompt is a request, not a
+    guarantee. A comma can be fixed outright rather than reported, since
+    removing one before a coordinating conjunction changes no meaning.
+    """
+    assert p4m._house_style("A gagne, et B perd, ou C renonce.", "fr") == (
+        "A gagne et B perd ou C renonce."
+    )
+    # A word that merely starts with the conjunction must survive.
+    assert p4m._house_style("Des index, etc.", "fr") == "Des index, etc."
+    # Languages with no stated rule are untouched, Oxford comma included.
+    assert p4m._house_style("A, B, and C.", "en") == "A, B, and C."
+    for lang in ("en", "fr", "es"):
+        assert "no_comma_before" in p4m.i18n(lang)["analysis_md"]

@@ -2071,10 +2071,32 @@ def analysis_prose(
         text = prose if isinstance(prose, str) else str(prose)
         # The model is asked for prose and sometimes returns it fenced anyway.
         text = re.sub(r"^\s*```[a-z]*\s*|\s*```\s*$", "", text.strip())
-        return text.strip()
+        return _house_style(text.strip(), lang)
     except Exception:
         logger.warning("written analysis: the local model was not reachable")
         return ""
+
+
+def _house_style(text: str, lang: str) -> str:
+    """Enforce the punctuation rules the prompt already asks for.
+
+    The French prompt has said "never write a comma before et or ou" since it
+    was written, and the model still does it a couple of times per analysis.
+    An instruction is not a guarantee: the same reason `check_analysis` exists
+    rather than trusting the prompt's "do not re-derive a position". This is a
+    comma, so it can be fixed outright instead of merely reported -- removing
+    one before a coordinating conjunction leaves the sentence saying exactly
+    what it said.
+
+    Driven by the locale's ``no_comma_before`` list, empty for languages where
+    no such rule has been stated, so this is a no-op outside French.
+    """
+    conjunctions = [
+        w.strip() for w in i18n(lang)["analysis_md"].get("no_comma_before", "").split(",")
+    ]
+    for word in [w for w in conjunctions if w]:
+        text = re.sub(rf",(\s+{re.escape(word)}\b)", r"\1", text)
+    return text
 
 
 def check_analysis(
