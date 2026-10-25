@@ -24,7 +24,6 @@ plus ``distillation/data/dataset/images/`` for the vlm_assess image files.
 
 from __future__ import annotations
 
-import argparse
 import importlib.util
 import json
 import sys
@@ -32,6 +31,7 @@ from pathlib import Path
 from types import ModuleType
 
 import best_engine_ai_helper.llm as llm_module
+import click
 import pandas as pd
 
 import standpoint as sp
@@ -242,30 +242,50 @@ def vlm_assess_negative_example(
 # --------------------------------------------------------------------------- #
 # main
 # --------------------------------------------------------------------------- #
-def parse_args() -> argparse.Namespace:
-    ap = argparse.ArgumentParser()
-    ap.add_argument(
-        "--shard-id",
-        type=int,
-        default=None,
-        help="This worker's shard (0-indexed). Requires --num-shards. Writes to "
-        "<task>.shard<N>.jsonl and .processed.shard<N> instead of the shared files, "
-        "so concurrent shards never write the same file (JSONL lines, especially "
-        "narrative text, can exceed the OS's atomic-write size, so two processes "
-        "appending to one shared file risks interleaved/corrupted lines) -- merge "
-        "with merge_shards.py once all shards finish.",
-    )
-    ap.add_argument("--num-shards", type=int, default=None)
-    return ap.parse_args()
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "--shard-id",
+    type=int,
+    default=None,
+    help="This worker's shard (0-indexed). Requires --num-shards. Writes to "
+    "<task>.shard<N>.jsonl and .processed.shard<N> instead of the shared files, "
+    "so concurrent shards never write the same file (JSONL lines, especially "
+    "narrative text, can exceed the OS's atomic-write size, so two processes "
+    "appending to one shared file risks interleaved/corrupted lines) -- merge "
+    "with merge_shards.py once all shards finish.",
+)
+@click.option(
+    "--num-shards",
+    type=int,
+    default=None,
+    help="How many shards the run is split across; required with --shard-id.",
+)
+def main(shard_id: int | None, num_shards: int | None) -> None:
+    """Capture the teacher's own calls into the per-task distillation datasets.
 
+    \f
 
-def main() -> None:
-    args = parse_args()
-    sharded = args.shard_id is not None
-    if sharded and (args.num_shards is None or not (0 <= args.shard_id < args.num_shards)):
-        print("--shard-id requires --num-shards and 0 <= shard-id < num-shards", file=sys.stderr)
-        sys.exit(1)
-    suffix = f".shard{args.shard_id}" if sharded else ""
+    Everything past the form feed is for readers of the source: click renders a
+    command's whole docstring in ``--help`` and stops at ``\\f``, so without it
+    the Numpy-style block CODING.md Rule 1 asks for would reach the terminal as
+    one reflowed paragraph.
+
+    Parameters
+    ----------
+    shard_id : int, optional
+        This worker's 0-indexed shard; ``None`` runs the whole corpus in one
+        process and writes the shared files.
+    num_shards : int, optional
+        How many shards the run is split across. Mandatory with `shard_id`, and
+        the pair is validated here rather than by click because the constraint
+        is relational (``0 <= shard_id < num_shards``).
+    """
+    sharded = shard_id is not None
+    if sharded and (num_shards is None or not (0 <= shard_id < num_shards)):
+        # A bad flag combination, so it prints the usage line and exits 2 --
+        # the same treatment webapp/build.py gives --llm-server/--llm-server-model.
+        raise click.UsageError("--shard-id requires --num-shards and 0 <= shard-id < num-shards")
+    suffix = f".shard{shard_id}" if sharded else ""
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
@@ -285,10 +305,10 @@ def main() -> None:
     processed = set(PROCESSED_LOG.read_text().split()) if PROCESSED_LOG.exists() else set()
     todo = [p for p in csv_paths if p.stem not in processed]
     if sharded:
-        todo = [p for p in todo if int(p.stem.split("_", 1)[0]) % args.num_shards == args.shard_id]
+        todo = [p for p in todo if int(p.stem.split("_", 1)[0]) % num_shards == shard_id]
     print(
         f"{len(csv_paths)} tables total, {len(processed)} already processed, "
-        f"{len(todo)} to do{f' (shard {args.shard_id}/{args.num_shards})' if sharded else ''}."
+        f"{len(todo)} to do{f' (shard {shard_id}/{num_shards})' if sharded else ''}."
     )
 
     counts = dict.fromkeys(sinks, 0)

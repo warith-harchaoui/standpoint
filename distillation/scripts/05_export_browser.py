@@ -41,12 +41,13 @@ Run with the distillation venv::
 
 from __future__ import annotations
 
-import argparse
 import json
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+import click
 
 DIST_DIR = Path(__file__).resolve().parents[1]
 CHECKPOINTS = DIST_DIR / "checkpoints"
@@ -214,13 +215,34 @@ def lay_out_for_browser(tokenizer_src: Path, onnx_dir: Path, q4_file: Path, out:
     )
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--lang", choices=("en", "fr", "all"), default="all")
-    args = parser.parse_args()
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "--lang",
+    type=click.Choice(("en", "fr", "all")),
+    default="all",
+    show_default=True,
+    help="Export the adapter trained on this language.",
+)
+def main(lang: str) -> None:
+    """Fuse, export to ONNX, quantise to q4f16 and lay out the browser bundle.
 
-    stem = f"standpoint-qwen3-0.6b{'' if args.lang == 'all' else '-' + args.lang}"
-    fused = fuse(args.lang, CHECKPOINTS / f"{stem}-fused")
+    \f
+
+    Everything past the form feed is for readers of the source: click renders a
+    command's whole docstring in ``--help`` and stops at ``\\f``, so without it
+    the Numpy-style block CODING.md Rule 1 asks for would reach the terminal as
+    one reflowed paragraph.
+
+    Parameters
+    ----------
+    lang : str
+        Which trained adapter to export, mirroring `03_train_lora.py`'s
+        ``--lang``: ``en`` / ``fr`` for the specialists, ``all`` for the
+        bilingual control. It picks the base model, the adapter and the upstream
+        tokenizer repo, and names every intermediate checkpoint directory.
+    """
+    stem = f"standpoint-qwen3-0.6b{'' if lang == 'all' else '-' + lang}"
+    fused = fuse(lang, CHECKPOINTS / f"{stem}-fused")
     onnx_dir = export_onnx(fused, CHECKPOINTS / f"{stem}-onnx-fp16")
     q4_file = CHECKPOINTS / f"{stem}-onnx-q4f16" / "model_q4f16.onnx"
     if q4_file.exists():
@@ -228,7 +250,7 @@ def main() -> None:
     else:
         quantize_q4f16(onnx_dir, q4_file)
     lay_out_for_browser(
-        upstream_tokenizer_dir(args.lang), onnx_dir, q4_file, CHECKPOINTS / f"{stem}-browser"
+        upstream_tokenizer_dir(lang), onnx_dir, q4_file, CHECKPOINTS / f"{stem}-browser"
     )
 
 

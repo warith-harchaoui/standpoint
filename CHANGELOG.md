@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The nine remaining `argparse` scripts in `distillation/scripts/` are click
+  commands** (`02_generate_dataset`, `03_train_lora`, `04_evaluate`,
+  `05_export_browser`, `06_evaluate_onnx`, `07_prune_vocab`,
+  `08_export_pruned`, `run_lora_with_val`, `run_lora_text_with_val`), so
+  `import argparse` is now absent from the whole repository — `webapp/build.py`
+  and `skills/standpoint/scripts/positioning_summary.py`, the two non-console
+  scripts, went first. Every flag keeps
+  its exact spelling — these are run by path from documented command lines, and
+  `03_train_lora.py` builds the trainer's argv as a subprocess, so a rename
+  would have broken a real invocation rather than a doc. `-h` works alongside
+  `--help` everywhere, and each docstring carries the `\f` that keeps its
+  numpydoc block out of the rendered help.
+
+  Two details were worth more than a mechanical rewrite. `04_evaluate.py`'s
+  `--lang` binds to `run_lang`, because the per-example loop binds its own
+  `lang` and letting the flag own that name would have named the report files
+  after the last example's language instead of the run's. And
+  `run_lora_with_val.py` hands `mlx_vlm`'s `setup_model_for_training` a
+  `SimpleNamespace`, since that function reads five settings off an object's
+  attributes rather than taking arguments.
+
+### Fixed
+
+- **`run_lora_with_val.py --help` no longer claims `--val-batches -1` means
+  "the whole validation split".** It does not: `sft_trainer.evaluate` turns
+  `num_batches=-1` into `iter(int, 1)` and zips it with the equally infinite
+  `iterate_batches`, so `-1` loops forever — which `distillation/README.md`
+  has recorded as finding 5 all along, while a stale comment next to the flag
+  said the opposite. Converting that comment into user-facing help would have
+  published the mistake, so the help now warns instead. The default is
+  unchanged.
+- **`02_generate_dataset.py` with `--shard-id` but no usable `--num-shards`
+  now prints the usage line and exits 2** instead of a bare message and exit 1,
+  matching how `webapp/build.py` reports the same kind of flag-pair error.
+
 ## [0.13.0] - 2026-10-25
 
 ### Removed

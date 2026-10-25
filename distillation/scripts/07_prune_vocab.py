@@ -40,46 +40,15 @@ Run with the distillation venv::
 
 from __future__ import annotations
 
-import argparse
 import json
 import sys
 from pathlib import Path
 
+import click
+
 DIST_DIR = Path(__file__).resolve().parents[1]
 CHECKPOINTS = DIST_DIR / "checkpoints"
 REPO = DIST_DIR.parent
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument(
-        "--weights",
-        type=Path,
-        default=CHECKPOINTS / "standpoint-qwen3-0.6b-fused",
-        help="fused HF checkpoint (weights + config)",
-    )
-    parser.add_argument(
-        "--tokenizer",
-        type=Path,
-        default=CHECKPOINTS / "llm-engine",
-        help="directory holding the UPSTREAM tokenizer files (mlx_lm fuse mangles "
-        "tokenizer_config.json -- see 05_export_browser.py -- so the browser "
-        "bundle's copy is the trusted source)",
-    )
-    parser.add_argument(
-        "--out",
-        type=Path,
-        default=CHECKPOINTS / "standpoint-qwen3-0.6b-pruned",
-        help="output checkpoint directory",
-    )
-    parser.add_argument(
-        "--common-merges",
-        type=int,
-        default=20_000,
-        help="keep the results of this many top-frequency BPE merges as a "
-        "robustness margin for out-of-corpus words (default: %(default)s)",
-    )
-    return parser.parse_args()
 
 
 def corpus_texts(tokenizer) -> list[str]:
@@ -118,13 +87,73 @@ def corpus_texts(tokenizer) -> list[str]:
     return texts
 
 
-def main() -> None:
-    args = parse_args()
+# ``--tokenizer`` lands as `tokenizer_dir`: main() binds a loaded AutoTokenizer to
+# the name `tokenizer`, and letting the flag own it would turn every later
+# ``tokenizer / "file.json"`` into an attempt to divide a tokenizer by a string.
+# No ``exists=True`` anywhere: argparse validated none of these paths, and the
+# first read is what reports a wrong one.
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "--weights",
+    type=click.Path(path_type=Path),
+    default=CHECKPOINTS / "standpoint-qwen3-0.6b-fused",
+    show_default=True,
+    help="Fused HF checkpoint (weights + config).",
+)
+@click.option(
+    "--tokenizer",
+    "tokenizer_dir",
+    type=click.Path(path_type=Path),
+    default=CHECKPOINTS / "llm-engine",
+    show_default=True,
+    help="Directory holding the UPSTREAM tokenizer files (mlx_lm fuse mangles "
+    "tokenizer_config.json -- see 05_export_browser.py -- so the browser "
+    "bundle's copy is the trusted source).",
+)
+@click.option(
+    "--out",
+    "out_dir",
+    type=click.Path(path_type=Path),
+    default=CHECKPOINTS / "standpoint-qwen3-0.6b-pruned",
+    show_default=True,
+    help="Output checkpoint directory.",
+)
+@click.option(
+    "--common-merges",
+    type=int,
+    default=20_000,
+    show_default=True,
+    help="Keep the results of this many top-frequency BPE merges as a "
+    "robustness margin for out-of-corpus words.",
+)
+def main(weights: Path, tokenizer_dir: Path, out_dir: Path, common_merges: int) -> None:
+    """Rebuild the checkpoint around the vocabulary the three tasks can reach.
 
+    \f
+
+    Everything past the form feed is for readers of the source: click renders a
+    command's whole docstring in ``--help`` and stops at ``\\f``, so without it
+    the Numpy-style block CODING.md Rule 1 asks for would reach the terminal as
+    one reflowed paragraph.
+
+    Parameters
+    ----------
+    weights : Path
+        Fused HF checkpoint supplying ``model.safetensors`` plus the config and
+        generation config whose special-token ids get remapped.
+    tokenizer_dir : Path
+        Where the trusted upstream tokenizer files are read from (the
+        ``--tokenizer`` flag).
+    out_dir : Path
+        Destination checkpoint directory (the ``--out`` flag).
+    common_merges : int
+        How many top-frequency BPE merges to keep beyond the corpus tokens, as a
+        robustness margin for words the corpus never saw.
+    """
     from transformers import AutoTokenizer
 
-    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)
-    tok_json = json.loads((args.tokenizer / "tokenizer.json").read_text(encoding="utf-8"))
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
+    tok_json = json.loads((tokenizer_dir / "tokenizer.json").read_text(encoding="utf-8"))
     vocab: dict[str, int] = tok_json["model"]["vocab"]
     merges: list[list[str]] = tok_json["model"]["merges"]
     added = tok_json["added_tokens"]
@@ -140,7 +169,7 @@ def main() -> None:
     corpus_tokens = {id_to_token[i] for i in used_ids if i not in added_ids}
     keep = set(corpus_tokens)
     keep.update(id_to_token[i] for i in range(256))  # the byte alphabet
-    common = {a + b for a, b in merges[: args.common_merges]}
+    common = {a + b for a, b in merges[:common_merges]}
     keep.update(t for t in common if t in vocab)
 
     # --- derivation closure ------------------------------------------------------
@@ -160,7 +189,7 @@ def main() -> None:
                 stack.append(part)
     print(
         f"keep set: {len(corpus_tokens)} corpus tokens "
-        f"+ {args.common_merges} common merges + bytes -> {len(keep)} after closure "
+        f"+ {common_merges} common merges + bytes -> {len(keep)} after closure "
         f"(of {len(vocab)} base tokens)"
     )
 
@@ -184,17 +213,17 @@ def main() -> None:
         {**entry, "id": old_to_new[entry["id"]]} for entry in sorted(added, key=lambda a: a["id"])
     ]
 
-    args.out.mkdir(parents=True, exist_ok=True)
-    (args.out / "tokenizer.json").write_text(
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "tokenizer.json").write_text(
         json.dumps(tok_json, ensure_ascii=False), encoding="utf-8"
     )
 
     # tokenizer_config: same content, added-token ids rewritten.
-    tok_cfg = json.loads((args.tokenizer / "tokenizer_config.json").read_text(encoding="utf-8"))
+    tok_cfg = json.loads((tokenizer_dir / "tokenizer_config.json").read_text(encoding="utf-8"))
     tok_cfg["added_tokens_decoder"] = {
         str(old_to_new[int(old)]): meta for old, meta in tok_cfg["added_tokens_decoder"].items()
     }
-    (args.out / "tokenizer_config.json").write_text(
+    (out_dir / "tokenizer_config.json").write_text(
         json.dumps(tok_cfg, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
@@ -205,23 +234,23 @@ def main() -> None:
             return [old_to_new[v] for v in value]
         return old_to_new[value] if isinstance(value, int) else value
 
-    config = json.loads((args.weights / "config.json").read_text(encoding="utf-8"))
+    config = json.loads((weights / "config.json").read_text(encoding="utf-8"))
     config["vocab_size"] = new_vocab_size
     for field in ("bos_token_id", "eos_token_id", "pad_token_id"):
         if field in config:
             config[field] = remap_ids(config[field])
-    (args.out / "config.json").write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+    (out_dir / "config.json").write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
-    gen = json.loads((args.weights / "generation_config.json").read_text(encoding="utf-8"))
+    gen = json.loads((weights / "generation_config.json").read_text(encoding="utf-8"))
     for field in ("bos_token_id", "eos_token_id", "pad_token_id"):
         if field in gen:
             gen[field] = remap_ids(gen[field])
-    (args.out / "generation_config.json").write_text(
+    (out_dir / "generation_config.json").write_text(
         json.dumps(gen, indent=2) + "\n", encoding="utf-8"
     )
 
     # --- verify BEFORE writing weights: corpus tokenization is unchanged ---------
-    pruned_tokenizer = AutoTokenizer.from_pretrained(args.out)
+    pruned_tokenizer = AutoTokenizer.from_pretrained(out_dir)
     print("verifying corpus tokenization is bit-identical...")
     for n, text in enumerate(texts):
         before = tokenizer(text, add_special_tokens=False)["input_ids"]
@@ -236,17 +265,17 @@ def main() -> None:
     import torch
     from safetensors.torch import load_file, save_file
 
-    state = load_file(str(args.weights / "model.safetensors"))
+    state = load_file(str(weights / "model.safetensors"))
     embed = state["model.embed_tokens.weight"]
     rows = kept_old_ids + [a["id"] for a in sorted(added, key=lambda a: a["id"])]
     state["model.embed_tokens.weight"] = embed[torch.tensor(rows)].contiguous()
     print(
         f"embed_tokens: {tuple(embed.shape)} -> {tuple(state['model.embed_tokens.weight'].shape)}"
     )
-    save_file(state, str(args.out / "model.safetensors"), metadata={"format": "pt"})
+    save_file(state, str(out_dir / "model.safetensors"), metadata={"format": "pt"})
 
-    total = sum(f.stat().st_size for f in args.out.glob("*") if f.is_file())
-    print(f"\npruned checkpoint ready at {args.out} ({total / 1e6:.0f} MB)")
+    total = sum(f.stat().st_size for f in out_dir.glob("*") if f.is_file())
+    print(f"\npruned checkpoint ready at {out_dir} ({total / 1e6:.0f} MB)")
 
 
 if __name__ == "__main__":

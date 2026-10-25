@@ -51,12 +51,13 @@ see `--help`.
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _mlx_vlm_idefics3_patch  # noqa: F401  (patches Idefics3.__call__ on import)
+import click
 import mlx.core as mx
 import mlx.optimizers as optim
 from datasets import load_dataset
@@ -92,53 +93,154 @@ def _guard_against_nan_updates(optimizer: optim.Optimizer) -> None:
     optimizer.update = guarded_update
 
 
-def parse_args() -> argparse.Namespace:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--model-path", required=True)
-    ap.add_argument("--dataset", required=True)
-    ap.add_argument("--train-vision", action="store_true")
-    ap.add_argument("--iters", type=int, required=True)
-    ap.add_argument("--batch-size", type=int, default=1)
-    ap.add_argument("--gradient-accumulation-steps", type=int, default=1)
-    ap.add_argument("--learning-rate", type=float, default=1e-4)
-    ap.add_argument(
-        "--warmup-steps",
-        type=int,
-        default=0,
-        help="Linear LR ramp from 0 to --learning-rate over this many optimizer "
-        "updates (not raw iters -- see module docstring). 0 disables warmup.",
+# --model-path / --dataset / --output-path stay plain strings rather than
+# click.Path: argparse typed none of them, and `output_path` in particular is
+# string-concatenated below ("/adapters.safetensors") and handed to
+# `load_dataset`, which accepts a dataset name as readily as a directory.
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option("--model-path", required=True, help="Base MLX vision model to fine-tune.")
+@click.option("--dataset", required=True, help="Dataset with train/validation splits.")
+@click.option("--train-vision", is_flag=True, help="Unfreeze the vision stack too.")
+@click.option("--iters", type=int, required=True, help="Raw training iterations.")
+@click.option("--batch-size", type=int, default=1, show_default=True, help="Examples per batch.")
+@click.option(
+    "--gradient-accumulation-steps",
+    type=int,
+    default=1,
+    show_default=True,
+    help="Batches accumulated per optimizer update.",
+)
+@click.option(
+    "--learning-rate", type=float, default=1e-4, show_default=True, help="Adam learning rate."
+)
+@click.option(
+    "--warmup-steps",
+    type=int,
+    default=0,
+    show_default=True,
+    help="Linear LR ramp from 0 to --learning-rate over this many optimizer "
+    "updates (not raw iters -- see module docstring). 0 disables warmup.",
+)
+@click.option(
+    "--grad-clip",
+    type=float,
+    default=None,
+    help="Per-element gradient clip; omitted clips nothing.",
+)
+@click.option("--lora-rank", type=int, default=16, show_default=True, help="LoRA rank.")
+@click.option("--lora-alpha", type=float, default=32, show_default=True, help="LoRA alpha.")
+@click.option("--lora-dropout", type=float, default=0.0, show_default=True, help="LoRA dropout.")
+@click.option(
+    "--steps-per-report", type=int, default=10, show_default=True, help="Iterations between logs."
+)
+@click.option(
+    "--steps-per-eval", type=int, default=100, show_default=True, help="Iterations between evals."
+)
+@click.option(
+    "--steps-per-save",
+    type=int,
+    default=100,
+    show_default=True,
+    help="Iterations between checkpoints.",
+)
+# The -1 default is kept so existing argv keeps working, but the help no longer
+# repeats the comment that used to sit here ("-1 == the whole val split"): it is
+# wrong. `sft_trainer.evaluate` turns num_batches=-1 into `iter(int, 1)` and zips
+# it with the equally infinite `iterate_batches`, so -1 hangs rather than reading
+# the split once -- distillation/README.md, finding 5. Callers therefore pass the
+# real batch count, and --help now says so instead of repeating the mistake.
+@click.option(
+    "--val-batches",
+    type=int,
+    default=-1,
+    show_default=True,
+    help="Validation batches per eval. Pass the real count: -1 does NOT mean "
+    "the whole split, it makes mlx_vlm's evaluate() loop forever.",
+)
+@click.option(
+    "--max-seq-length", type=int, default=2048, show_default=True, help="Token cap per example."
+)
+@click.option(
+    "--output-path",
+    required=True,
+    help="Adapter directory, or a .safetensors file to write directly.",
+)
+@click.option("--full-finetune", is_flag=True, help="Train full weights instead of LoRA.")
+def main(
+    model_path: str,
+    dataset: str,
+    train_vision: bool,
+    iters: int,
+    batch_size: int,
+    gradient_accumulation_steps: int,
+    learning_rate: float,
+    warmup_steps: int,
+    grad_clip: float | None,
+    lora_rank: int,
+    lora_alpha: float,
+    lora_dropout: float,
+    steps_per_report: int,
+    steps_per_eval: int,
+    steps_per_save: int,
+    val_batches: int,
+    max_seq_length: int,
+    output_path: str,
+    full_finetune: bool,
+) -> None:
+    """LoRA-train an MLX vision model with a real validation split wired in.
+
+    \f
+
+    Everything past the form feed is for readers of the source: click renders a
+    command's whole docstring in ``--help`` and stops at ``\\f``, so without it
+    the Numpy-style block CODING.md Rule 1 asks for would reach the terminal as
+    one reflowed paragraph.
+
+    Parameters
+    ----------
+    model_path : str
+        Base MLX vision model, loaded with ``trust_remote_code``.
+    dataset : str
+        Anything `datasets.load_dataset` accepts, carrying ``train`` and
+        ``validation`` splits -- both are loaded, which is the whole point of
+        this script.
+    train_vision, full_finetune : bool
+        Passed through to `setup_model_for_training` (unfreeze the vision stack;
+        train full weights rather than LoRA).
+    iters, batch_size, gradient_accumulation_steps, max_seq_length : int
+        Training schedule and memory envelope.
+    learning_rate : float
+        Adam learning rate, also the top of the warmup ramp.
+    warmup_steps : int
+        Length of the linear LR ramp, counted in optimizer updates rather than
+        raw iterations -- see the module docstring.
+    grad_clip : float, optional
+        Per-element clip handed to `mlx_vlm`'s trainer; None clips nothing.
+    lora_rank, lora_alpha, lora_dropout : int or float
+        LoRA geometry, read off the namespace by `setup_model_for_training`.
+    steps_per_report, steps_per_eval, steps_per_save : int
+        Reporting, validation and checkpoint cadence.
+    val_batches : int
+        Validation batches per eval. The -1 default is mlx_vlm's own and hangs
+        (see the comment above the flag); pass the real count instead.
+    output_path : str
+        Adapter directory, or a ``.safetensors`` path written as given.
+    """
+    adapter_file = (
+        output_path
+        if output_path.endswith(".safetensors")
+        else output_path + "/adapters.safetensors"
     )
-    ap.add_argument("--grad-clip", type=float, default=None)
-    ap.add_argument("--lora-rank", type=int, default=16)
-    ap.add_argument("--lora-alpha", type=float, default=32)
-    ap.add_argument("--lora-dropout", type=float, default=0.0)
-    ap.add_argument("--steps-per-report", type=int, default=10)
-    ap.add_argument("--steps-per-eval", type=int, default=100)
-    ap.add_argument("--steps-per-save", type=int, default=100)
-    ap.add_argument("--val-batches", type=int, default=-1)  # -1 == the whole val split
-    ap.add_argument("--max-seq-length", type=int, default=2048)
-    ap.add_argument("--output-path", required=True)
-    ap.add_argument("--full-finetune", action="store_true")
-    return ap.parse_args()
 
-
-def main() -> None:
-    args = parse_args()
-    output_path = (
-        args.output_path
-        if args.output_path.endswith(".safetensors")
-        else args.output_path + "/adapters.safetensors"
-    )
-
-    print(f"Loading model from {args.model_path}")
-    model, processor = load(args.model_path, processor_config={"trust_remote_code": True})
+    print(f"Loading model from {model_path}")
+    model, processor = load(model_path, processor_config={"trust_remote_code": True})
     model_type = model.config.model_type
     config = model.config.__dict__
 
-    print(f"Loading dataset from {args.dataset}")
+    print(f"Loading dataset from {dataset}")
 
     def prep(split: str) -> VisionDataset:
-        raw = load_dataset(args.dataset, split=split)
+        raw = load_dataset(dataset, split=split)
         raw = transform_dataset_to_messages(raw, model_type)
         return VisionDataset(raw, config, processor)
 
@@ -146,38 +248,51 @@ def main() -> None:
     val_dataset = prep("validation")
     print(f"{len(train_dataset)} train / {len(val_dataset)} val examples")
 
-    # setup_model_for_training reads args.full_finetune / args.train_vision /
-    # args.lora_rank / args.lora_alpha / args.lora_dropout / an (absent) adapter_path
-    # off the namespace directly -- this argparse.Namespace already matches that shape.
-    model = setup_model_for_training(model, args, adapter_path=None)
+    # setup_model_for_training reads full_finetune / train_vision / lora_rank /
+    # lora_alpha / lora_dropout off an object's ATTRIBUTES (it was written for
+    # mlx_vlm's own argparse.Namespace), so click's keyword arguments have to be
+    # re-wrapped into one. Exactly those five names and no more: anything it
+    # stopped reading would then be dead weight here, and anything it starts
+    # reading will raise rather than silently take a default.
+    model = setup_model_for_training(
+        model,
+        SimpleNamespace(
+            full_finetune=full_finetune,
+            train_vision=train_vision,
+            lora_rank=lora_rank,
+            lora_alpha=lora_alpha,
+            lora_dropout=lora_dropout,
+        ),
+        adapter_path=None,
+    )
     print_trainable_parameters(model)
 
     # linear_schedule holds at `end` for every step past `steps` (see mlx docs), so
     # this doubles as "warmup then flat" with no separate decay schedule needed.
     lr = (
-        optim.linear_schedule(0.0, args.learning_rate, args.warmup_steps)
-        if args.warmup_steps > 0
-        else args.learning_rate
+        optim.linear_schedule(0.0, learning_rate, warmup_steps)
+        if warmup_steps > 0
+        else learning_rate
     )
     optimizer = optim.Adam(learning_rate=lr)
     _guard_against_nan_updates(optimizer)  # see module docstring's NaN/Inf guard section
 
     training_args = TrainingArgs(
-        batch_size=args.batch_size,
-        iters=args.iters,
-        steps_per_report=args.steps_per_report,
-        steps_per_eval=args.steps_per_eval,
-        steps_per_save=args.steps_per_save,
-        val_batches=args.val_batches,
-        max_seq_length=args.max_seq_length,
-        adapter_file=output_path,
+        batch_size=batch_size,
+        iters=iters,
+        steps_per_report=steps_per_report,
+        steps_per_eval=steps_per_eval,
+        steps_per_save=steps_per_save,
+        val_batches=val_batches,
+        max_seq_length=max_seq_length,
+        adapter_file=adapter_file,
         grad_checkpoint=False,
-        learning_rate=args.learning_rate,
-        grad_clip=args.grad_clip,
-        gradient_accumulation_steps=args.gradient_accumulation_steps,
-        full_finetune=args.full_finetune,
+        learning_rate=learning_rate,
+        grad_clip=grad_clip,
+        gradient_accumulation_steps=gradient_accumulation_steps,
+        full_finetune=full_finetune,
     )
-    print(f"Training model (sft), {args.iters} iterations, eval every {args.steps_per_eval}")
+    print(f"Training model (sft), {iters} iterations, eval every {steps_per_eval}")
     train(
         model=model,
         optimizer=optimizer,

@@ -21,13 +21,14 @@ Run with the distillation venv::
 
 from __future__ import annotations
 
-import argparse
 import importlib.util
 import json
 import sys
 import time
 from collections import defaultdict
 from pathlib import Path
+
+import click
 
 DIST_DIR = Path(__file__).resolve().parents[1]
 SCRIPTS = DIST_DIR / "scripts"
@@ -48,55 +49,84 @@ def _load_eval04():
     return module
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument(
-        "--bundle",
-        type=Path,
-        default=DIST_DIR / "checkpoints" / "llm-engine",
-        help="browser bundle directory (tokenizer at root, onnx/model_q4f16.onnx)",
-    )
-    parser.add_argument(
-        "--split",
-        type=Path,
-        default=DIST_DIR / "data" / "dataset" / "combined" / "validation.jsonl",
-        help="held-out split to score (default: the bilingual run's)",
-    )
-    parser.add_argument(
-        "--suffix",
-        default="onnx",
-        help="report lands in data/eval_report_<suffix>.json (default: %(default)s)",
-    )
-    parser.add_argument(
-        "--limit", type=int, default=0, help="score only the first N examples (0 = all)"
-    )
-    return parser.parse_args()
+# No ``exists=True`` on either path: argparse validated neither, and --bundle in
+# particular is checked by hand below so the message names the missing graph
+# rather than the directory.
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "--bundle",
+    type=click.Path(path_type=Path),
+    default=DIST_DIR / "checkpoints" / "llm-engine",
+    show_default=True,
+    help="Browser bundle directory (tokenizer at root, onnx/model_q4f16.onnx).",
+)
+@click.option(
+    "--split",
+    "split_path",
+    type=click.Path(path_type=Path),
+    default=DIST_DIR / "data" / "dataset" / "combined" / "validation.jsonl",
+    show_default=True,
+    help="Held-out split to score; the default is the bilingual run's.",
+)
+@click.option(
+    "--suffix",
+    default="onnx",
+    show_default=True,
+    help="Report lands in data/eval_report_<suffix>.json.",
+)
+@click.option(
+    "--limit",
+    type=int,
+    default=0,
+    show_default=True,
+    help="Score only the first N examples (0 = all).",
+)
+def main(bundle: Path, split_path: Path, suffix: str, limit: int) -> None:
+    """Score the ONNX q4f16 browser bundle on the held-out split.
 
+    \f
 
-def main() -> None:
-    args = parse_args()
+    Everything past the form feed is for readers of the source: click renders a
+    command's whole docstring in ``--help`` and stops at ``\\f``, so without it
+    the Numpy-style block CODING.md Rule 1 asks for would reach the terminal as
+    one reflowed paragraph.
+
+    Parameters
+    ----------
+    bundle : Path
+        The browser bundle to score, as laid out by `05_export_browser.py` or
+        `08_export_pruned.py`.
+    split_path : Path
+        The held-out JSONL split (the ``--split`` flag, bound to this name so it
+        reads as a path rather than a train/validation split label).
+    suffix : str
+        Names this run's report and failure log, so a reference bundle and a
+        candidate never overwrite each other.
+    limit : int
+        Score only the first N examples; ``0`` scores the whole split.
+    """
     ev = _load_eval04()
 
     from optimum.onnxruntime import ORTModelForCausalLM
     from transformers import AutoTokenizer
 
-    graph = args.bundle / "onnx" / "model_q4f16.onnx"
+    graph = bundle / "onnx" / "model_q4f16.onnx"
     if not graph.exists():
         print(f"{graph} missing; not a browser bundle.", file=sys.stderr)
         sys.exit(1)
-    print(f"Loading {args.bundle} through onnxruntime (CPU)...")
-    tokenizer = AutoTokenizer.from_pretrained(args.bundle)
+    print(f"Loading {bundle} through onnxruntime (CPU)...")
+    tokenizer = AutoTokenizer.from_pretrained(bundle)
     model = ORTModelForCausalLM.from_pretrained(
-        args.bundle, file_name="model_q4f16.onnx", use_cache=True
+        bundle, file_name="model_q4f16.onnx", use_cache=True
     )
     # optimum sizes the empty KV-cache tensors as hidden/num_heads for qwen3,
     # but Qwen3 declares an explicit head_dim (128, not 1024/16): honour it.
     if getattr(model.config, "head_dim", None):
         model.embed_size_per_head = model.config.head_dim
 
-    examples = ev.load_val_examples(args.split)
-    if args.limit:
-        examples = examples[: args.limit]
+    examples = ev.load_val_examples(split_path)
+    if limit:
+        examples = examples[:limit]
     print(f"{len(examples)} held-out examples.\n")
 
     scores: dict[tuple[str, str], list[bool]] = defaultdict(list)
@@ -153,7 +183,7 @@ def main() -> None:
         )
 
     report = {}
-    print(f"\n--- ONNX bundle report ({args.bundle.name}) ---")
+    print(f"\n--- ONNX bundle report ({bundle.name}) ---")
     for (task, lang), oks in sorted(scores.items()):
         rate = sum(oks) / len(oks)
         entry = {"pass": sum(oks), "total": len(oks), "rate": rate}
@@ -171,12 +201,12 @@ def main() -> None:
         report[f"{task}/{lang}"] = entry
         print(line)
 
-    report_path = DIST_DIR / "data" / f"eval_report_{args.suffix}.json"
+    report_path = DIST_DIR / "data" / f"eval_report_{suffix}.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2))
     print(f"\nWritten to {report_path}")
 
-    failures_path = DIST_DIR / "data" / f"eval_failures_{args.suffix}.jsonl"
+    failures_path = DIST_DIR / "data" / f"eval_failures_{suffix}.jsonl"
     failures_path.write_text(
         "".join(json.dumps(f, ensure_ascii=False) + "\n" for f in failures), encoding="utf-8"
     )

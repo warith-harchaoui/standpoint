@@ -33,12 +33,12 @@ model -- small enough to ship to a browser -- the right shape for this job.
 
 from __future__ import annotations
 
-import argparse
 import json
 import subprocess
 import sys
 from pathlib import Path
 
+import click
 from sklearn.model_selection import train_test_split
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
@@ -123,29 +123,40 @@ def split(examples: list[dict]) -> tuple[list[dict], list[dict]]:
     return train[:n_train], val[:n_val]  # drop the sub-batch remainder, not worth padding
 
 
-def parse_args() -> argparse.Namespace:
-    """CLI: which language this run specialises in."""
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument(
-        "--lang",
-        choices=LANGS,
-        default="all",
-        help="train on this language's examples only; 'all' is the bilingual "
-        "control (default: %(default)s)",
-    )
-    parser.add_argument(
-        "--learning-rate",
-        type=float,
-        default=5e-5,
-        help="LoRA learning rate (default: %(default)s)",
-    )
-    return parser.parse_args()
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "--lang",
+    type=click.Choice(LANGS),
+    default="all",
+    show_default=True,
+    help="Train on this language's examples only; 'all' is the bilingual control.",
+)
+@click.option(
+    "--learning-rate",
+    type=float,
+    default=5e-5,
+    show_default=True,
+    help="LoRA learning rate.",
+)
+def main(lang: str, learning_rate: float) -> None:
+    """Split the captured corpus and LoRA-train the 0.6B student for one language.
 
+    \f
 
-def main() -> None:
-    args = parse_args()
-    lang = args.lang
+    Everything past the form feed is for readers of the source: click renders a
+    command's whole docstring in ``--help`` and stops at ``\\f``, so without it
+    the Numpy-style block CODING.md Rule 1 asks for would reach the terminal as
+    one reflowed paragraph.
 
+    Parameters
+    ----------
+    lang : str
+        Which track to train: ``en`` / ``fr`` specialise on one language (each
+        on its own base model, see the module docstring), ``all`` is the
+        bilingual control.
+    learning_rate : float
+        LoRA learning rate handed to `run_lora_text_with_val.py`.
+    """
     examples = load_combined()
     if lang != "all":
         examples = [e for e in examples if e.get("lang") == lang]
@@ -196,7 +207,7 @@ def main() -> None:
         "--gradient-accumulation-steps",
         str(GRAD_ACCUM),
         "--learning-rate",
-        str(args.learning_rate),
+        str(learning_rate),
         "--warmup-steps",
         "60",  # optimizer updates, i.e. ~240 raw iterations at GRAD_ACCUM 4  # ~a third of an epoch: keeps Adam's moment estimates small while
         # the adapter is least stable, the fix that stopped the vision track's

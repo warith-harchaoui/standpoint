@@ -26,13 +26,13 @@ shipped as silently worse.
 
 from __future__ import annotations
 
-import argparse
 import json
 import re
 import sys
 from collections import defaultdict
 from pathlib import Path
 
+import click
 from mlx_lm import generate, load
 
 import standpoint as sp
@@ -207,35 +207,52 @@ def student_answer(model, tokenizer, question: str) -> str:
     return strip_reasoning(result if isinstance(result, str) else str(result))
 
 
-def parse_args() -> argparse.Namespace:
-    """CLI: which language's run to score."""
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument(
-        "--lang",
-        choices=LANGS,
-        default="all",
-        help="score the adapter trained on this language (default: %(default)s)",
-    )
-    return parser.parse_args()
+# The flag is spelled --lang but lands as `run_lang`: the per-example loop below
+# binds its own `lang` (that example's language label), and letting the flag own
+# that name would silently hand the post-loop report paths the last example's
+# language instead of the run's.
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "--lang",
+    "run_lang",
+    type=click.Choice(LANGS),
+    default="all",
+    show_default=True,
+    help="Score the adapter trained on this language.",
+)
+def main(run_lang: str) -> None:
+    """Score one language's adapter on its own held-out split, per task.
 
+    \f
 
-def main() -> None:
-    args = parse_args()
-    adapter = adapter_for(args.lang)
-    report_path = report_path_for(args.lang)
+    Everything past the form feed is for readers of the source: click renders a
+    command's whole docstring in ``--help`` and stops at ``\\f``, so without it
+    the Numpy-style block CODING.md Rule 1 asks for would reach the terminal as
+    one reflowed paragraph.
+
+    Parameters
+    ----------
+    run_lang : str
+        Which run to score (the ``--lang`` flag): ``en`` / ``fr`` for the
+        specialists, ``all`` for the bilingual control. Each is scored on the
+        split `03_train_lora.py` wrote for it, so the three reports compare
+        like with like.
+    """
+    adapter = adapter_for(run_lang)
+    report_path = report_path_for(run_lang)
     if not adapter.exists():
         print(
-            f"{adapter} missing; run 03_train_lora.py --lang {args.lang} first.",
+            f"{adapter} missing; run 03_train_lora.py --lang {run_lang} first.",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    base_model = BASE_MODELS[args.lang]
+    base_model = BASE_MODELS[run_lang]
     print(f"Loading {base_model.name} + adapter {adapter.parent.name}/{adapter.name}...")
     model, tokenizer = load(str(base_model), adapter_path=str(adapter))
 
-    examples = load_val_examples(val_path_for(args.lang))
-    print(f"{len(examples)} held-out {args.lang} examples.\n")
+    examples = load_val_examples(val_path_for(run_lang))
+    print(f"{len(examples)} held-out {run_lang} examples.\n")
 
     # (task, lang) -> list of bool pass/fail, and the raw suggest_ratings
     # deviations behind those booleans (see suggest_ratings_deviation).
@@ -276,7 +293,7 @@ def main() -> None:
         print(f"[{i + 1}/{len(examples)}] {task}/{lang}: {'PASS' if ok else 'FAIL'}")
 
     report = {}
-    print(f"\n--- Phase 3 report ({args.lang}) ---")
+    print(f"\n--- Phase 3 report ({run_lang}) ---")
     for (task, lang), oks in sorted(scores.items()):
         rate = sum(oks) / len(oks)
         entry = {"pass": sum(oks), "total": len(oks), "rate": rate}
@@ -301,7 +318,7 @@ def main() -> None:
     report_path.write_text(json.dumps(report, indent=2))
     print(f"\nWritten to {report_path}")
 
-    failures_path = failures_path_for(args.lang)
+    failures_path = failures_path_for(run_lang)
     failures_path.write_text(
         "".join(json.dumps(f, ensure_ascii=False) + "\n" for f in failures), encoding="utf-8"
     )

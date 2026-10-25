@@ -27,11 +27,11 @@ afterwards)::
 
 from __future__ import annotations
 
-import argparse
 import importlib.util
 import sys
 from pathlib import Path
 
+import click
 import numpy as np
 
 DIST_DIR = Path(__file__).resolve().parents[1]
@@ -109,19 +109,36 @@ def quantize_embedding_int8(q4_file: Path, out_file: Path) -> None:
     print(f"int8-embedding graph written to {out_file} ({out_file.stat().st_size / 1e6:.0f} MB)")
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument(
-        "--pruned",
-        type=Path,
-        default=CHECKPOINTS / "standpoint-qwen3-0.6b-pruned",
-        help="pruned HF checkpoint from 07_prune_vocab.py",
-    )
-    args = parser.parse_args()
+# No ``exists=True``: argparse did not validate the path either, and optimum's own
+# loader is what reports a checkpoint that is not there.
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "--pruned",
+    type=click.Path(path_type=Path),
+    default=CHECKPOINTS / "standpoint-qwen3-0.6b-pruned",
+    show_default=True,
+    help="Pruned HF checkpoint from 07_prune_vocab.py.",
+)
+def main(pruned: Path) -> None:
+    """Export the pruned checkpoint to a browser bundle, embeddings included.
 
+    \f
+
+    Everything past the form feed is for readers of the source: click renders a
+    command's whole docstring in ``--help`` and stops at ``\\f``, so without it
+    the Numpy-style block CODING.md Rule 1 asks for would reach the terminal as
+    one reflowed paragraph.
+
+    Parameters
+    ----------
+    pruned : Path
+        The already-fused, vocabulary-pruned checkpoint `07_prune_vocab.py`
+        wrote. Its directory name becomes the stem of every artefact this
+        script produces, and it doubles as the tokenizer source.
+    """
     ex = _load_export05()
-    stem = args.pruned.name  # standpoint-qwen3-0.6b-pruned
-    onnx_dir = ex.export_onnx(args.pruned, CHECKPOINTS / f"{stem}-onnx-fp16")
+    stem = pruned.name  # standpoint-qwen3-0.6b-pruned
+    onnx_dir = ex.export_onnx(pruned, CHECKPOINTS / f"{stem}-onnx-fp16")
     q4_file = CHECKPOINTS / f"{stem}-onnx-q4f16" / "model_q4f16.onnx"
     if q4_file.exists():
         print(f"q4f16 graph already at {q4_file}, reusing")
@@ -134,7 +151,7 @@ def main() -> None:
         quantize_embedding_int8(q4_file, q4e8_file)
     # The pruned checkpoint doubles as the tokenizer source: 07 already wrote
     # upstream-derived tokenizer files with remapped ids next to the weights.
-    ex.lay_out_for_browser(args.pruned, onnx_dir, q4e8_file, CHECKPOINTS / f"{stem}-browser")
+    ex.lay_out_for_browser(pruned, onnx_dir, q4e8_file, CHECKPOINTS / f"{stem}-browser")
 
 
 if __name__ == "__main__":
