@@ -81,13 +81,14 @@ The Pyodide runtime itself is loaded from the jsDelivr CDN at page load (see
 
 from __future__ import annotations
 
-import argparse
 import json
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+import click
 
 # Repo layout anchors: this file lives in <repo>/webapp/.
 WEBAPP = Path(__file__).resolve().parent
@@ -527,126 +528,165 @@ def resolve_out(out: Path, *, clean: bool) -> Path:
     return resolved
 
 
-def main() -> None:
-    """Build the bundle end to end; ``--clean`` wipes a previous build first."""
+# ``--llm-server`` and ``--llm-server-model`` go together: click checks the pair
+# inside the callback and raises a UsageError, which prints the usage line and
+# exits 2 exactly as argparse's ``parser.error`` did.
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option("--clean", is_flag=True, help="Remove a previous build before building.")
+@click.option(
+    "--base-url",
+    default=BASE_URL,
+    show_default=True,
+    help="Deployment URL for canonical/OG/sitemap.",
+)
+@click.option(
+    "--llm-server",
+    default=None,
+    metavar="URL",
+    help="Point the Laziness button at a shared OpenAI-compatible server "
+    "(e.g. http://gpu1.example:8000) instead of the in-page model. The page "
+    "still falls back to the in-page model whenever the server cannot be used "
+    "— including from an https page, which browsers forbid from calling an "
+    "http endpoint.",
+)
+@click.option(
+    "--llm-server-path",
+    default=None,
+    metavar="PATH",
+    help="Endpoint path on that server (default /v1/chat/completions, which is "
+    "raw vLLM; an Open-WebUI gateway answers on /api/chat/completions).",
+)
+@click.option(
+    "--llm-server-credentials",
+    is_flag=True,
+    help="Send the visitor's cookies with the call, so an SSO session on the "
+    "gateway authorises it and no token ships in the page. Requires the server "
+    "to name this deployment's origin in Access-Control-Allow-Origin; browsers "
+    "refuse credentials against a wildcard.",
+)
+@click.option(
+    "--llm-server-login",
+    default=None,
+    metavar="URL",
+    help="Where a visitor signs in to that server, quoted back to them when the "
+    "call comes back unauthenticated.",
+)
+@click.option(
+    "--llm-server-model",
+    default=None,
+    metavar="NAME",
+    help="Model id to ask that server for (required with --llm-server).",
+)
+@click.option(
+    "--model",
+    "model_dir",
+    type=click.Path(path_type=Path, exists=True, file_okay=False),
+    default=None,
+    help="Copy this folder in as llm-engine/ inside the build (the distilled "
+    "student the page downloads at load, produced by "
+    "distillation/scripts/05_export_browser.py). Several hundred MB, so it is "
+    "opt-in: without it the bundle expects the folder uploaded separately.",
+)
+@click.option(
+    "--no-gate",
+    is_flag=True,
+    help="Build the freely accessible app: no landing page, no PHP endpoints, "
+    "no .htaccess, no activity tracking (for hosts without PHP, or for a mirror "
+    "that is meant to be open).",
+)
+@click.option(
+    "--ext-txt",
+    is_flag=True,
+    help="Ship every file whose extension the host refuses (.py, .json, .md, "
+    ".yaml, .toml, ...) as <name><ext>.txt, and rewrite same-origin reads in "
+    "the page. Needed on deraison.ai, which answers 403 to those extensions "
+    'across the whole domain — reaching the visitor as "Unexpected token '
+    "'<'\" or a SyntaxError on an HTML error body.",
+)
+@click.option(
+    "--out",
+    "out_dir",
+    type=click.Path(path_type=Path),
+    default=DIST,
+    show_default=True,
+    help="Output folder; use a separate one to keep that build intact. Refused "
+    f"if it would write anywhere else inside the {SITE_DIR} mirror.",
+)
+def main(
+    clean: bool,
+    base_url: str,
+    llm_server: str | None,
+    llm_server_path: str | None,
+    llm_server_credentials: bool,
+    llm_server_login: str | None,
+    llm_server_model: str | None,
+    model_dir: Path | None,
+    no_gate: bool,
+    ext_txt: bool,
+    out_dir: Path,
+) -> None:
+    """Build the static Standpoint web app end to end.
+
+    \f
+
+    ``--clean`` wipes a previous build first. Everything after the form feed is
+    for readers of the source: click truncates ``--help`` there, so the
+    numpydoc block below never reaches the terminal.
+
+    Parameters
+    ----------
+    clean : bool
+        Remove a previous build before building.
+    base_url : str
+        Deployment URL used for canonical/OG/sitemap.
+    llm_server, llm_server_path, llm_server_credentials, llm_server_login, llm_server_model
+        Shared-inference-server wiring; the first two require the model id.
+    model_dir : Path or None
+        Folder copied in as ``llm-engine/``.
+    no_gate : bool
+        Build without the landing page / PHP gate.
+    ext_txt : bool
+        Rename host-refused extensions to ``.txt`` and rewrite reads.
+    out_dir : Path
+        Output folder, validated by :func:`resolve_out`.
+    """
     global DIST  # every helper writes relative to this module-level anchor
-    parser = argparse.ArgumentParser(description="Build the static Standpoint web app.")
-    parser.add_argument(
-        "--clean", action="store_true", help="remove a previous build before building"
-    )
-    parser.add_argument(
-        "--base-url",
-        default=BASE_URL,
-        help="deployment URL for canonical/OG/sitemap (default: %(default)s)",
-    )
-    parser.add_argument(
-        "--llm-server",
-        default=None,
-        metavar="URL",
-        help="point the Laziness button at a shared OpenAI-compatible server "
-        "(e.g. http://gpu1.example:8000) instead of the in-page model. The page "
-        "still falls back to the in-page model whenever the server cannot be "
-        "used -- including from an https page, which browsers forbid from "
-        "calling an http endpoint",
-    )
-    parser.add_argument(
-        "--llm-server-path",
-        default=None,
-        metavar="PATH",
-        help="endpoint path on that server (default /v1/chat/completions, which "
-        "is raw vLLM; an Open-WebUI gateway answers on /api/chat/completions)",
-    )
-    parser.add_argument(
-        "--llm-server-credentials",
-        action="store_true",
-        help="send the visitor's cookies with the call, so an SSO session on the "
-        "gateway authorises it and no token ships in the page. Requires the "
-        "server to name this deployment's origin in Access-Control-Allow-Origin; "
-        "browsers refuse credentials against a wildcard",
-    )
-    parser.add_argument(
-        "--llm-server-login",
-        default=None,
-        metavar="URL",
-        help="where a visitor signs in to that server, quoted back to them when "
-        "the call comes back unauthenticated",
-    )
-    parser.add_argument(
-        "--llm-server-model",
-        default=None,
-        metavar="NAME",
-        help="model id to ask that server for (required with --llm-server)",
-    )
-    parser.add_argument(
-        "--model",
-        type=Path,
-        default=None,
-        help="copy this folder in as llm-engine/ inside the build (the distilled "
-        "student the page downloads at load, produced by "
-        "distillation/scripts/05_export_browser.py). Several hundred MB, so it "
-        "is opt-in: without it the bundle expects the folder uploaded separately",
-    )
-    parser.add_argument(
-        "--no-gate",
-        action="store_true",
-        help="build the freely accessible app: no landing page, no PHP endpoints, "
-        "no .htaccess, no activity tracking (for hosts without PHP, or for a "
-        "mirror that is meant to be open)",
-    )
-    parser.add_argument(
-        "--ext-txt",
-        action="store_true",
-        help="ship every file whose extension the host refuses (.py, .json, "
-        ".md, .yaml, .toml, ...) as <name><ext>.txt, and rewrite same-origin "
-        "reads in the page. Needed on deraison.ai, which answers 403 to those "
-        "extensions across the whole domain -- reaching the visitor as "
-        "\"Unexpected token '<'\" or a SyntaxError on an HTML error body",
-    )
-    parser.add_argument(
-        "--out",
-        type=Path,
-        default=DIST,
-        help="output folder (default: %(default)s); use a separate one to keep "
-        "that build intact. Refused if it would write anywhere else inside the "
-        f"{SITE_DIR} mirror",
-    )
-    args = parser.parse_args()
-    DIST = resolve_out(args.out, clean=args.clean)
+    DIST = resolve_out(out_dir, clean=clean)
 
     wheels = build_wheels()
     export_i18n()
-    llm_server = None
-    if args.llm_server:
-        if not args.llm_server_model:
-            parser.error("--llm-server needs --llm-server-model")
-        llm_server = {"url": args.llm_server, "model": args.llm_server_model}
-        if args.llm_server_path:
-            llm_server["path"] = args.llm_server_path
-        if args.llm_server_credentials:
-            llm_server["credentials"] = "include"
-        if args.llm_server_login:
-            llm_server["loginUrl"] = args.llm_server_login
-        print(f"shared inference server wired in: {args.llm_server} ({args.llm_server_model})")
-    compose_index(args.base_url, gated=not args.no_gate, llm_server=llm_server)
+    server = None
+    if llm_server:
+        if not llm_server_model:
+            raise click.UsageError("--llm-server needs --llm-server-model")
+        server = {"url": llm_server, "model": llm_server_model}
+        if llm_server_path:
+            server["path"] = llm_server_path
+        if llm_server_credentials:
+            server["credentials"] = "include"
+        if llm_server_login:
+            server["loginUrl"] = llm_server_login
+        print(f"shared inference server wired in: {llm_server} ({llm_server_model})")
+    compose_index(base_url, gated=not no_gate, llm_server=server)
     copy_assets(wheels)
-    if args.model:
+    if model_dir:
         model_dst = DIST / "llm-engine"
         if model_dst.exists():
             shutil.rmtree(model_dst)
-        shutil.copytree(args.model, model_dst)
+        shutil.copytree(model_dir, model_dst)
         size = sum(f.stat().st_size for f in model_dst.rglob("*") if f.is_file())
         print(f"llm-engine/ copied ({size / 1e6:.0f} MB)")
-    if args.no_gate:
+    if no_gate:
         print("gate skipped (--no-gate): index.html is the entry point, open access")
     else:
-        gate_assets(args.base_url)
-    site_indexes(args.base_url)
-    if args.ext_txt:
-        ext_as_txt(args.base_url)
+        gate_assets(base_url)
+    site_indexes(base_url)
+    if ext_txt:
+        ext_as_txt(base_url)
     total = sum(f.stat().st_size for f in DIST.rglob("*") if f.is_file())
     print(f"\n{DIST} ready ({total / 1e6:.1f} MB before the CDN-served Pyodide runtime).")
     print("Upload the CONTENTS of that folder to the web folder it mirrors (/standpoint).")
-    if args.no_gate:
+    if no_gate:
         print("Open access: if the server still carries the old gate, delete its")
         print(".htaccess, index.php and gate/ there, or requests keep 302-ing to")
         print("the login form. Leave private/ alone (it holds the collected leads).")
