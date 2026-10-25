@@ -520,31 +520,51 @@ def test_vlm_assessment_of_rendered_figure(result):
 
 
 @pytest.mark.needs_model
-def test_main_argv_writes_deliverable(tmp_path):
-    # `main` is the `standpoint` console script's argv wiring around `run`; nothing
-    # else in the suite calls it, so a broken flag name here would only surface at
-    # install time.
-    p4m.main([str(EXAMPLE), "--outdir", str(tmp_path), "--stem", "argv_demo"])
-    written = {p.name for p in tmp_path.iterdir()}
-    assert "argv_demo.png" in written
-    assert "argv_demo.yaml" in written
-
-
-@pytest.mark.needs_model
-def test_main_click_writes_deliverable(tmp_path):
-    # `main_click` is the `standpoint-click` console script's argv wiring; same
-    # rationale as test_main_argv_writes_deliverable above, for the click CLI.
+def test_cli_writes_deliverable(tmp_path):
+    # `standpoint.cli.cli` is the `standpoint` console script's argv wiring around
+    # `run`; nothing else in the suite calls it, so a broken flag name here would
+    # only surface at install time. Until 0.13.0 this scenario was written twice,
+    # once per command line; there is one door now, so there is one test.
     from click.testing import CliRunner
 
-    from standpoint.click_cli import main_click
+    from standpoint.cli import cli
 
     result = CliRunner().invoke(
-        main_click, [str(EXAMPLE), "--outdir", str(tmp_path), "--stem", "click_demo"]
+        cli, [str(EXAMPLE), "--outdir", str(tmp_path), "--stem", "cli_demo"]
     )
     assert result.exit_code == 0, result.output
     written = {p.name for p in tmp_path.iterdir()}
-    assert "click_demo.png" in written
-    assert "click_demo.yaml" in written
+    assert "cli_demo.png" in written
+    assert "cli_demo.yaml" in written
+
+
+def test_cli_help_and_version_are_reachable_and_readable():
+    """`-h`, `--help` and `-V` all answer, and the help text stays human.
+
+    Model-free on purpose: these are the three things about a CLI that no amount of
+    reading the source reveals. The `Parameters` assertion is the interesting one --
+    click renders a command's entire docstring, so without the `\\f` that `cli`
+    carries, the Numpy-style block CODING.md Rule 1 requires would reach the user
+    reflowed into one paragraph ("Parameters ---------- table : str ...").
+    """
+    from click.testing import CliRunner
+
+    from standpoint.cli import cli
+
+    runner = CliRunner()
+
+    short = runner.invoke(cli, ["-h"])
+    assert short.exit_code == 0, short.output
+    assert "--outdir" in short.output  # the options really render
+    assert "Parameters" not in short.output
+    assert "----------" not in short.output
+    assert short.output == runner.invoke(cli, ["--help"]).output  # -h is not a stub
+
+    version = runner.invoke(cli, ["-V"])
+    assert version.exit_code == 0, version.output
+    # The explicit `__version__`, not the installed distribution's metadata: an
+    # editable checkout would otherwise report whatever was last pip-installed.
+    assert p4m.__version__ in version.output
 
 
 # --------------------------------------------------------------------------- #

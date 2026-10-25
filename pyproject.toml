@@ -20,12 +20,18 @@ dependencies = [
     "langdetect>=1.0.9",
     # The shared locale loader (`osh.Locales`) that reads locales/i18n.yaml.
     # Previously arrived transitively through best-engine-ai-helper; the code
-    # imports it by name now, so it is declared by name.
-    "os-helper>=2.9.0,<3",
+    # imports it by name now, so it is declared by name. The ceiling is `<4`,
+    # not `<3`: os-helper 3.0.0 only dropped its own second command line, and
+    # standpoint imports the library (`Locales`, `Prompts`, logging), never that
+    # CLI, so the major bump cannot reach this package.
+    "os-helper>=2.9.0,<4",
     # Capped: it was ">=1.0" with no ceiling, so a future major would have
     # resolved in silently — the same gap found across the suite.
     "best-engine-ai-helper>=1.6.1,<2",
-    "click>=8.1",
+    # The command line is click-built and not optional: one door, always there.
+    # Capped like every other dependency here -- click 9 would otherwise resolve
+    # in silently on a future release.
+    "click>=8.1,<9",
 ]
 classifiers = [
     "License :: OSI Approved :: BSD License",
@@ -63,8 +69,7 @@ Homepage = "https://github.com/warith-harchaoui/standpoint"
 Author = "https://www.linkedin.com/in/warith-harchaoui"
 
 [project.scripts]
-standpoint = "standpoint:main"
-standpoint-click = "standpoint.click_cli:main"
+standpoint = "standpoint.cli:main"
 standpoint-gui = "standpoint.api:main_gui"
 standpoint-mcp = "standpoint.mcp:main"
 

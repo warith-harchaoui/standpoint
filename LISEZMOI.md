@@ -93,15 +93,13 @@ couleur et ses valeurs d'origine.
 - **Consciente de la polarité** : marquez une colonne « le plus bas, le meilleur » avec
   `(↓)` (ou `--lower`) et `standpoint` reformule un inconvénient en bénéfice
   (*Abordable* au lieu de « pas cher »).
-- **Auto-vérification visuelle** : `--check` demande à un modèle de vision local si
-  la figure se lit correctement (leader en haut à droite, étiquettes lisibles,
-  légende visible).
+- **Auto-vérification de la mise en page** : `--check` relit les coordonnées et dit si
+  la figure tient (leader en haut à droite, étiquettes lisibles, pôles dessinés).
 
-**Un moteur, sept surfaces d'accès.** Le même pipeline `positioning()` s'utilise via :
+**Un moteur, six surfaces d'accès.** Le même pipeline `positioning()` s'utilise via :
 
 - **Bibliothèque** : `import standpoint as sp`.
-- **CLI ×2** : `standpoint` (argparse, toujours installée) et `standpoint-click`
-  (jumelle click), aux options identiques.
+- **CLI** : `standpoint` — une seule ligne de commande, en click, toujours installée.
 - **GUI** : `standpoint-gui` → une page web sur `/gui` (extra `[gui]`).
 - **API HTTP** : une application FastAPI (`POST /api/position`), même extra `[gui]`.
 - **MCP** : `standpoint-mcp` publie l'API comme outils MCP sur `/mcp` (extra `[mcp]`).
@@ -172,7 +170,7 @@ Nouveau avec les environnements Python : [🥸 Conseils techniques](https://dera
 ### Depuis PyPI (recommandé)
 
 ```bash
-pip install standpoint             # la bibliothèque + les deux CLI
+pip install standpoint             # la bibliothèque + la commande `standpoint`
 pip install "standpoint[gui]"      # + la GUI navigateur et l'API HTTP
 pip install "standpoint[mcp]"      # + le serveur MCP (au-dessus de l'API)
 ```
@@ -240,7 +238,8 @@ standpoint examples/programming_languages.csv --outdir out
 # sans installer : python3 -m standpoint examples/programming_languages.csv --outdir out
 ```
 
-Deux CLI équivalentes sont installées : `standpoint` (argparse) et `standpoint-click`.
+Une seule ligne de commande est installée : `standpoint`. Demandez-lui `-h` (ou
+`--help`) pour voir toutes les options ; `-V` affiche la version.
 
 En bibliothèque :
 

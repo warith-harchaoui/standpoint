@@ -37,9 +37,8 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.12.2"
+__version__ = "0.13.0"
 
-import argparse
 import contextlib
 import functools
 import logging
@@ -141,7 +140,6 @@ __all__ = [
     "vlm_assess",
     "engine",
     "run",
-    "main",
 ]
 
 
@@ -2527,7 +2525,7 @@ def positioning(
 
 
 # --------------------------------------------------------------------------- #
-# CLI
+# CLI core (the command line itself lives in standpoint/cli.py)
 # --------------------------------------------------------------------------- #
 def run(
     table: str,
@@ -2542,7 +2540,8 @@ def run(
 ) -> list[str]:
     """Shared CLI core: build the positioning, print a summary, write the files.
 
-    Used by both the argparse (`main`) and click (`main_click`) entry points.
+    Called by the `standpoint` command line (`standpoint.cli`), and usable
+    directly by any caller that wants the same printed summary.
     `top` / `right` force a named option into the top-pole / right-pole highlight.
     Returns the list of written paths.
     """
@@ -2618,57 +2617,3 @@ def run(
             print(f"  {key:16s}: {verdict[key]}")
         print(f"  notes           : {verdict['notes']}")
     return written
-
-
-def main(argv: list[str] | None = None) -> None:
-    """argparse entry point (console command ``standpoint``)."""
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("table", help="path to a markdown or CSV table")
-    ap.add_argument(
-        "-r",
-        "--reference",
-        default="0",
-        help="row placed top-right: index (default 0) or exact name",
-    )
-    ap.add_argument(
-        "-o",
-        "--outdir",
-        default="out",
-        help="output directory for the deliverable (default out/)",
-    )
-    ap.add_argument("--stem", help="basename for outputs (default: derived from reference)")
-    ap.add_argument(
-        "--top",
-        help="exact name of the option to highlight as strongest "
-        "toward the top pole (default: picked from the map)",
-    )
-    ap.add_argument(
-        "--right",
-        help="exact name of the option to highlight as strongest "
-        "toward the right pole (default: picked from the map)",
-    )
-    ap.add_argument(
-        "--lower",
-        default="",
-        help="comma-separated criteria where lower is better (e.g. Price,Latency)",
-    )
-    ap.add_argument(
-        "--model",
-        default=None,
-        help="override the local model tag (default: the one resolved in llm.engine.yaml)",
-    )
-    ap.add_argument(
-        "--check",
-        action="store_true",
-        help="ask the vision model to sanity-check the rendered figure",
-    )
-    a = ap.parse_args(argv)
-    try:
-        run(a.table, a.reference, a.outdir, a.stem, a.top, a.right, a.lower, a.model, a.check)
-    except Exception as err:  # noqa: BLE001 — last resort: a clean CLI error, not a traceback
-        print(f"Error: {err}", file=sys.stderr)
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()

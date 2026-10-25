@@ -22,16 +22,16 @@ DataFrame. Lower-level building blocks are exported too: `parse_table`, `analyze
 (→ `PCAResult`), `assign_roles`, `axis_poles`, `gradient_colors`, `to_svg`,
 `results_yaml`, `render_figures`, `export_all`.
 
-## CLI (two twins, identical flags)
+## CLI
 
 ```bash
-standpoint table.csv --outdir out            # argparse CLI (always installed)
-standpoint-click table.csv --outdir out      # click twin ([gui] extra not required)
+standpoint table.csv --outdir out            # one command line, always installed
+standpoint -h                                # every flag; -V prints the version
 
 standpoint table.csv --reference "AWS"       # option placed top-right
 standpoint table.csv --lower Price,Latency   # lower-is-better criteria
 standpoint table.csv --model qwen3:8b        # a different Ollama model
-standpoint table.csv --check                 # ask a vision model to sanity-check the figure
+standpoint table.csv --check                 # self-check the layout from the coordinates
 standpoint table.csv --top Azure --right IBM # force the two challenger highlights
 ```
 

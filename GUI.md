@@ -102,7 +102,7 @@ library never imports the web layer.)
 - `standpoint/static/`: the app icon set + PWA manifest, generated from
   `assets/logo.png` and shipped as package data.
 - `pyproject.toml`: a `gui` extra (`fastapi`, `uvicorn`) and the `standpoint-gui`
-  script. The core library and the two CLIs import none of it.
+  script. The core library and the command line import none of it.
 
 ## Run it
 
@@ -212,7 +212,7 @@ the Laziness fill end to end.
   Fine for one user on localhost; a streaming or two-step (geometry first, pole names
   after) response would feel better.
 - **Scope guard.** The GUI stays an *optional extra* (the `gui` extra); the core
-  library and the two CLIs must never import it.
+  library and the command line must never import it.
 
 ## Roadmap
 

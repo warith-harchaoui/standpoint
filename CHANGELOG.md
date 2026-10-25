@@ -7,6 +7,96 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-10-25
+
+### Removed
+
+- **The argparse command line, and with it the `standpoint-click` console
+  script.** The package shipped two doors onto the same `run()`: `standpoint`
+  (argparse) and `standpoint-click` (click). A suffix naming the parsing
+  library describes the implementation, not the interface, so there is now one
+  command line — `standpoint` — and it is the click one.
+
+  The deletion was the interesting part here, because standpoint's argparse CLI
+  did not live in a module of its own: the parser, the dispatch and `main()`
+  were inside `standpoint/__init__.py`, and `[project.scripts]` pointed
+  `standpoint` straight at `standpoint:main`. Three things left that file —
+  `import argparse`, the 50-line `main()` with its nine `add_argument` calls,
+  and `"main"` from `__all__` — and nothing else: the removal was done by
+  matching the function's exact text boundaries, then comparing the module's
+  top-level definitions before and after, which reported `main` removed and
+  nothing else lost. `standpoint/__init__.py` is a library module again, and
+  `argparse` now reaches the process only transitively, through scikit-learn.
+
+  `run()` stays exactly where it was. It is library logic — build the
+  positioning, print the summary, write the files — and `standpoint/cli.py`
+  imports it, which is what the click door already did.
+
+### Changed
+
+- **`standpoint/click_cli.py` → `standpoint/cli.py`** (`git mv`, so the history
+  follows), and `[project.scripts]` reads
+  `standpoint = "standpoint.cli:main"`. `standpoint-gui` and `standpoint-mcp`
+  are untouched: those start other surfaces, they are not command lines.
+  `python -m standpoint` forwards to `standpoint.cli.main` instead of
+  `standpoint.main`.
+
+- **Parity was full before the deletion, and was checked rather than assumed.**
+  Both doors took one positional `TABLE` and the same eight flags
+  (`-r/--reference`, `-o/--outdir`, `--stem`, `--top`, `--right`, `--lower`,
+  `--model`, `--check`), with the same defaults (`"0"`, `"out"`, `None`,
+  `None`, `None`, `""`, `None`, `False`) and the same positional hand-off to
+  `run()`. Neither side had subcommands, so nothing needed porting. The two
+  tests that covered the pair (`test_main_argv_writes_deliverable`,
+  `test_main_click_writes_deliverable`) were one scenario written twice; they
+  collapse into `test_cli_writes_deliverable`, and the suite stays at 117
+  passing.
+
+- **`click` is capped (`>=8.1,<9`) and `os-helper` widened (`<3` → `<4`)** in
+  both `pyproject.toml` and `requirements.txt`. click was already a core
+  dependency here, which is where a non-optional command line belongs. The
+  os-helper ceiling moves because 3.0.0 only drops that package's own second
+  command line, and standpoint imports its library (`Locales`, `Prompts`,
+  logging), never its CLI.
+
+### Added
+
+- **`-V` / `--version`, and a test for the three things reading the source
+  cannot tell you.** Neither door had a version flag. It is now on the one that
+  remains, and it is passed `__version__` explicitly rather than read from the
+  installed distribution metadata — in an editable checkout that metadata
+  reports whatever was last `pip install`ed, so `-V` would cheerfully print a
+  stale release. `test_cli_help_and_version_are_reachable_and_readable` asserts
+  `-h` and `--help` give the same text, that `-V` prints `__version__`, and
+  that the Numpy-style `Parameters` block does **not** appear in `--help`:
+  click renders a command's whole docstring, so without the `\f` the block
+  CODING.md Rule 1 requires would reach the terminal as one reflowed paragraph.
+  That test is model-free, so it runs in CI.
+
+### Fixed
+
+- **`--check` advertised a vision model it has not used since
+  [0.9.0](#090---2026-09-28).** Both help texts said "ask the vision model to
+  sanity-check the rendered figure", and README / LISEZMOI / the skill's
+  `interfaces.md` repeated it, but the flag reaches `assess_layout`, which
+  reads the coordinates and needs no model at all. Found by running the
+  command, not by reading it. All five places now say what it does.
+
+- **`requirements.txt` floated an older os-helper floor than
+  `pyproject.toml`** (`>=2.4.0` against `>=2.9.0`), so the two files disagreed
+  about which release first carried `osh.Locales`. Aligned.
+
+### Migration
+
+- `standpoint-click <args>` → `standpoint <args>`. Identical flags, identical
+  defaults, identical output; only the command name is shorter.
+- A script calling `standpoint.main(argv)` must call
+  `standpoint.cli.main()` (which reads `sys.argv`) or, better, the library
+  function it actually wanted: `standpoint.run(table, ...)` returns the list of
+  written paths. `standpoint.main` no longer exists and is out of `__all__`.
+- Nothing changes for `import standpoint`, `positioning()`, the GUI, the HTTP
+  API, the MCP endpoint or the skill.
+
 ## [0.12.2] - 2026-10-22
 
 ### Changed

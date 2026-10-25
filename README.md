@@ -87,14 +87,13 @@ plus a YAML file with every option's coordinates, role, colour, and original val
   challengers that reach furthest toward the top and right poles.
 - **Polarity aware**: mark a lower-is-better column with `(↓)` (or `--lower`) and
   Standpoint names the benefit (*Affordable*, *Portable*), never the drawback.
-- **Vision self-check**: `--check` asks a local vision model whether the figure reads
-  correctly (leader top-right, labels legible, legend visible).
+- **Layout self-check**: `--check` reads the coordinates back and reports whether the
+  figure holds up (leader top-right, labels legible, pole labels drawn).
 
-**One engine, seven access surfaces.** The same `positioning()` pipeline is reachable as:
+**One engine, six access surfaces.** The same `positioning()` pipeline is reachable as:
 
 - **Library**: `import standpoint as sp`.
-- **CLI ×2**: `standpoint` (argparse, always installed) and `standpoint-click`
-  (click twin) with identical flags.
+- **CLI**: `standpoint` — one command line, built with click, always installed.
 - **GUI**: `standpoint-gui` → a single-page browser app at `/gui` (`[gui]` extra).
 - **HTTP API**: a FastAPI app (`POST /api/position`), same `[gui]` extra.
 - **MCP**: `standpoint-mcp` publishes the API as MCP tools at `/mcp` (`[mcp]` extra).
@@ -161,7 +160,7 @@ New to Python environments? See [🥸 Tech tips](https://deraison.ai/4ml/#instal
 ### From PyPI (recommended)
 
 ```bash
-pip install standpoint             # library + the two CLIs
+pip install standpoint             # library + the `standpoint` command
 pip install "standpoint[gui]"      # + the browser GUI and HTTP API
 pip install "standpoint[mcp]"      # + the MCP server (over the API)
 ```
@@ -225,7 +224,8 @@ standpoint examples/programming_languages.csv --outdir out
 # without installing: python3 -m standpoint examples/programming_languages.csv --outdir out
 ```
 
-Two equivalent CLIs are installed: `standpoint` (argparse) and `standpoint-click`.
+One command line is installed: `standpoint`. Ask it for `-h` (or `--help`) to see
+every flag, and `-V` for the version.
 
 As a library:
 

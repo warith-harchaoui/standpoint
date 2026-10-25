@@ -1,12 +1,12 @@
-"""Module entry point so ``python -m standpoint`` runs the argparse CLI.
+"""Module entry point so ``python -m standpoint`` runs the command line.
 
 This is the same command the ``standpoint`` console script installs; it lets the
 tool run without a console script on the PATH (e.g. inside a container, or right
 after a plain ``pip install`` in an environment whose scripts dir is not active).
-It only forwards to ``standpoint.main``; all parsing and work live there.
+It only forwards to ``standpoint.cli.main``; all parsing and work live there.
 """
 
-from standpoint import main
+from standpoint.cli import main
 
 if __name__ == "__main__":
     main()

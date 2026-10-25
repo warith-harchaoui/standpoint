@@ -10,7 +10,7 @@ description: >-
   / perceptual map / quadrant / 2×2 / magic-quadrant-style chart", "compare
   these options across these criteria and chart it", hands over a CSV or
   Markdown table whose first column is names and the rest numeric ratings, or
-  names `standpoint`, `standpoint-click`, `standpoint-gui`, `standpoint-mcp`,
+  names `standpoint`, `standpoint-gui`, `standpoint-mcp`,
   `import standpoint`. Do NOT use for a bar / line / scatter chart of raw data,
   a single-criterion ranking, or a diagram with no numbers behind it. The
   exhaustive trigger catalogue is in `references/triggers.md`.
@@ -35,14 +35,14 @@ plain words, and colouring and labelling the points.
 ## First: is it installed?
 
 ```bash
-standpoint --help                 # the argparse CLI (always installed with the package)
+standpoint --help                 # the command line (installed with the package; -h works too)
 python -c "import standpoint"     # library import check
 ```
 
 If it is missing, install it (Python 3.10–3.13):
 
 ```bash
-pip install standpoint                 # library + the two CLIs
+pip install standpoint                 # library + the `standpoint` command
 pip install "standpoint[gui]"          # + browser GUI and HTTP API
 pip install "standpoint[mcp]"          # + MCP server (over the API)
 ```
@@ -77,8 +77,8 @@ pos.role_of  # {'AWS': 'best', 'DigitalOcean': 'worst', ...}
 
 - **Library** (`import standpoint as sp`) — inside Python, or to get the `Positioning`
   object (`.coords`, `.loadings`, `.axes`, `.to_svg()`, `.export()`).
-- **CLI** — `standpoint` (argparse) or the twin `standpoint-click`; same flags. Best
-  for a one-shot from a file, or scripting.
+- **CLI** — `standpoint` (one command line, built with click). Best for a one-shot
+  from a file, or scripting.
 - **GUI** — `standpoint-gui` → http://localhost:8000/gui: edit a table in the browser,
   upload/download CSV or XLSX, and generate the quadrant live. Best when a human
   wants to try tables interactively.

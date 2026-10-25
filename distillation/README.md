@@ -135,7 +135,7 @@ generator had already conceded that the leader's quadrant is known by
 construction.
 
 `vlm_assess` was also only ever reached through the CLI's `--check` flag --
-absent from `webgui.py`, `api.py`, `mcp.py`, `click_cli.py` and the webapp --
+absent from `webgui.py`, `api.py`, `mcp.py`, `cli.py` and the webapp --
 and it printed three booleans without changing anything about the rendered map.
 So standpoint grew `assess_layout()`, which returns the same verdict keys from
 the coordinates and pole labels directly: exact instead of guessed, instant

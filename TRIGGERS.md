@@ -23,7 +23,7 @@ human skimming, and for an agent deciding whether to invoke the
   table." (the *labelled* map, not feature engineering; see below).
 
 **The user names the tool or its symbols.**
-- Commands: `standpoint`, `standpoint-click`, `standpoint-gui`, `standpoint-mcp`,
+- Commands: `standpoint`, `standpoint-gui`, `standpoint-mcp`,
   `python -m standpoint`.
 - Library: `positioning`, `analyze`, `axis_poles`, `assign_roles`, `gradient_colors`,
   `to_svg`, `export_all`, `parse_table`, the `Positioning` / `PCAResult` objects.
@@ -52,7 +52,7 @@ human skimming, and for an agent deciding whether to invoke the
 | Reach for | When |
 |---|---|
 | **Library** `import standpoint as sp` | inside Python, or to get the `Positioning` object |
-| **CLI** `standpoint` / `standpoint-click` | one-shot from a file, or scripting |
+| **CLI** `standpoint` | one-shot from a file, or scripting |
 | **GUI** `standpoint-gui` (`/gui`) | a human editing tables interactively in the browser |
 | **HTTP API** `POST /api/position` | another program calling over HTTP |
 | **MCP** `standpoint-mcp` (`/mcp`) | an MCP-aware agent/host calling `position` as a tool |

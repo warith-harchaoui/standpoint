@@ -16,8 +16,8 @@ Given a version `MAJOR.MINOR.PATCH`:
 - **PATCH** bumps for backwards-compatible fixes only: bug fixes, internal refactors,
   packaging fixes, or dependency-pin bumps that don't change observable behaviour.
 
-The public surface is what `standpoint.__all__` exports, the two console commands
-(`standpoint`, `standpoint-click`), and the shapes of the `Positioning` / `PCAResult`
+The public surface is what `standpoint.__all__` exports, the console command
+`standpoint`, and the shapes of the `Positioning` / `PCAResult`
 objects. The single source of truth for the version is `standpoint.__version__`.
 
 ## Running the checks locally
