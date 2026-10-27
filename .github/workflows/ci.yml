@@ -23,6 +23,7 @@ jobs:
   ci:
     name: lint + core tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -49,6 +50,7 @@ jobs:
   floor:
     name: Floor (py3.10 installs and imports)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # `requires-python = ">=3.10"` is a promise to anyone running `pip install`:
     # on 3.10 this package installs and imports. Nothing in the suite checked
     # it -- sixteen members made the promise and only speaker-helper ran the
