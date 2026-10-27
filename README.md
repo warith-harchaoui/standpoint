@@ -217,7 +217,7 @@ standpoint --help                                               # confirms the C
   on Windows); Standpoint requires 3.10+. Install a newer Python with the prerequisite
   commands above rather than patching around the version check.
 
-## Usage
+## Quick start
 
 ```bash
 standpoint examples/programming_languages.csv --outdir out
@@ -233,7 +233,7 @@ As a library:
 import standpoint as sp
 
 pos = sp.positioning("examples/programming_languages.csv")
-pos.export("out")  # writes out/python.{png,svg,white.png,white.svg,yaml}
+pos.export("out")  # writes out/python.{png,svg,white.png,white.svg,md,yaml}
 print(pos.axes)
 # {'x': 'Concurrency ↔ Ecosystem', 'y': 'Safety ↔ Learning'}
 ```
@@ -346,8 +346,8 @@ only where they fit, and a legend for the rest.
 ## Notes
 
 - Axis names come from a local model. A guard keeps them positive, distinct, and
-  free of acronyms; a larger `--model` helps, and `--check` asks the vision model
-  whether the figure reads correctly.
+  free of acronyms; a larger `--model` helps. `--check` needs no model at all: it
+  reads the written coordinates back and reports whether the layout holds up.
 - Higher is better by default. For a column where lower is better, mark its header
   with `(↓)` (`Price (↓)`, `Latency (↓)`) or pass `--lower Price,Latency`. Standpoint
   negates it and names the pole for the benefit ("Affordable", "Portable"), never

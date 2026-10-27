@@ -231,7 +231,7 @@ standpoint --help                                               # confirme que l
   Python plus récent avec les commandes prérequises ci-dessus plutôt que de contourner
   la vérification de version.
 
-## Utilisation
+## Prise en main rapide
 
 ```bash
 standpoint examples/programming_languages.csv --outdir out
@@ -247,7 +247,7 @@ En bibliothèque :
 import standpoint as sp
 
 pos = sp.positioning("examples/programming_languages.csv")
-pos.export("out")  # écrit out/python.{png,svg,white.png,white.svg,yaml}
+pos.export("out")  # écrit out/python.{png,svg,white.png,white.svg,md,yaml}
 print(pos.axes)
 # {'x': 'Concurrency ↔ Ecosystem', 'y': 'Safety ↔ Learning'}
 ```
@@ -366,8 +366,8 @@ reste.
 ## Notes
 
 - Les noms d'axes viennent d'un modèle local. Un garde-fou les garde positifs,
-  distincts et sans acronymes ; un `--model` plus gros aide et `--check` demande au
-  modèle de vision si la figure se lit correctement.
+  distincts et sans acronymes ; un `--model` plus gros aide. `--check` n'a besoin
+  d'aucun modèle : il relit les coordonnées écrites et dit si la mise en page tient.
 - Le plus haut, le meilleur, par défaut. Pour une colonne où le plus bas est le meilleur, marquez
   son en-tête avec `(↓)` (`Price (↓)`, `Latency (↓)`) ou passez `--lower Price,Latency`.
   Standpoint la négativise et nomme le pôle par le bénéfice (« Abordable »,

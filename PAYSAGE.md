@@ -7,6 +7,8 @@ positionnement (carte perceptuelle) ? La façon honnête d'y répondre est d'*ut
 Standpoint sur lui-même* : cette page est donc un tableau de comparaison passé dans
 l'outil, exactement comme n'importe quel autre exemple.
 
+## En un coup d'œil
+
 La comparaison (le plus haut, le meilleur, sur une échelle de 1 à 5) :
 
 <!-- TABLE:START -->
@@ -35,7 +37,7 @@ Les en-têtes du tableau étant en français, la carte sort **entièrement en fr
 titre et noms des axes. De quoi illustrer au passage le côté multilingue de
 l'outil.
 
-## Comment la lire
+## Positionnement
 
 Deux familles se font face :
 
@@ -78,6 +80,63 @@ python3 -m standpoint assets/paysage.csv --outdir assets --stem paysage
 
 Le tableau d'entrée est dans [`assets/paysage.csv`](assets/paysage.csv) ; l'exécution
 écrit aussi le YAML des coordonnées à côté de la figure.
+
+## Quand choisir quoi
+
+Une comparaison qui ne recommande jamais qu'elle-même est une publicité. Voici donc
+la liste pour choisir, lignes où Standpoint est la mauvaise réponse comprises.
+
+- **Vous avez déjà les notes et voulez un placement auditable** : prenez
+  Standpoint. Même CSV en entrée, mêmes coordonnées en sortie, plus un YAML qui dit
+  quel critère a tiré quelle option où. Cette traçabilité est tout le produit.
+- **Vous voulez la décomposition elle-même, pas une image finie** : prenez `prince`
+  ou le `PCA` de scikit-learn. Standpoint s'engage sur une seule ACP de corrélation
+  tronquée à deux composantes et cache les réglages ; `prince` couvre aussi l'AFC,
+  l'ACM, l'AFDM et l'AFM, gère les lignes et colonnes supplémentaires et vous laisse
+  le tracé.
+- **Les points ne viennent pas d'une matrice de notes** : prenez `Tableau`, `Excel`
+  ou `PowerPoint`. Une feuille de route, un plan de table, un 2×2 d'opinions : il n'y
+  a aucune matrice à projeter et Standpoint refuse de dessiner ce qu'il ne peut pas
+  calculer.
+- **Le livrable doit coller au pixel à une charte de présentation** : prenez `Canva`
+  ou `Figma`. Le SVG de Standpoint est écrit à la main et modifiable, mais la mise en
+  page est la sienne, pas celle de votre système de design.
+- **Il vous faut un jugement sur un marché dont vous n'avez aucun chiffre** : lisez
+  un `Magic Quadrant de Gartner`. Standpoint n'a aucun avis sur aucun fournisseur ; il
+  ne fait qu'arranger les nombres qu'on lui donne et si ces nombres sont des
+  suppositions, la carte est une image de vos suppositions.
+- **Le tableau est minuscule ou unidimensionnel** : ne prenez ni l'un ni l'autre.
+  Standpoint exige au moins deux options et deux critères qui varient vraiment, et
+  une comparaison sur un seul critère est une liste triée, pas une carte.
+
+## Sources et date de relevé
+
+**Relevé le 27/10/2026.** Les étoiles ci-dessus sont *notre lecture* de chaque outil
+face à chaque critère. Ce ne sont pas des chiffres publiés par ces projets ; rien
+sur cette page n'est un banc d'essai : rien n'a été chronométré. Les notes sont
+versionnées à côté de la figure qu'elles produisent
+([`assets/paysage.csv`](assets/paysage.csv) en français,
+[`assets/landscape.csv`](assets/landscape.csv) en anglais), si bien qu'un désaccord
+se règle en modifiant une cellule puis en relançant la commande.
+
+Ce qui a servi de base ligne par ligne :
+
+| Ligne | Ce que nous avons regardé |
+|---|---|
+| `prince` | le README du projet : une implémentation à l'API scikit-learn de l'ACP, de l'AFC, de l'ACM, de l'AFDM, de l'AFM, de la GPA et de la PGA, avec un tracé via Altair — [MaxHalford/prince](https://github.com/MaxHalford/prince) |
+| `PCA` | la référence de la classe : `components_` et `explained_variance_ratio_` sont exposés ; `get_feature_names_out()` nomme les axes `pca0`, `pca1`, … ; la classe elle-même ne trace rien — [`sklearn.decomposition.PCA`](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html) |
+| `Tableau` | le produit tel qu'il est livré, [tableau.com](https://www.tableau.com) |
+| `Gartner Magic Quadrant` | les quadrants publiés eux-mêmes, [gartner.com](https://www.gartner.com). La note basse en « Coordonnées Reproductibles » dit que nous n'avons trouvé aucune matrice d'entrée publiée derrière un quadrant, pas que nous savons qu'il n'en existe pas |
+| `Excel/PowerPoint 2x2` | les outils de nuage de points et de formes de Microsoft Office tels qu'ils sont livrés |
+| `Modèle Canva/Figma` | les modèles de quadrant livrés par les deux éditeurs |
+
+Aucun numéro de version n'apparaît dans le tableau, volontairement. Une note épinglée
+à une version est périmée la semaine suivante, alors que ces critères portent sur ce
+à quoi chaque outil *sert*, ce qui ne bouge pas d'une version à l'autre. Le seul
+critère où l'écart est catégoriel plutôt qu'une affaire de degré est le « Nommage
+Automatique des Axes » : chez les six alternatives, un axe porte le champ qu'on y a
+déposé ou une formule tapée par l'auteur ; aucune ne lit les loadings pour
+proposer des mots aux deux pôles.
 
 Voir le [LISEZMOI](https://github.com/warith-harchaoui/standpoint/blob/main/LISEZMOI.md)
 pour ce que fait Standpoint et comment l'installer ; voir

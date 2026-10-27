@@ -44,6 +44,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   now prints the usage line and exits 2** instead of a bare message and exit 1,
   matching how `webapp/build.py` reports the same kind of flag-pair error.
 
+### Documentation
+
+- **The six cross-suite documents now carry the shared spine** (coding standard
+  rules 16 to 18), so a reader arriving at Standpoint from any other AI Helpers
+  member meets the same load-bearing sections in the same order, in both
+  languages. `## Usage` / `## Utilisation` became `## Quick start` /
+  `## Prise en main rapide`; `LANDSCAPE.md` / `PAYSAGE.md` gained
+  `## At a glance` over the managed star table, renamed `## How to read it` /
+  `## Comment la lire` to `## Positioning` / `## Positionnement`, and gained
+  `## When to pick what` and `## Sources and as-of date`. Nothing was
+  relocated: the two renames and the new sections are the whole structural
+  change, and the `<!-- TABLE:* -->` / `<!-- FIGURE:* -->` regions that
+  `gen_landscape.py` owns are untouched.
+
+- **`LANDSCAPE.md` / `PAYSAGE.md` now say where the star ratings come from and
+  when.** They are the maintainer's own reading, not published vendor figures,
+  and the new `## Sources and as-of date` says so, names what each competitor
+  row was read against, and states explicitly that nothing on the page is a
+  benchmark. The new `## When to pick what` recommends a competitor in five of
+  its six bullets — a comparison document that never does that is advertising.
+
+- **`EXAMPLES.md` / `EXEMPLES.md` were rewritten from 82 lines to nine numbered
+  scenarios** plus `## Setup`, `## Command line` and `## Troubleshooting`. Every
+  snippet was executed against the tracked `examples/` tables and every output
+  block is a captured one; the file now separates the deterministic geometry
+  from the model-named pole words, since only the second kind varies between
+  machines.
+
+- **Both READMEs claimed `--check` "asks the vision model whether the figure
+  reads correctly".** It stopped doing that when the check moved to the
+  geometry: `--check` reaches `assess_layout`, which reads the written
+  coordinates and needs no model at all. The note now says so, which matters
+  because it is the difference between a flag that works during a model outage
+  and one that does not.
+- **`pos.export("out")` was documented as writing five files**, omitting the
+  `.md` written analysis that `export_all` has produced since the Markdown face
+  was restored. It writes six.
+
 ## [0.13.0] - 2026-10-25
 
 ### Removed
