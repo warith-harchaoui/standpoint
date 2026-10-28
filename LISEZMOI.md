@@ -344,6 +344,8 @@ ex. `Price (↓)` ou listez-la dans `--lower`.
 
 ## Comment ça marche
 
+![Comment standpoint fonctionne : un tableau comparatif en entrée, une carte de positionnement dont chaque coordonnée est vérifiable en sortie](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/diagrams/comment-ca-marche.png)
+
 1. Standardiser chaque critère à moyenne 0 et écart-type 1. L'ACP est sensible à
    l'échelle ; cette étape met chaque critère sur un pied d'égalité.
 2. Lancer l'ACP et garder deux composantes. Les axes restent des sommes pondérées

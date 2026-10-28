@@ -325,6 +325,8 @@ The first row is the reference and goes to the top right. Change it with
 
 ## How it works
 
+![How standpoint works: a comparison table in, a positioning map whose every coordinate can be audited out](https://raw.githubusercontent.com/warith-harchaoui/standpoint/main/assets/diagrams/how-it-works.png)
+
 1. Standardize each criterion to mean 0 and standard deviation 1. PCA is sensitive
    to scale, so this puts every criterion on equal footing.
 2. Run PCA and keep two components. The axes stay as weighted sums of the original
