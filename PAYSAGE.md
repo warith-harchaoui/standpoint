@@ -142,3 +142,15 @@ Voir le [LISEZMOI](https://github.com/warith-harchaoui/standpoint/blob/main/LISE
 pour ce que fait Standpoint et comment l'installer ; voir
 [EXEMPLES.md](https://github.com/warith-harchaoui/standpoint/blob/main/EXEMPLES.md)
 pour d'autres exemples travaillés.
+
+## Idées à reprendre
+
+Étudié plutôt que deviné : ce que chaque voisin fait mieux, puis ce que cette bibliothèque devrait changer pour l'égaler. Rien ici n'est un engagement : c'est la liste de lecture dont part la version suivante.
+
+- **`prince` — les autres méthodes factorielles, pour les tableaux qui ne sont pas que des nombres** — L'ACP exige des colonnes numériques. L'ACM traite les colonnes catégorielles puis l'AFDM un mélange, qui est la forme que prend un tableau comparatif dès qu'on ajoute une colonne de licence ou de langue. Refuser un tel tableau se défend ; l'orienter vers la bonne méthode vaut mieux.
+
+- **Le carré magique de Gartner — nommer les quadrants, pas seulement les axes** — Les lecteurs retiennent « Leaders » puis « Acteurs de niche » parce que les régions portent un nom. Cet outil nomme les pôles en laissant les quatre régions sans étiquette, or c'est l'étape entre un nuage de points puis une carte que l'on peut citer.
+
+- **Dessiner les contributions, pas seulement les afficher** — L'outil calcule déjà quels critères portent chaque axe puis les affiche. Un petit panneau de contributions à côté de la carte est ce qui permet au lecteur de vérifier le nom de l'axe contre les preuves au lieu de s'y fier — et ce dépôt vient précisément d'être mordu par une prose qui contredisait ses propres coordonnées.
+
+- **Tableau — un survol qui révèle la ligne sous-jacente** — Le SVG est déjà interactif. Montrer au survol les notes brutes d'une option referme la boucle entre le résumé en 2D puis le tableau d'où il vient, ce qui est la deuxième question que pose tout lecteur d'une carte de positionnement.

@@ -128,3 +128,15 @@ See the [README](https://github.com/warith-harchaoui/standpoint/blob/main/README
 for what Standpoint does and how to install it, and
 [EXAMPLES.md](https://github.com/warith-harchaoui/standpoint/blob/main/EXAMPLES.md)
 for more worked examples.
+
+## Ideas worth stealing
+
+Researched rather than guessed: what each neighbour does better, and what this library would have to change to match it. Nothing here is a commitment — it is the reading list the next version starts from.
+
+- **`prince` — the other factorial methods, for tables that are not all numbers** — PCA needs numeric columns. MCA handles categorical ones and FAMD handles a mix, which is the shape a comparison table takes the moment someone adds a licence or a language column. Refusing such a table is defensible; routing it to the right method is better.
+
+- **Gartner's magic quadrant — name the quadrants, not only the axes** — Readers remember "Leaders" and "Niche Players" because the regions are named. This tool names the poles and leaves the four regions unlabelled, which is the step between a scatter plot and a map someone can quote.
+
+- **Draw the loadings, do not only print them** — The tool already computes which criteria drive each axis and prints them. A small contribution panel beside the map is what lets a reader check the axis name against the evidence instead of trusting it — and this repo has just been bitten by prose that contradicted its own coordinates.
+
+- **Tableau — hover that reveals the underlying row** — The SVG is already interactive. Showing an option's raw ratings on hover closes the loop between the 2-D summary and the table it came from, which is the question every reader of a positioning map asks second.
