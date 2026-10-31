@@ -17,14 +17,14 @@ colonnes, des nombres dans les cellules) et produit une carte de positionnement 
 et un fichier YAML avec toutes les coordonnées et tous les coefficients. Une seule
 commande suffit.
 
-La méthode est une analyse en composantes principales (ACP) ordinaire : à partir de
-plusieurs colonnes de notes, elle trouve les quelques directions nouvelles où les
-options se distinguent le plus, si bien qu'une ligne entière de notes se ramène à
-deux nombres qui portent l'essentiel de ce qui la distingue des autres. On s'en sert
-de longue date pour les cartes perceptuelles. Standpoint y ajoute le travail que
-vous feriez sinon à la main : il oriente la carte autour d'une option de référence,
-nomme les axes en mots simples (dans la langue de vos colonnes), colore et étiquette
-les points et écrit tout le résultat.
+La méthode est une analyse en composantes principales (ACP) ordinaire : à partir de plusieurs colonnes de notes, elle trouve les quelques directions nouvelles où les options se distinguent le plus, si bien qu'une ligne entière de notes se ramène à deux nombres qui portent l'essentiel de ce qui la distingue des autres. On s'en sert de longue date pour les cartes perceptuelles.
+
+Ce que Standpoint y ajoute, c'est le travail que vous feriez sinon à la main :
+
+- il oriente la carte autour d'une option de référence ;
+- il nomme les axes en mots simples, dans la langue de vos colonnes ;
+- il colore puis étiquette les points ;
+- il écrit tout le résultat, coordonnées comprises.
 
 ## Tout en local
 
@@ -290,14 +290,11 @@ docker compose up --build
 docker compose --profile llm up --build
 ```
 
-Sans serveur du tout ? `python webapp/build.py` compose la même GUI en **dossier
-statique** : le moteur tourne dans le navigateur du visiteur via Pyodide et un
-seul modèle dans la page — le student distillé de Standpoint, téléchargé une fois
-au chargement derrière un voile « Patience… » plein écran, puis en cache — nomme
-les axes et remplit les cases vides à l'auto-remplissage : sans serveur, sans
-clé. Il suffit d'uploader le dossier produit (`--out` choisit lequel, `--help`
-affiche celui par défaut) dans un dossier web statique et tout fonctionne.
-Détails dans [GUI.md](https://github.com/warith-harchaoui/standpoint/blob/main/GUI.md) § Static build.
+Sans serveur du tout ? `python webapp/build.py` compose la même GUI en **dossier statique**.
+
+Le moteur tourne dans le navigateur du visiteur via Pyodide, puis un seul modèle dans la page — le student distillé de Standpoint, téléchargé une fois au chargement derrière un voile « Patience… » plein écran, ensuite mis en cache — nomme les axes puis remplit les cases vides à l'auto-remplissage. Sans serveur, sans clé.
+
+Il suffit d'uploader le dossier produit (`--out` choisit lequel, `--help` affiche celui par défaut) dans un dossier web statique pour que tout fonctionne. Détails dans [GUI.md](https://github.com/warith-harchaoui/standpoint/blob/main/GUI.md) § Static build.
 
 Pour travailler la bibliothèque en local, un environnement conda minimal enveloppe le
 même `requirements.txt` :

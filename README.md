@@ -16,13 +16,14 @@ Standpoint reads a comparison table (options as rows, criteria as columns, numbe
 in the cells) and produces a 2D positioning map and a YAML file with all the
 coordinates and coefficients. One command does it.
 
-The method is ordinary Principal Component Analysis (PCA): given many columns of
-numbers, find the few new directions along which the options actually differ the
-most, so a whole row of ratings collapses into two numbers that still carry most of
-what distinguishes it from the rest. People have used it for perceptual maps for a
-long time. What Standpoint adds is the work you would otherwise do by hand: it
-orients the map around a reference option, names the axes in plain words (in the
-language of your columns), colours and labels the points, and writes everything out.
+The method is ordinary Principal Component Analysis (PCA): given many columns of numbers, find the few new directions along which the options actually differ the most, so a whole row of ratings collapses into two numbers that still carry most of what distinguishes it from the rest. People have used it for perceptual maps for a long time.
+
+What Standpoint adds is the work you would otherwise do by hand:
+
+- it orients the map around a reference option;
+- it names the axes in plain words, in the language of your columns;
+- it colours and labels the points;
+- it writes everything out, coordinates included.
 
 ## Local-first
 
@@ -276,13 +277,11 @@ docker compose up --build
 docker compose --profile llm up --build
 ```
 
-No server at all? `python webapp/build.py` composes the same GUI as a **static
-bundle**: the engine runs in the visitor's browser via Pyodide, and one in-page
-model — Standpoint's own distilled student, downloaded once at page load behind
-a full-screen `Patience…` veil, then cached — names the axes and fills the empty
-cells on auto-fill: no server, no key. Upload the folder it writes (`--out` says
-where, `--help` prints the default) to any static web folder and it just works.
-Details in [GUI.md](https://github.com/warith-harchaoui/standpoint/blob/main/GUI.md) § Static build.
+No server at all? `python webapp/build.py` composes the same GUI as a **static bundle**.
+
+The engine runs in the visitor's browser via Pyodide, and one in-page model — Standpoint's own distilled student, downloaded once at page load behind a full-screen `Patience…` veil, then cached — names the axes and fills the empty cells on auto-fill. No server, no key.
+
+Upload the folder it writes (`--out` says where, `--help` prints the default) to any static web folder and it just works. Details in [GUI.md](https://github.com/warith-harchaoui/standpoint/blob/main/GUI.md) § Static build.
 
 For local library work, a thin conda env wraps the same `requirements.txt`:
 
