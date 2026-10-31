@@ -24,7 +24,7 @@ dependencies = [
     # not `<3`: os-helper 3.0.0 only dropped its own second command line, and
     # standpoint imports the library (`Locales`, `Prompts`, logging), never that
     # CLI, so the major bump cannot reach this package.
-    "os-helper>=2.9.0,<4",
+    "os-helper>=2.9.0,<5",
     # Capped: it was ">=1.0" with no ceiling, so a future major would have
     # resolved in silently — the same gap found across the suite.
     "best-engine-ai-helper>=1.6.1,<2",
