@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-10-31
+
+### Fixed
+
+- **The published metadata capped `os-helper<4`, so nobody installing from
+  the index could reach 4.0.0.** The ceiling was raised in the repository on
+  2026-10-31, but a wheel's `Requires-Dist` is frozen at upload: until this
+  release the raised ceiling reached no installer at all, and a fresh resolve
+  still pulled os-helper 3.1.0. This release is what carries the `<5` to the
+  index. This package never calls `hashfile` or `hashfolder`, the two functions
+  whose contract 4.0.0 changes, so the ceiling was the only thing in the
+  way.
+
 ### Changed
 
 - **The nine remaining `argparse` scripts in `distillation/scripts/` are click
