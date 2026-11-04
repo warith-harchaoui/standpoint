@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A label could sit beside another dot and read as that dot's name. On the
+  sprezzature-audio landscape the reference, placed first in the top-right
+  corner, found right, up and both upper diagonals outside the band, left and
+  down blocked, and took the lower-left diagonal, right beside F5-TTS, while
+  its own dot carried no name. A placement is now refused when a neighbour's
+  dot is clearly closer to the label than its own (under three quarters of
+  the distance), and the points the first pass leaves unlabelled get a second
+  pass with the band lifted, still inside the canvas. The reference now sits
+  above its dot. `tests/test_standpoint.py::test_no_label_reads_as_a_neighbours_name`.
+
 ## [0.13.1] - 2026-10-31
 
 ### Fixed

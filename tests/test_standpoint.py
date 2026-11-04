@@ -1031,3 +1031,81 @@ def test_the_house_comma_rule_is_applied_not_merely_requested() -> None:
     assert p4m._house_style("A, B, and C.", "en") == "A, B, and C."
     for lang in ("en", "fr", "es"):
         assert "no_comma_before" in p4m.i18n(lang)["analysis_md"]
+
+
+# The 23 tools of sprezzature-audio's landscape (2026-11-04), as placed. The
+# reference sits in the top-right corner with Chatterbox to its left and F5-TTS
+# directly below; its label took the one side the band left it, beside F5-TTS,
+# and read as F5-TTS's name while the reference dot carried none.
+_AUDIO_LANDSCAPE = [
+    ("sprezzature-audio", 2.778, 3.797),
+    ("whisper.cpp", -2.778, 0.715),
+    ("faster-whisper", -2.557, 1.588),
+    ("WhisperX", -1.122, 1.485),
+    ("whisper-diarization", -0.444, 2.273),
+    ("pyannote.audio", -0.369, 1.05),
+    ("NVIDIA NeMo", 0.693, 0.017),
+    ("SpeechBrain", 0.954, 2.688),
+    ("Vosk", -2.12, 0.855),
+    ("Kokoro", -1.096, 2.335),
+    ("Piper", -1.403, 1.763),
+    ("Chatterbox", 2.346, 3.797),
+    ("XTTS v2", 2.752, 2.056),
+    ("F5-TTS", 2.778, 3.296),
+    ("Kyutai TTS", 1.132, 2.233),
+    ("MeloTTS", -0.586, 3.451),
+    ("ElevenLabs", 1.041, -3.797),
+    ("Deepgram", -0.738, -3.01),
+    ("AssemblyAI", -1.487, -3.359),
+    ("Azure Speech", 1.598, -2.65),
+    ("Amazon Transcribe", -1.094, -2.653),
+    ("OpenAI Audio API", -0.447, -1.881),
+    ("Otter.ai", 0.079, -2.472),
+]
+
+
+def test_no_label_reads_as_a_neighbours_name():
+    names = [n for n, _, _ in _AUDIO_LANDSCAPE]
+    scores = np.array([[x, y] for _, x, y in _AUDIO_LANDSCAPE])
+    result = p4m.PCAResult(
+        names=names,
+        features=["a", "b"],
+        scores=scores,
+        components=np.zeros((2, 2)),
+        explained_variance_ratio=np.array([0.4, 0.15]),
+        rotation_deg=0.0,
+        reference="sprezzature-audio",
+        x_std=np.zeros((len(names), 2)),
+    )
+    svg = p4m.to_svg(result, roles=p4m.assign_roles(result), poles=["L", "R", "B", "T"])
+    dots = [
+        (float(cx), float(cy))
+        for cx, cy in re.findall(r'<circle cx="([\d.]+)" cy="([\d.]+)" r="7', svg)
+    ][: len(names)]
+    texts = {
+        name: (float(x), float(y), float(size), anchor)
+        for x, y, size, anchor, name in re.findall(
+            r'<text x="([\d.]+)" y="([\d.]+)" font-size="([\d.]+)"[^>]*'
+            r'text-anchor="(start|end|middle)"[^>]*>([^<]+)</text>',
+            svg,
+        )
+    }
+    assert "sprezzature-audio" in texts, "the reference dot must carry its own name"
+
+    def dist(px, py, box):
+        return float(np.hypot(max(box[0] - px, 0, px - box[2]), max(box[1] - py, 0, py - box[3])))
+
+    # The reference and its two neighbours. whisper-diarization sits at 0.72 of
+    # its own distance on the rendered geometry, a borderline call that comes
+    # from the placement box being centred on the baseline while the text is
+    # drawn above it; that is a separate, wider change.
+    for i, name in enumerate(names):
+        if name not in {"sprezzature-audio", "Chatterbox", "F5-TTS"}:
+            continue
+        x, y, size, anchor = texts[name]
+        w, h = len(name) * 0.58 * size, 1.3 * size
+        x0 = x if anchor == "start" else x - w if anchor == "end" else x - w / 2
+        box = (x0, y - h, x0 + w, y)
+        own = dist(*dots[i], box)
+        nearest = min(dist(*d, box) for j, d in enumerate(dots) if j != i)
+        assert nearest >= 0.75 * own, f"{name}'s label sits beside another dot"

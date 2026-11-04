@@ -769,13 +769,22 @@ def label_placements(
     # -- pushing the baseline DOWN by `ch` (-ch) compensates the other way.
     ch_px = 1.3 * font_px
     placements: dict[int, tuple[float, float, str]] = {}
-    for i in corners + others:
+
+    def _dist_to_box(px: float, py: float, b: tuple[float, float, float, float]) -> float:
+        """Distance from a point to a box (0 inside), in the shared pixel frame."""
+        return float(np.hypot(max(b[0] - px, 0.0, px - b[2]), max(b[1] - py, 0.0, py - b[3])))
+
+    centres_px = [(float(cx) / sx, float(cy) / sy) for cx, cy in scores]
+
+    def _place(
+        i: int, kx: float | None, ky: float | None
+    ) -> tuple[tuple[float, float, float, float], tuple[float, float, str]] | None:
+        """The first side, first ring, that fits for point `i` inside (kx, ky)."""
         x, y = scores[i]
         x_px, y_px = x / sx, y / sy  # the dot's centre in the shared pixel frame
         w_px = len(result.names[i]) * 0.58 * font_px
         h_px = ch_px
         half_w_px, half_h_px = max(w_px / 2, 0.01), max(h_px / 2, 0.01)
-        found = None  # (box, (lx, ly, anchor)): the first direction, first ring, that fits
         for k in _LABEL_RINGS:
             for ox, oy in _LABEL_DIRS:
                 r_px = 2.5 * dot_r_px + k * row_px
@@ -831,24 +840,47 @@ def label_placements(
                 box = (box_px[0] * sx, box_px[1] * sy, box_px[2] * sx, box_px[3] * sy)
                 # Keep labels out of the outer margin reserved for the pole words:
                 # a label whose box edge crosses the bound is treated as blocked.
-                if keepin_x is not None and (box[0] < -keepin_x or box[2] > keepin_x):
+                if kx is not None and (box[0] < -kx or box[2] > kx):
                     continue
-                if keepin_y is not None and (box[1] < -keepin_y or box[3] > keepin_y):
+                if ky is not None and (box[1] < -ky or box[3] > ky):
                     continue
                 probe = (box[0] - pad_x, box[1] - pad_y, box[2] + pad_x, box[3] + pad_y)
                 if any(_overlaps(probe, b) for b in boxes):
+                    continue
+                # Never clearly closer to another dot than to its own: a label
+                # whose near edge sits beside a neighbour reads as the
+                # neighbour's name. "Clearly" is under three quarters of its own
+                # distance; an equal call is not a misreading. Measured on the
+                # case that prompted it: 20 px to the neighbour, 44 to its own.
+                own = _dist_to_box(x_px, y_px, box_px)
+                if any(
+                    _dist_to_box(cx, cy, box_px) < 0.75 * own
+                    for j, (cx, cy) in enumerate(centres_px)
+                    if j != i
+                ):
                     continue
                 # First fit, not best fit: _LABEL_DIRS is priority-ordered (right,
                 # left, up, down, then diagonals), and every direction at a given
                 # ring already carries the same gap, so the first one that clears
                 # everything is exactly the preferred one.
-                found = (box, (float(lx_px * sx), float(ly_px * sy), anchor))
-                break
+                return (box, (float(lx_px * sx), float(ly_px * sy), anchor))
+        return None
+
+    # Two passes. The first keeps labels inside the band (`keepin_*`). The
+    # second gives the points it left unlabelled one more chance with the band
+    # lifted, still inside the canvas. On a 2026-11-04 landscape the reference
+    # dot, placed first in the top-right corner, had right, up and both top
+    # diagonals outside the band, left and down blocked, and took the one side
+    # left, which read as its neighbour's name; the rule against that now
+    # refuses it, and this pass gives it the room on the right instead.
+    for kx, ky in ((keepin_x, keepin_y), (view_x * 0.97, view_y * 0.97)):
+        for i in corners + others:
+            if i in placements:
+                continue
+            found = _place(i, kx, ky)
             if found is not None:
-                break
-        if found is not None:
-            boxes.append(found[0])
-            placements[i] = found[1]
+                boxes.append(found[0])
+                placements[i] = found[1]
     return placements
 
 
