@@ -82,6 +82,7 @@ journey and Laziness, asserting that no 403 reaches the page).
 | `seo/head-seo.html`  | Deployment head block: canonical, Open Graph/Twitter card, JSON-LD          |
 | `seo/icons/`         | Favicon/PWA set generated from `assets/logo.png` (sprezzature-publish)      |
 | `seo/make_og_card.py`| Regenerates `seo/og-card.png` (the 1200×630 Open Graph card)                |
+| `gate/`              | The professional-email gate: landing page, magic-link login, file serving behind the cookie, activity log, free-domain blocklist; left out by `--no-gate` |
 
 The build also emits `robots.txt`, `sitemap.xml`, `llms.txt`, `llms-full.txt`
 and `humans.txt` into the build folder (sprezzature-publish
