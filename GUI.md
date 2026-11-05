@@ -174,9 +174,9 @@ flowchart LR
   a clear "nothing to fill" message; a browser without WebGPU gets told so.
 
 ```bash
-python webapp/build.py            # writes ~/web/deraison/standpoint/
+python webapp/build.py            # writes $STANDPOINT_SITE_DIR/standpoint/
 # that folder IS the SFTP payload; upload its CONTENTS to the web folder:
-#   sftp> put -r ~/web/deraison/standpoint/* /path/to/htdocs/standpoint/
+#   sftp> put -r "$STANDPOINT_SITE_DIR"/standpoint/* /path/to/htdocs/standpoint/
 ```
 
 The default output is the `standpoint/` sub-folder of the local deraison.ai

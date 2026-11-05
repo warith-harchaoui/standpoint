@@ -459,7 +459,7 @@ release on PyPI. Everything below therefore ships for the first time here.
 ### Changed
 
 - **The static build writes straight into the folder it is uploaded from.**
-  `webapp/build.py` now lands in `~/web/deraison/standpoint/` — the local
+  `webapp/build.py` now lands in `$STANDPOINT_SITE_DIR/standpoint/` — the local
   mirror of `https://deraison.ai/standpoint` — instead of `web/` at the repo
   root, so the deploy is one SFTP put of one folder with nothing to copy in
   between. That sub-folder is all this project owns: `resolve_out()` refuses an

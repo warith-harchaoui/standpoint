@@ -55,10 +55,11 @@ Run from the repo root with the project env active::
 
     python webapp/build.py --clean --no-gate --model distillation/checkpoints/llm-engine
 
-writes ``~/web/deraison/standpoint/``: the local mirror of the folder served at
+writes ``$STANDPOINT_SITE_DIR/standpoint/``: the local mirror of the folder served at
 https://deraison.ai/standpoint, so deploying is a plain SFTP put of that one
 folder, code and model together, nothing else to think about. Its parent
-``~/web/deraison/`` mirrors the rest of the site (index.php, includes/, the
+``$STANDPOINT_SITE_DIR`` (the site mirror; ``web/`` in this checkout when the
+variable is unset, git-ignored) mirrors the rest of the site (index.php, includes/, the
 other projects) and belongs to deraison.ai, not here: this build never creates,
 moves or deletes anything there, and ``resolve_out()`` refuses an ``--out``
 that would.
@@ -72,7 +73,7 @@ carries the old gate, delete the server-side ``.htaccess``, ``index.php`` and
 
     # Open-access mirror (sev7n): same recipe, a folder of its own, outside
     # the deraison.ai mirror.
-    python webapp/build.py --no-gate --clean --out ~/web/sev7n-standpoint \\
+    python webapp/build.py --no-gate --clean --out /path/to/sev7n-standpoint \\
         --base-url https://deraison.ai/standpoint
 
 The Pyodide runtime itself is loaded from the jsDelivr CDN at page load (see
@@ -82,6 +83,7 @@ The Pyodide runtime itself is loaded from the jsDelivr CDN at page load (see
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -100,8 +102,10 @@ REPO = WEBAPP.parent
 # is ours, and it maps one-to-one to https://deraison.ai/standpoint, so the
 # deploy is a plain SFTP put of that single folder. NOTHING else under SITE_DIR
 # is ever created, moved or deleted here -- see resolve_out(), which enforces
-# it rather than trusting whoever types --out.
-SITE_DIR = Path.home() / "web" / "deraison"
+# it rather than trusting whoever types --out. The mirror's location is the
+# machine's business: $STANDPOINT_SITE_DIR names it, and without it the build
+# lands in web/ at the repo root (git-ignored).
+SITE_DIR = Path(os.environ.get("STANDPOINT_SITE_DIR") or REPO / "web").expanduser().resolve()
 OWN_DIR = SITE_DIR / "standpoint"
 DIST = OWN_DIR
 

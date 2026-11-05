@@ -24,7 +24,9 @@ import re
 import sys
 from pathlib import Path
 
-LOG_PATH = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("/tmp/train_lora.log")
+if len(sys.argv) < 2:
+    sys.exit(f"usage: {Path(sys.argv[0]).name} <train_lora.log> [out.csv]")
+LOG_PATH = Path(sys.argv[1])
 OUT_PATH = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("data/training_loss.csv")
 STEPS_PER_REPORT = 10
 VOCAB_SIZE = 49280  # checkpoints/smolvlm2-500m-mlx-bf16/config.json: vocab_size

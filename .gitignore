@@ -43,7 +43,7 @@ __pycache__/
 build/
 dist/
 # The deployment payload (webapp/build.py) no longer lands in the repo: the
-# build writes ~/web/deraison/standpoint/, which IS the SFTP folder for
+# build writes $STANDPOINT_SITE_DIR/standpoint/, which IS the SFTP folder for
 # deraison.ai/standpoint (model included, hence its size). These patterns stay
 # as a net, for an --out aimed back in here.
 /web/

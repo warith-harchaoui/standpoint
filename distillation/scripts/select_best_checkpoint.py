@@ -25,7 +25,9 @@ import shutil
 import sys
 from pathlib import Path
 
-LOG_PATH = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("/tmp/train_lora.log")
+if len(sys.argv) < 2:
+    sys.exit(f"usage: {Path(sys.argv[0]).name} <train_lora.log> [adapter_dir]")
+LOG_PATH = Path(sys.argv[1])
 ADAPTER_DIR = (
     Path(sys.argv[2])
     if len(sys.argv) > 2

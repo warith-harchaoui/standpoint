@@ -13,14 +13,14 @@ configured and reachable, answers the same calls faster. Full architecture, diag
 ## Build and deploy
 
 ```bash
-python webapp/build.py            # writes ~/web/deraison/standpoint/
+python webapp/build.py            # writes $STANDPOINT_SITE_DIR/standpoint/
 # that folder IS the SFTP payload; upload its CONTENTS to the web folder:
-#   sftp> put -r ~/web/deraison/standpoint/* /path/to/htdocs/standpoint/
+#   sftp> put -r "$STANDPOINT_SITE_DIR"/standpoint/* /path/to/htdocs/standpoint/
 ```
 
 The default output is the `standpoint/` sub-folder of the local deraison.ai
 mirror, so what you build is already sitting where it gets uploaded from. That
-one folder is all this project owns: everything else under `~/web/deraison/`
+one folder is all this project owns: everything else under `$STANDPOINT_SITE_DIR`
 belongs to the site, and `build.py` refuses an `--out` pointing at the mirror
 itself, at an ancestor of it, or at any other folder inside it — and refuses to
 `--clean` a folder that is not a previous build of this app. Build somewhere
