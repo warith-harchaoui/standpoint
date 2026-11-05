@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.13.2] - 2026-11-04
+## [0.13.3] - 2026-11-05
 
 **`standpoint-gui --help` and `standpoint-mcp --help` answer instead of serving.**
 Both read their bind from the environment and ignored their arguments, so
@@ -15,6 +15,8 @@ Both read their bind from the environment and ignored their arguments, so
 with `--host` / `--port` (defaults still from `STANDPOINT_HOST` /
 `STANDPOINT_PORT`); a test runs every console script with `--help` under a
 timeout.
+
+## [0.13.2] - 2026-11-04
 
 ### Fixed
 
