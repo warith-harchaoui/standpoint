@@ -3,8 +3,8 @@
 The lead-magnet landing (webapp/gate/landing.php) shows non-editable previews
 of the four example datasets. Rather than drawing separate marketing images,
 this script drives the ACTUAL built app headlessly (Playwright over a local
-server on ``dist/``, Pyodide engine, the in-page student for the pole names) and
-saves each generated map as ``dist/static/examples/<id>.<lang>.svg`` — so the
+server on the build output, Pyodide engine, the in-page student for the pole names) and
+saves each generated map as ``<build output>/static/examples/<id>.<lang>.svg`` — so the
 public previews are pixel-honest about what the gated app produces.
 
 Run after ``python webapp/build.py`` (needs network for the CDNs)::
@@ -25,7 +25,11 @@ from pathlib import Path
 from playwright.sync_api import Page, sync_playwright
 
 WEBAPP = Path(__file__).resolve().parent
-DIST = WEBAPP.parent / "web"
+# The folder build.py writes, read from build.py itself: this script used to
+# serve ``<repo>/web``, which no build ever creates, so the gallery stayed empty.
+# Run as ``python webapp/render_examples.py``, webapp/ is on sys.path.
+from build import DIST  # noqa: E402
+
 OUT = DIST / "static" / "examples"
 PORT = 8794
 
@@ -40,7 +44,7 @@ EXAMPLES: dict[str, dict[str, str]] = {
 
 
 def serve() -> http.server.ThreadingHTTPServer:
-    """Serve dist/ quietly on localhost; returns the running server."""
+    """Serve the build output quietly on localhost; returns the running server."""
 
     class Quiet(http.server.SimpleHTTPRequestHandler):
         """SimpleHTTPRequestHandler without per-request stderr noise."""
@@ -72,7 +76,7 @@ def render_one(page: Page, example_id: str, first_cell: str) -> str:
 
 
 def main() -> None:
-    """Render every (dataset, language) pair into dist/static/examples/."""
+    """Render every (dataset, language) pair into static/examples/ under the build output."""
     OUT.mkdir(parents=True, exist_ok=True)
     server = serve()
     try:
