@@ -396,23 +396,29 @@ def position(req: PositionRequest) -> PositionResponse:
     )
 
 
-def main_gui() -> None:
+def main_gui(argv: list[str] | None = None) -> None:
     """Console entry point (``standpoint-gui``): serve the GUI on localhost.
 
     Honours ``STANDPOINT_HOST`` / ``STANDPOINT_PORT`` exactly as
     ``standpoint-mcp`` already does -- port 8000 is a popular one, and a
     hardcoded bind left the only escape hatch being "free the port". The
     loopback default is deliberate and stays: the table never leaves the
-    machine unless the operator asks for it by name.
+    machine unless the operator asks for it by name. A click command, so
+    ``--help`` answers instead of starting the server.
     """
-    import os
+    import click
 
-    import uvicorn
+    @click.command(context_settings={"help_option_names": ["-h", "--help"]})
+    @click.option("--host", envvar="STANDPOINT_HOST", default="127.0.0.1", show_default=True)
+    @click.option("--port", envvar="STANDPOINT_PORT", default=8000, type=int, show_default=True)
+    def serve(host: str, port: int) -> None:
+        """Serve the Standpoint GUI at http://HOST:PORT/gui."""
+        import uvicorn
 
-    host = os.environ.get("STANDPOINT_HOST", "127.0.0.1")
-    port = int(os.environ.get("STANDPOINT_PORT", "8000"))
-    print(f"Standpoint GUI -> http://{host}:{port}/gui  (Ctrl-C to stop)")
-    uvicorn.run(app, host=host, port=port, log_level="info")
+        click.echo(f"Standpoint GUI -> http://{host}:{port}/gui  (Ctrl-C to stop)")
+        uvicorn.run(app, host=host, port=port, log_level="info")
+
+    serve.main(args=argv, prog_name="standpoint-gui")
 
 
 if __name__ == "__main__":

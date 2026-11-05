@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.13.2] - 2026-11-04
 
+**`standpoint-gui --help` and `standpoint-mcp --help` answer instead of serving.**
+Both read their bind from the environment and ignored their arguments, so
+`--help` started a server that never returned. They are click commands now,
+with `--host` / `--port` (defaults still from `STANDPOINT_HOST` /
+`STANDPOINT_PORT`); a test runs every console script with `--help` under a
+timeout.
+
 ### Fixed
 
 - A label could sit beside another dot and read as that dot's name. On the
