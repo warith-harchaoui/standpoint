@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.4] - 2026-11-12
+
+**PyPI states the licence as `BSD-3-Clause`.** The metadata pointed at the
+`LICENSE` file, so PyPI showed its first line, "BSD 3-Clause License", where
+every other member of the suite shows the SPDX identifier. No code change.
+
 ## [0.13.3] - 2026-11-05
 
 **`standpoint-gui --help` and `standpoint-mcp --help` answer instead of serving.**

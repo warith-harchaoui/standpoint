@@ -37,7 +37,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.13.3"
+__version__ = "0.13.4"
 
 import contextlib
 import functools
