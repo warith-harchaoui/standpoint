@@ -152,6 +152,7 @@ def main(pruned: Path) -> None:
     # The pruned checkpoint doubles as the tokenizer source: 07 already wrote
     # upstream-derived tokenizer files with remapped ids next to the weights.
     ex.lay_out_for_browser(pruned, onnx_dir, q4e8_file, CHECKPOINTS / f"{stem}-browser")
+    ex.discard_intermediates(onnx_dir, q4_file, q4e8_file)
 
 
 if __name__ == "__main__":

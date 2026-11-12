@@ -215,6 +215,22 @@ def lay_out_for_browser(tokenizer_src: Path, onnx_dir: Path, q4_file: Path, out:
     )
 
 
+def discard_intermediates(*paths: Path) -> None:
+    """Delete export byproducts once the browser bundle holds its own copies.
+
+    The fp16 export and the quantised graphs exist only to feed
+    `lay_out_for_browser`, which copies what it needs; left behind they are
+    gigabytes nothing reads. Called only after the bundle is laid out, so a run
+    that dies midway still finds them and resumes instead of re-exporting.
+    """
+    for path in paths:
+        if path.is_file():
+            path = path.parent
+        if path.exists():
+            shutil.rmtree(path)
+            print(f"discarded intermediate {path}")
+
+
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option(
     "--lang",
@@ -252,6 +268,8 @@ def main(lang: str) -> None:
     lay_out_for_browser(
         upstream_tokenizer_dir(lang), onnx_dir, q4_file, CHECKPOINTS / f"{stem}-browser"
     )
+    # The fused checkpoint stays: 07_prune_vocab.py starts from it.
+    discard_intermediates(onnx_dir, q4_file)
 
 
 if __name__ == "__main__":

@@ -33,6 +33,7 @@ def _load(name: str, filename: str) -> ModuleType:
 _table_utils = _load("_table_utils", "_table_utils.py")
 _balance_mod = _load("balance_dataset", "07_balance_dataset.py")
 _figure_mod = _load("make_loss_figure", "make_loss_figure.py")
+_export_mod = _load("export_browser", "05_export_browser.py")
 
 
 # --------------------------------------------------------------------------- #
@@ -119,3 +120,20 @@ def test_centered_moving_average_preserves_point_count() -> None:
     out = _figure_mod.centered_moving_average(points, window_iters=100)
     assert len(out) == len(points)
     assert [it for it, _ in out] == [it for it, _ in points]  # x-axis untouched
+
+
+# --------------------------------------------------------------------------- #
+# 05_export_browser.discard_intermediates
+# --------------------------------------------------------------------------- #
+def test_discard_intermediates_removes_dirs_and_the_dir_of_a_file(tmp_path: Path) -> None:
+    onnx_dir = tmp_path / "x-onnx-fp16"
+    onnx_dir.mkdir()
+    (onnx_dir / "model.onnx").write_bytes(b"0")
+    q4_file = tmp_path / "x-onnx-q4f16" / "model_q4f16.onnx"
+    q4_file.parent.mkdir()
+    q4_file.write_bytes(b"0")
+    bundle = tmp_path / "x-browser"
+    bundle.mkdir()
+    _export_mod.discard_intermediates(onnx_dir, q4_file, tmp_path / "never-written")
+    assert not onnx_dir.exists() and not q4_file.parent.exists()
+    assert bundle.exists()
