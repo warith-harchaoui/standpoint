@@ -226,7 +226,7 @@ print(sp.gradient_colors(res, roles)[:4])
 
 ```
 {'Python': 'best', 'Rust': 'worst', 'Java': 'right', 'Ruby': 'top'}
-['#FF3B30', '#A52A2A', '#75A857', '#9CB7FF']
+['#FF383C', '#AC7F5E', '#75A857', '#9CB7FF']
 ```
 
 Forcez une option nommée dans un rôle avec `top=` / `right=` (`--top` / `--right`
@@ -349,7 +349,7 @@ meta:
     axis_1: 2.0037
     axis_2: 0.7785
   role: best
-  color: '#FF3B30'
+  color: '#FF383C'
   attributes:
     Speed: 5.0
     Plugins: 5.0

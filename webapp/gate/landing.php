@@ -68,7 +68,7 @@ $flag = (string) ($_GET['link'] ?? ($_GET['login'] ?? ''));
        the headline, Roboto Mono for the eyebrow. Good Colors blue as accent.
        Dark mode is a .dark class on <html> (not a media query), exactly like
        the app, so the shared theme toggle rules both pages. */
-    :root { --accent: #007AFF; --accent-soft: #CCE4FF; }
+    :root { --accent: #0088FF; --accent-soft: #CCE7FF; }
     * { box-sizing: border-box; margin: 0; }
     body {
       font-family: Roboto, system-ui, -apple-system, Helvetica, Arial, sans-serif;
@@ -126,8 +126,8 @@ $flag = (string) ($_GET['link'] ?? ($_GET['login'] ?? ''));
     button[type=submit]:hover { background: #292524; }
     button[type=submit]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .msg { border-radius: .6rem; padding: .7rem .9rem; font-size: .95rem; display: none; }
-    .msg.ok { background: #D4F5D9; color: #14532d; display: block; }
-    .msg.err { background: #FFD8D6; color: #7f1d1d; display: block; }
+    .msg.ok { background: #D6F4DE; color: #14532d; display: block; }
+    .msg.err { background: #FFD7D8; color: #7f1d1d; display: block; }
     .hp { position: absolute; left: -9999px; }
     footer { border-top: 1px solid #e7e5e4; margin-top: 3rem; padding-top: 1rem;
       font-size: .85rem; color: #78716c; }
@@ -139,8 +139,8 @@ $flag = (string) ($_GET['link'] ?? ($_GET['login'] ?? ''));
     .dark input[type=email] { background: #0c0a09; border-color: #44403c; color: #e7e5e4; }
     .dark button[type=submit] { background: #e7e5e4; color: #1c1917; }
     .dark button[type=submit]:hover { background: #fff; }
-    .dark .msg.ok { background: #14532d; color: #D4F5D9; }
-    .dark .msg.err { background: #7f1d1d; color: #FFD8D6; }
+    .dark .msg.ok { background: #14532d; color: #D6F4DE; }
+    .dark .msg.err { background: #7f1d1d; color: #FFD7D8; }
     /* Ralph Eyeball fix: the muted grays readable on white fail on the dark
        cards (consent, notes, eyebrow ~2.8:1); lift them to a legible stone. */
     .dark .consent { color: #a8a29e; }
@@ -285,10 +285,10 @@ const STRINGS = {
 };
 // One Good Colors tint per dataset, mirroring the app's example buttons.
 const TINTS = {
-  programming_languages: "#007AFF",
-  laptops: "#28CD41",
-  cloud_providers: "#FF9500",
-  voitures_electriques: "#AF52DE"
+  programming_languages: "#0088FF",
+  laptops: "#34C759",
+  cloud_providers: "#FF8D28",
+  voitures_electriques: "#CB30E0"
 };
 
 // Language and theme: initialized by the pre-paint script in <head> from the

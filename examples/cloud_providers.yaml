@@ -46,7 +46,7 @@ approaches:
     axis_1: 2.2575
     axis_2: 2.6018
   role: best
-  color: '#FF3B30'
+  color: '#FF383C'
   attributes:
     Compute Breadth: 5.0
     Managed AI/ML: 4.0
@@ -74,7 +74,7 @@ approaches:
     axis_1: 2.1499
     axis_2: 2.4987
   role: top
-  color: '#AF52DE'
+  color: '#CB30E0'
   attributes:
     Compute Breadth: 4.0
     Managed AI/ML: 4.0
@@ -102,7 +102,7 @@ approaches:
     axis_1: 1.7133
     axis_2: -0.016
   role: right
-  color: '#007AFF'
+  color: '#0088FF'
   attributes:
     Compute Breadth: 3.0
     Managed AI/ML: 3.0
@@ -130,7 +130,7 @@ approaches:
     axis_1: -2.1465
     axis_2: -1.6245
   role: worst
-  color: '#A52A2A'
+  color: '#AC7F5E'
   attributes:
     Compute Breadth: 2.0
     Managed AI/ML: 1.0

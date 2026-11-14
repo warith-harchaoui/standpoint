@@ -628,7 +628,7 @@ def _yaml_for(df: pd.DataFrame) -> dict:
             roles=["best"] + ["other"] * (n - 1),
             poles=["L", "R", "B", "T"],
             axis_names=["axis one", "axis two"],
-            colors=["#FF3B30"] * n,
+            colors=["#FF383C"] * n,
         )
     )
 

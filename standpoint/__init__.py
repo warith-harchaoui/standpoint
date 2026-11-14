@@ -37,7 +37,7 @@ from __future__ import annotations
 
 __author__ = "Warith Harchaoui"
 __url__ = "https://www.linkedin.com/in/warith-harchaoui"
-__version__ = "0.13.4"
+__version__ = "0.13.5"
 
 import contextlib
 import functools
@@ -66,14 +66,15 @@ DetectorFactory.seed = 0  # deterministic language detection
 # grab stdout). The CLI in `run()` is the one place that prints on purpose.
 logger = logging.getLogger("standpoint")
 
-# "Good Colors" Apple-base palette: https://deraison.ai/colors/.
+# The corporate palette of https://deraison.ai/colors/ (Apple system colours,
+# values of June 9, 2025), the source of truth for every colour of the suite.
 # The four highlighted roles keep a fixed identity hue; the axis cross and labels
 # use neutrals. Every other dot is coloured by its map position (`gradient_colors`).
 PALETTE = {
-    "reference": "#FF3B30",  # Red    the reference leader (best), sits top-right
-    "right": "#007AFF",  # Blue   challenger that most defines the right pole
-    "worst": "#A52A2A",  # Brown  weakest overall, sits bottom-left
-    "top": "#AF52DE",  # Purple challenger that most defines the top pole
+    "reference": "#FF383C",  # Red    the reference leader (best), sits top-right
+    "right": "#0088FF",  # Blue   challenger that most defines the right pole
+    "worst": "#AC7F5E",  # Brown  weakest overall, sits bottom-left
+    "top": "#CB30E0",  # Purple challenger that most defines the top pole
     "competitor": "#8E8E93",  # Gray   placeholder; overridden by gradient_colors
     "axis": "#C7C7CC",  # light gray for the centred, dotted axis cross
     "label": "#1C1C1E",  # near-black label text

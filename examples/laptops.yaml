@@ -45,7 +45,7 @@ approaches:
     axis_1: 2.3614
     axis_2: 2.6563
   role: best
-  color: '#FF3B30'
+  color: '#FF383C'
   attributes:
     Price: 3.0
     Performance: 3.0
@@ -58,7 +58,7 @@ approaches:
     axis_1: 2.3614
     axis_2: -1.3129
   role: right
-  color: '#007AFF'
+  color: '#0088FF'
   attributes:
     Price: 5.0
     Performance: 5.0
@@ -136,7 +136,7 @@ approaches:
     axis_1: -1.3039
     axis_2: -2.2894
   role: worst
-  color: '#A52A2A'
+  color: '#AC7F5E'
   attributes:
     Price: 4.0
     Performance: 5.0
@@ -149,7 +149,7 @@ approaches:
     axis_1: -2.3614
     axis_2: 2.6563
   role: top
-  color: '#AF52DE'
+  color: '#CB30E0'
   attributes:
     Price: 1.0
     Performance: 2.0

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.5] - 2026-11-14
+
+**The highlighted dots take the colours of [deraison.ai/colors](https://deraison.ai/colors/).**
+The site is the source of truth for every colour of the suite, and its
+corporate palette is Apple's system colours of June 9, 2025. The four roles
+change accordingly: the reference red `#FF3B30` becomes `#FF383C`, the right
+challenger's blue `#007AFF` becomes `#0088FF`, the weakest option's brown
+`#A52A2A` becomes `#AC7F5E`, the top challenger's purple `#AF52DE` becomes
+`#CB30E0`. The other dots keep their position-driven hue wheel. The worked
+examples, the repository's own landscape, the web GUI's example buttons and
+the landing page follow; their PNGs are rasterised again with resvg at the
+same scale, which reproduces the previous files byte for byte from the
+previous SVGs.
+
 ## [0.13.4] - 2026-11-12
 
 **PyPI states the licence as `BSD-3-Clause`.** The metadata pointed at the

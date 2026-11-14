@@ -172,18 +172,18 @@ GUI_HTML = r"""<!doctype html>
        (https://deraison.ai/colors/). These are the one colored piece of
        chrome, because each button IS a dataset ("color means data"). Text stays
        near-ink for contrast; dark mode keeps the stroke and drops the tint. */
-    .ex-blue   { background:#CCE4FF; border-color:#007AFF; color:#0a3d75; }
-    .ex-green  { background:#D4F5D9; border-color:#28CD41; color:#0e5b1e; }
-    .ex-orange { background:#FFEACC; border-color:#FF9500; color:#7a4a00; }
-    .ex-purple { background:#EFDCF8; border-color:#AF52DE; color:#5b2179; }
-    .ex-blue:hover   { background:#b8d9ff; border-color:#007AFF; }
-    .ex-green:hover  { background:#c2efc9; border-color:#28CD41; }
-    .ex-orange:hover { background:#ffdfad; border-color:#FF9500; }
-    .ex-purple:hover { background:#e6cbf4; border-color:#AF52DE; }
-    .dark .ex-blue   { background:transparent; border-color:#007AFF; color:#7db8ff; }
-    .dark .ex-green  { background:transparent; border-color:#28CD41; color:#6fdd82; }
-    .dark .ex-orange { background:transparent; border-color:#FF9500; color:#ffb54d; }
-    .dark .ex-purple { background:transparent; border-color:#AF52DE; color:#cd8fea; }
+    .ex-blue   { background:#CCE7FF; border-color:#0088FF; color:#0a3d75; }
+    .ex-green  { background:#D6F4DE; border-color:#34C759; color:#0e5b1e; }
+    .ex-orange { background:#FFE8D4; border-color:#FF8D28; color:#7a4a00; }
+    .ex-purple { background:#F5D6F9; border-color:#CB30E0; color:#5b2179; }
+    .ex-blue:hover   { background:#b8d9ff; border-color:#0088FF; }
+    .ex-green:hover  { background:#c2efc9; border-color:#34C759; }
+    .ex-orange:hover { background:#ffdfad; border-color:#FF8D28; }
+    .ex-purple:hover { background:#e6cbf4; border-color:#CB30E0; }
+    .dark .ex-blue   { background:transparent; border-color:#0088FF; color:#7db8ff; }
+    .dark .ex-green  { background:transparent; border-color:#34C759; color:#6fdd82; }
+    .dark .ex-orange { background:transparent; border-color:#FF8D28; color:#ffb54d; }
+    .dark .ex-purple { background:transparent; border-color:#CB30E0; color:#cd8fea; }
     .dark .ex-blue:hover   { background:#0a2a4d; }
     .dark .ex-green:hover  { background:#0c3a16; }
     .dark .ex-orange:hover { background:#4d3000; }
@@ -306,7 +306,7 @@ GUI_HTML = r"""<!doctype html>
     </section>
 
     <p id="status" role="status" aria-live="polite" class="text-sm text-neutral-500 hidden"></p>
-    <p id="error" role="alert" aria-live="assertive" class="text-sm font-medium hidden" style="color:#FF3B30"></p>
+    <p id="error" role="alert" aria-live="assertive" class="text-sm font-medium hidden" style="color:#FF383C"></p>
 
     <!-- 3 · Quadrant -->
     <section class="card bg-white rounded-2xl p-6 sm:p-8 space-y-5">

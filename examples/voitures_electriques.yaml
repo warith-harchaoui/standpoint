@@ -46,7 +46,7 @@ approaches:
     axis_1: 3.2189
     axis_2: 0.4276
   role: best
-  color: '#FF3B30'
+  color: '#FF383C'
   attributes:
     Autonomie: 5.0
     Performances: 5.0
@@ -130,7 +130,7 @@ approaches:
     axis_1: 3.2189
     axis_2: -0.4276
   role: right
-  color: '#007AFF'
+  color: '#0088FF'
   attributes:
     Autonomie: 4.0
     Performances: 5.0
@@ -172,7 +172,7 @@ approaches:
     axis_1: -1.5274
     axis_2: 0.4276
   role: top
-  color: '#AF52DE'
+  color: '#CB30E0'
   attributes:
     Autonomie: 3.0
     Performances: 3.0
@@ -186,7 +186,7 @@ approaches:
     axis_1: -3.2189
     axis_2: -0.0129
   role: worst
-  color: '#A52A2A'
+  color: '#AC7F5E'
   attributes:
     Autonomie: 2.0
     Performances: 2.0

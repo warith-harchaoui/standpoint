@@ -46,7 +46,7 @@ approaches:
     axis_1: 2.0865
     axis_2: 1.4636
   role: best
-  color: '#FF3B30'
+  color: '#FF383C'
   attributes:
     Automated Axis Naming: 5.0
     One Command: 5.0
@@ -60,7 +60,7 @@ approaches:
     axis_1: 2.0865
     axis_2: -1.1765
   role: right
-  color: '#007AFF'
+  color: '#0088FF'
   attributes:
     Automated Axis Naming: 1.0
     One Command: 2.0
@@ -130,7 +130,7 @@ approaches:
     axis_1: -2.0865
     axis_2: 1.4636
   role: worst
-  color: '#A52A2A'
+  color: '#AC7F5E'
   attributes:
     Automated Axis Naming: 1.0
     One Command: 1.0

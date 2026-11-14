@@ -5,15 +5,15 @@
     .panel      { fill: #ffffff; stroke: #d6d6d6; stroke-width: 1.5; }
     .panel-label{ fill: #6b6b6b; font-size: 13px; font-weight: 600; letter-spacing: .08em; }
     .io         { fill: #F8F8F8; stroke: #9a9a9a; stroke-width: 1.5; }
-    .stage      { fill: #FFF4E0; stroke: #FF9500; stroke-width: 1.5; }
-    .core       { fill: #007AFF; stroke: #0062CC; stroke-width: 1.5; }
-    .surface    { fill: #EAF3FF; stroke: #007AFF; stroke-width: 1.5; }
+    .stage      { fill: #FFF4E0; stroke: #FF8D28; stroke-width: 1.5; }
+    .core       { fill: #0088FF; stroke: #0062CC; stroke-width: 1.5; }
+    .surface    { fill: #EAF3FF; stroke: #0088FF; stroke-width: 1.5; }
     .n-title    { font-size: 15px; font-weight: 600; fill: #111111; }
     .n-sub      { font-size: 12px; fill: #5a5a5a; }
     .on-dark    { fill: #ffffff; font-size: 15px; font-weight: 600; }
     .on-dark-sub{ fill: #d8e8ff; font-size: 12px; }
     .flow       { fill: none; stroke: #9a9a9a; stroke-width: 2; }
-    .tie        { fill: none; stroke: #007AFF; stroke-width: 1.5; }
+    .tie        { fill: none; stroke: #0088FF; stroke-width: 1.5; }
     .caption    { font-size: 12.5px; fill: #5a5a5a; font-style: italic; }
     .step       { font-size: 11px; font-weight: 700; fill: #B26A00;
                   font-family: 'Roboto Mono', ui-monospace, monospace; }
@@ -23,7 +23,7 @@
       .panel      { fill: #1b1b1d; stroke: #3a3a3d; }
       .panel-label{ fill: #a0a0a6; }
       .io         { fill: #2a2a2e; stroke: #6f6f76; }
-      .stage      { fill: #3a2d12; stroke: #FF9500; }
+      .stage      { fill: #3a2d12; stroke: #FF8D28; }
       .surface    { fill: #10243d; stroke: #4da2ff; }
       .n-title    { fill: #f2f2f4; }
       .n-sub      { fill: #b4b4ba; }

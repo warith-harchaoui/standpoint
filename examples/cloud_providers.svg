@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><title id="sp-title">Providers in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 13 providers, Nimble to Robust on the horizontal axis, Frugal to Expansive on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="157.0" y1="484.0" x2="1067.0" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="863.0" x2="612.0" y2="105.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="end">Robust</text><text data-pole="left" x="60.0" y="492.8" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="start">Nimble</text><text data-pole="top" x="612.0" y="64.7" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Expansive</text><text data-pole="bottom" x="612.0" y="918.0" font-size="25" font-style="italic" fill="#6E6E73" text-anchor="middle">Frugal</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: AWS
 role: best
 axis1: 2.26
-axis2: 2.60"><circle cx="912.0" cy="259.0" r="8.31" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: AWS
+axis2: 2.60"><circle cx="912.0" cy="259.0" r="8.31" fill="#FF383C" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: AWS
 role: best
 axis1: 2.26
 axis2: 2.60</title></g><text x="924.5" y="264.6" font-size="16" fill="#1C1C1E" text-anchor="start">AWS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Google Cloud
@@ -13,7 +13,7 @@ axis1: 1.32
 axis2: 1.79</title></g><text x="800.4" y="334.7" font-size="16" fill="#1C1C1E" text-anchor="start">Google Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Microsoft Azure
 role: top
 axis1: 2.15
-axis2: 2.50"><circle cx="897.7" cy="267.9" r="8.31" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Microsoft Azure
+axis2: 2.50"><circle cx="897.7" cy="267.9" r="8.31" fill="#CB30E0" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: Microsoft Azure
 role: top
 axis1: 2.15
 axis2: 2.50</title></g><text x="885.2" y="273.5" font-size="16" fill="#1C1C1E" text-anchor="end">Microsoft Azure</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Oracle Cloud
@@ -25,7 +25,7 @@ axis1: 1.20
 axis2: -0.81</title></g><text x="784.4" y="559.6" font-size="16" fill="#1C1C1E" text-anchor="start">Oracle Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: IBM Cloud
 role: right
 axis1: 1.71
-axis2: -0.02"><circle cx="839.7" cy="485.4" r="8.31" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: IBM Cloud
+axis2: -0.02"><circle cx="839.7" cy="485.4" r="8.31" fill="#0088FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: IBM Cloud
 role: right
 axis1: 1.71
 axis2: -0.02</title></g><text x="852.2" y="524.3" font-size="16" fill="#1C1C1E" text-anchor="start">IBM Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Alibaba Cloud
@@ -37,7 +37,7 @@ axis1: 1.03
 axis2: 0.45</title></g><text x="761.5" y="450.5" font-size="16" fill="#1C1C1E" text-anchor="start">Alibaba Cloud</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: DigitalOcean
 role: worst
 axis1: -2.15
-axis2: -1.62"><circle cx="326.8" cy="624.5" r="8.31" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: DigitalOcean
+axis2: -1.62"><circle cx="326.8" cy="624.5" r="8.31" fill="#AC7F5E" stroke="white" stroke-width="1" opacity="0.95"/><title>Providers: DigitalOcean
 role: worst
 axis1: -2.15
 axis2: -1.62</title></g><text x="339.3" y="630.1" font-size="16" fill="#1C1C1E" text-anchor="start">DigitalOcean</text><g class="sp-dot" tabindex="0" role="img" aria-label="Providers: Cloudflare

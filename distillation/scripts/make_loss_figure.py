@@ -33,7 +33,7 @@ MA_WINDOW_ITERS = 100  # centered moving average window on the training curve
 STEPS_PER_REPORT = 10  # extract_loss_curve.py: training rows are 10 iterations apart
 
 # deraison.ai/colors/academic -- Okabe-Ito, colorblind-safe.
-RED = "#D55E00"
+RED = "#E73121"
 ORANGE = "#E69F00"
 GREEN = "#009E73"
 BLUE = "#0072B2"

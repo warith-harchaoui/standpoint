@@ -81,8 +81,8 @@ flowchart LR
     lib -->|"SVG string"| embed["🖥️ innerHTML<br/>live quadrant"]
 
     %% "Good Colors" palette: https://deraison.ai/colors/
-    classDef browser fill:#CCE4FF,stroke:#007AFF,color:#000000,stroke-width:2px;
-    classDef server fill:#D4F5D9,stroke:#28CD41,color:#000000,stroke-width:2px;
+    classDef browser fill:#CCE7FF,stroke:#0088FF,color:#000000,stroke-width:2px;
+    classDef server fill:#D6F4DE,stroke:#34C759,color:#000000,stroke-width:2px;
     class grid,embed browser;
     class pos,lib server;
 ```
@@ -143,8 +143,8 @@ flowchart LR
     llm -.->|"schema-shaped answer<br/>(poles, noun forms, ratings)"| glue
 
     %% "Good Colors" palette: https://deraison.ai/colors/
-    classDef browser fill:#CCE4FF,stroke:#007AFF,color:#000000,stroke-width:2px;
-    classDef wasm fill:#EAD6FF,stroke:#AF52DE,color:#000000,stroke-width:2px;
+    classDef browser fill:#CCE7FF,stroke:#0088FF,color:#000000,stroke-width:2px;
+    classDef wasm fill:#EAD6FF,stroke:#CB30E0,color:#000000,stroke-width:2px;
     class grid,embed browser;
     class glue,lib,llm wasm;
 ```
