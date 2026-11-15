@@ -2,7 +2,7 @@
 
 [🇫🇷](https://github.com/warith-harchaoui/standpoint/blob/main/LISEZMOI.md) · [🇬🇧](https://github.com/warith-harchaoui/standpoint/blob/main/README.md)
 
-[![CI](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20SVG-brightgreen.svg)](#tout-en-local)
+[![CI](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20SVG-brightgreen.svg)](#tout-en-local)
 
 `Standpoint` fait partie d'une collection de bibliothèques appelée `AI Helpers`, développée pour bâtir des applications d'intelligence artificielle.
 
@@ -113,7 +113,7 @@ et le catalogue exhaustif
 
 ### Les deux commandes qui comptent
 
-Si vous avez déjà Python 3.10–3.13, c'est toute l'installation :
+Si vous avez déjà Python 3.10 ou plus récent, c'est toute l'installation :
 
 ```bash
 pip install --upgrade standpoint
@@ -131,7 +131,7 @@ Tout ce qui suit est le mode d'emploi complet, prérequis, environnement
 virtuel, dépannage, pour une machine sans Python déjà en place ou pour qui
 veut plus de contrôle.
 
-**Prérequis :** **Python 3.10–3.13** et **git**, multiplateforme :
+**Prérequis :** **Python 3.10 ou plus récent** et **git**, multiplateforme :
 
 - 🍎 **macOS** ([Homebrew](https://brew.sh)) : `brew install python git`
 - 🐧 **Ubuntu/Debian** : `sudo apt update && sudo apt install -y python3 python3-pip git`

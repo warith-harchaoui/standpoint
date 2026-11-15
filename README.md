@@ -2,7 +2,7 @@
 
 [🇫🇷](https://github.com/warith-harchaoui/standpoint/blob/main/LISEZMOI.md) · [🇬🇧](https://github.com/warith-harchaoui/standpoint/blob/main/README.md)
 
-[![CI](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20SVG-brightgreen.svg)](#local-first)
+[![CI](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/warith-harchaoui/standpoint/actions/workflows/ci.yml) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/warith-harchaoui/standpoint/blob/main/LICENSE) [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](#) [![Local-first](https://img.shields.io/badge/local--first-Ollama%20%2B%20SVG-brightgreen.svg)](#local-first)
 
 `Standpoint` belongs to a collection of libraries called `AI Helpers` developed for building Artificial Intelligence.
 
@@ -107,7 +107,7 @@ and the exhaustive
 
 ### The two commands that matter
 
-If you already have Python 3.10–3.13, this is the entire install:
+If you already have Python 3.10 or later, this is the entire install:
 
 ```bash
 pip install --upgrade standpoint
@@ -124,7 +124,7 @@ Everything below is the fuller walkthrough (prerequisites, a virtual
 environment, troubleshooting) for a machine that doesn't have Python set up
 yet, or for anyone who wants more control.
 
-**Prerequisites:** **Python 3.10–3.13** and **git**, cross-platform:
+**Prerequisites:** **Python 3.10 or later** and **git**, cross-platform:
 
 - 🍎 **macOS** ([Homebrew](https://brew.sh)): `brew install python git`
 - 🐧 **Ubuntu/Debian**: `sudo apt update && sudo apt install -y python3 python3-pip git`
