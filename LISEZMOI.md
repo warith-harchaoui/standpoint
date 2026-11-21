@@ -17,6 +17,8 @@ colonnes, des nombres dans les cellules) et produit une carte de positionnement 
 et un fichier YAML avec toutes les coordonnées et tous les coefficients. Une seule
 commande suffit.
 
+Laissez une [⭐️](https://github.com/warith-harchaoui/standpoint) sur GitHub si mon aide le mérite.
+
 La méthode est une analyse en composantes principales (ACP) ordinaire : à partir de plusieurs colonnes de notes, elle trouve les quelques directions nouvelles où les options se distinguent le plus, si bien qu'une ligne entière de notes se ramène à deux nombres qui portent l'essentiel de ce qui la distingue des autres. On s'en sert de longue date pour les cartes perceptuelles.
 
 Ce que Standpoint y ajoute, c'est le travail que vous feriez sinon à la main :

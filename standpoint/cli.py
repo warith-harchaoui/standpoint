@@ -17,7 +17,10 @@ import click
 from standpoint import __version__, run
 
 
-@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.command(
+    context_settings={"help_option_names": ["-h", "--help"]},
+    epilog="⭐️ on GitHub: https://github.com/warith-harchaoui/standpoint",
+)
 @click.argument("table", type=click.Path(exists=True, dir_okay=False))
 @click.option(
     "-r",

@@ -16,6 +16,8 @@ Standpoint reads a comparison table (options as rows, criteria as columns, numbe
 in the cells) and produces a 2D positioning map and a YAML file with all the
 coordinates and coefficients. One command does it.
 
+Drop a [⭐️](https://github.com/warith-harchaoui/standpoint) on GitHub if my help deserves it.
+
 The method is ordinary Principal Component Analysis (PCA): given many columns of numbers, find the few new directions along which the options actually differ the most, so a whole row of ratings collapses into two numbers that still carry most of what distinguishes it from the rest. People have used it for perceptual maps for a long time.
 
 What Standpoint adds is the work you would otherwise do by hand:
