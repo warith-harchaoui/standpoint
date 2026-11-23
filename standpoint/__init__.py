@@ -64,7 +64,7 @@ DetectorFactory.seed = 0  # deterministic language detection
 
 # Library diagnostics go through logging, never bare print (a library must not
 # grab stdout). The CLI in `run()` is the one place that prints on purpose.
-logger = logging.getLogger("standpoint")
+logger = logging.getLogger(__name__)
 
 # The corporate palette of https://deraison.ai/colors/ (Apple system colours,
 # values of June 9, 2025), the source of truth for every colour of the suite.
