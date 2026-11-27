@@ -1414,7 +1414,12 @@ def to_svg(
     PAD = 12  # outer margin, matches the old Vega config.padding
     TITLE_Y = PAD + 14  # title baseline, independent of the band reserved above
     TITLE_BAND = 34  # vertical space reserved above the plot for the title
-    LEGEND_W = 0 if all_labelled else max(160, legend_font * 11)
+    # The legend column is as wide as its longest name, not a fixed 11 em: at
+    # 160 px "TensorFlow Embedding Projector" ran 10 px past the right edge of
+    # the 2026-11 landscape and was clipped. Swatch (24 + 18 px) + name + PAD,
+    # names measured with the same 0.58 em estimate the de-clutter uses.
+    widest = max((len(nm) * 0.58 * legend_font for nm in names), default=0.0)
+    LEGEND_W = 0 if all_labelled else max(160, legend_font * 11, math.ceil(24 + 18 + widest + PAD))
 
     plot_x0 = PAD
     plot_y0 = TITLE_BAND
@@ -1557,9 +1562,12 @@ def to_svg(
         )
         if i in placements:
             lx, ly, anchor = placements[i]
+            # data-placed: the name sits where its dot's coordinates put it,
+            # not on a row, so two names a few pixels apart in height are a
+            # coincidence of the scores, not a missed baseline.
             parts.append(
                 f'<text x="{x_px(lx):.1f}" y="{y_px(ly) + label_dy:.1f}" font-size="{label_font}" '
-                f'fill="{PALETTE["label"]}" text-anchor="{anchor}">{_esc(nm)}</text>'
+                f'fill="{PALETTE["label"]}" text-anchor="{anchor}" data-placed="data">{_esc(nm)}</text>'
             )
 
     # -- fallback legend, only when crowding dropped some in-place labels --- #

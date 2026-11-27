@@ -1109,3 +1109,27 @@ def test_no_label_reads_as_a_neighbours_name():
         own = dist(*dots[i], box)
         nearest = min(dist(*d, box) for j, d in enumerate(dots) if j != i)
         assert nearest >= 0.75 * own, f"{name}'s label sits beside another dot"
+
+
+def test_the_fallback_legend_holds_its_longest_name():
+    """A crowded map's legend column is as wide as its longest name.
+
+    At a fixed 160 px, "TensorFlow Embedding Projector" ran past the right edge
+    of the 2026-11 landscape and was clipped (``sprezzature-figures check``:
+    text_outside_canvas). Model-free: the poles fall back to the loadings.
+    """
+    rng = np.random.default_rng(0)
+    names = [f"Tool {i}" for i in range(39)] + ["TensorFlow Embedding Projector, the long one"]
+    crowded = pd.DataFrame(
+        rng.integers(1, 6, size=(40, 6)),
+        index=pd.Index(names, name="Tool"),
+        columns=[f"c{j}" for j in range(6)],
+    ).astype(float)
+    svg = p4m.to_svg(p4m.analyze(crowded, reference=0))
+    width = float(re.search(r'<svg[^>]*\bwidth="([\d.]+)"', svg).group(1))
+    legend = re.findall(
+        r'<text x="([\d.]+)" y="[\d.]+" font-size="([\d.]+)" fill="#1C1C1E">([^<]+)</text>', svg
+    )
+    assert legend, "the crowded map was expected to fall back to its legend"
+    right = max(float(x) + 0.58 * float(size) * len(text) for x, size, text in legend)
+    assert right <= width, f"a legend name ends at {right:.0f} px on a {width:.0f} px canvas"

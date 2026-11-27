@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Every command line ends its `--help` on one line, after a blank one: `⭐️ on GitHub: https://github.com/warith-harchaoui/standpoint`. A test checks it for each console script. README.md and LISEZMOI.md carry one invitation to star the repository, right after the paragraph that says what the tool does.
 
+### Fixed
+
+- The fallback legend of a crowded map is as wide as its longest name: at a fixed 160 px, "TensorFlow Embedding Projector" ran past the right edge of the canvas and was clipped. The names placed beside their dots carry `data-placed="data"`, so a figure checker reads them as placed by the scores, not as a row that missed its baseline.
+
 ## [0.13.5] - 2026-11-14
 
 **The highlighted dots take the colours of [deraison.ai/colors](https://deraison.ai/colors/).**
